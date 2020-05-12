@@ -18,8 +18,10 @@ package com.zhoyq.server.jt808.starter.pack;
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
+import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
-import com.zhoyq.server.jt808.starter.service.SessionService;
+import com.zhoyq.server.jt808.starter.service.CacheService;
+import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,34 +40,83 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0102 implements PackHandler {
 
     @Autowired
-    private SessionService sessionService;
+    private CacheService cacheService;
+    @Autowired
+    private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private Jt808Helper jt808Helper;
+    @Autowired
+    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0102 终端鉴权  TerminalAuthentication");
-
-        String phone = ByteArrHelper.toHexString(phoneNum);
-
-        // 消息体内的鉴权码
-        String authId = null;
-        try {
-            authId = new String(msgBody,"GB18030").trim();
-        } catch (UnsupportedEncodingException e) {
-            log.warn(e.getMessage());
+        int version;
+        if (phoneNum.length == 10) {
+            version = 2019;
+        } else {
+            version = 20132011;
         }
 
-        String oriAuthId = sessionService.getAuth(phone);
+        String phone = byteArrHelper.toHexString(phoneNum);
+
+        // 获取鉴权码
+        String authId;
+
+        if (version == 2019) {
+            int len = msgBody[0];
+            try {
+                authId = jt808Helper.toGBKString(byteArrHelper.subByte(msgBody, 1, 1 + len));
+            } catch (UnsupportedEncodingException e) {
+                log.warn(e.getMessage());
+                authId = null;
+            }
+        } else {
+            try {
+                authId = jt808Helper.toGBKString(msgBody);
+            } catch (UnsupportedEncodingException e) {
+                log.warn(e.getMessage());
+                authId = null;
+            }
+        }
+
+        String oriAuthId = cacheService.getAuth(phone);
 
         byte result;
         if(oriAuthId != null && oriAuthId.equals(authId)){
             // 鉴权成功
             result = 0;
+            // 成功后保存鉴权信息
+            if(version == 2019){
+                tpe.execute(() -> {
+                    byte[] imei = byteArrHelper.subByte(msgBody, msgBody[0] + 1, msgBody[0] + 16);
+                    byte[] softVersion = byteArrHelper.subByte(msgBody, msgBody[0] + 16, msgBody[0] + 36);
+                    dataService.terminalAuth(
+                            phone,
+                            oriAuthId,
+                            jt808Helper.toAsciiString(imei),
+                            jt808Helper.toAsciiString(softVersion)
+                    );
+                });
+            } else {
+                tpe.execute(() -> {
+                    dataService.terminalAuth(
+                            phone,
+                            oriAuthId,
+                            null,
+                            null
+                    );
+                });
+            }
         }else{
             // 鉴权失败
             result = 1;
         }
-        return ResHelper.getPlatAnswer(phoneNum,streamNum, msgId, result);
+        return resHelper.getPlatAnswer(phoneNum,streamNum, msgId, result);
     }
 }

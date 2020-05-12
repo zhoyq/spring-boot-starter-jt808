@@ -40,20 +40,27 @@ public class Handler0x0702 implements PackHandler {
     @Autowired
     private ThreadPoolExecutor tpe;
 
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+    @Autowired
+    private Analyzer analyzer;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
-        log.info("0702 驾驶员身份信息采集上报 - 2011 & 2013 DriverDateCollectionReport");
+        log.info("0702 驾驶员身份信息采集上报 driver data collection report");
 
-        DriverInfo driverInfo = Analyzer.analyzeDriver(msgBody);
+        DriverInfo driverInfo = analyzer.analyzeDriver(phoneNum, msgBody);
         // 如果等于空 则解析错误 直接返回失败应答
         if (driverInfo == null) {
-            return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
+            return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
         }
         tpe.execute(() -> {
-            String phone = ByteArrHelper.toHexString(phoneNum);
+            String phone = byteArrHelper.toHexString(phoneNum);
             dataService.driverInfo(phone, driverInfo);
         });
 
-        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+        return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

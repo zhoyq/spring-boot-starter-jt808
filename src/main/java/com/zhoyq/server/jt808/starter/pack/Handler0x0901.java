@@ -37,17 +37,25 @@ public class Handler0x0901 implements PackHandler {
     private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+    @Autowired
+    private GzipHelper gzipHelper;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0901 数据压缩上报 DataPressUpload");
         tpe.execute(() -> {
-            String phone = ByteArrHelper.toHexString(phoneNum);
+            String phone = byteArrHelper.toHexString(phoneNum);
             // 因为压缩消息之后的全是 所以就不需要压缩消息长度取解析了
             // 解压缩后的数据
-            byte[] data = GzipHelper.ungzip(ByteArrHelper.subByte(msgBody,4));
+            byte[] data = gzipHelper.ungzip(byteArrHelper.subByte(msgBody,4));
 
             dataService.compressData(phone, data);
         });
-        return ResHelper .getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

@@ -39,22 +39,27 @@ public class Handler0x0001 implements PackHandler {
     @Autowired
     private ThreadPoolExecutor tpe;
 
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+
     @Override
     public byte[] handle(byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0001 终端通用应答 TerminalAnswer");
         tpe.execute(() -> {
             // 对应平台消息流水号
-            int platformStreamNumber = ByteArrHelper.twobyte2int(ByteArrHelper.subByte(msgBody,0,2));
+            int platformStreamNumber = byteArrHelper.twobyte2int(byteArrHelper.subByte(msgBody,0,2));
             // 平台消息ID
-            String platformCommandId = ByteArrHelper.toHexString(ByteArrHelper.subByte(msgBody,2,4));
+            String platformCommandId = byteArrHelper.toHexString(byteArrHelper.subByte(msgBody,2,4));
             // 终端对应电话号码
-            String phone = ByteArrHelper.toHexString(phoneNum);
+            String phone = byteArrHelper.toHexString(phoneNum);
             // 消息ID
-            String msg = ByteArrHelper.toHexString(msgId);
+            String msg = byteArrHelper.toHexString(msgId);
             // 一般终端应答都会对应下发指令进行 所以需要找到下发指令那条 并保存到其中
             dataService.terminalAnswer(phone, platformStreamNumber, platformCommandId, msg, msgBody);
         });
         // 直接返回处理应答成功
-        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+        return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

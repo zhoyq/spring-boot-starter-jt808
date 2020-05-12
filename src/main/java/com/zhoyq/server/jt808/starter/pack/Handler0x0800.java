@@ -39,16 +39,24 @@ public class Handler0x0800 implements PackHandler {
     private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+    @Autowired
+    private Analyzer analyzer;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0800  多媒体事件信息上传  MediaEventInfoUpload");
         // 保存多媒体信息到数据库 但没有实体文件
         tpe.execute(() -> {
-            String phone = ByteArrHelper.toHexString(phoneNum);
-            MediaInfo mediaInfo = Analyzer.analyzeMediaInfo(msgBody);
+            String phone = byteArrHelper.toHexString(phoneNum);
+            MediaInfo mediaInfo = analyzer.analyzeMediaInfo(msgBody);
             dataService.mediaInfo(phone, mediaInfo);
         });
 
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

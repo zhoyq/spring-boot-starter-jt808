@@ -16,21 +16,18 @@
 package com.zhoyq.server.jt808.starter.mina;
 
 import com.zhoyq.server.jt808.starter.config.Jt808Config;
-import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
+import com.zhoyq.server.jt808.starter.core.PackHandlerManagement;
+import com.zhoyq.server.jt808.starter.core.SessionManagement;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
-import com.zhoyq.server.jt808.starter.pack.NoSupportHandler;
-import com.zhoyq.server.jt808.starter.service.SessionService;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -44,43 +41,22 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Component
-public class MinaSessionHandler extends IoHandlerAdapter implements ApplicationContextAware {
-    /**
-     * 所有实现的包处理器
-     */
-    private static Map<Integer, PackHandler> packHandlerMap;
+public class MinaSessionHandler extends IoHandlerAdapter {
 
-    /**
-     * 不支持的协议消息
-     */
     @Autowired
-    private NoSupportHandler noSupportHandler;
-
-    /**
-     * 唤醒时 初始化 packHandlerMap
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        if(packHandlerMap == null){
-            packHandlerMap = new ConcurrentHashMap<>();
-
-            Map<String, Object> handlers =  applicationContext.getBeansWithAnnotation(Jt808Pack.class);
-            for (Map.Entry<String, Object> entry : handlers.entrySet()) {
-                Object handler = entry.getValue();
-                if (handler instanceof PackHandler) {
-                    Jt808Pack packConfig = handler.getClass().getAnnotation(Jt808Pack.class);
-                    // 新定义的包解析器会替换旧的
-                    packHandlerMap.put(packConfig.msgId() ,(PackHandler)handler);
-                }
-            }
-        }
-    }
+    private PackHandlerManagement packHandlerManagement;
 
     /**
      * 配置
      */
     @Autowired
     private Jt808Config jt808Config;
+    @Autowired
+    private Jt808Helper jt808Helper;
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
 
     /**
      * 会话空闲
@@ -109,7 +85,9 @@ public class MinaSessionHandler extends IoHandlerAdapter implements ApplicationC
      * 会话服务
      */
     @Autowired
-    private SessionService sessionService;
+    private SessionManagement sessionManagement;
+    @Autowired
+    private CacheService cacheService;
 
     /**
      * 获取消息
@@ -120,49 +98,68 @@ public class MinaSessionHandler extends IoHandlerAdapter implements ApplicationC
         log.debug("session received msg with id {} and msg {}", session.getId(), Arrays.toString(originData));
 
         // 按照协议解析获得的字节数组 pkgNum 从 1 开始
-        byte[] msgId, msgBodyProp, phoneNum, streamNum, pkgCount = null, pkgNum = null, res = null;
+        byte[] msgId, msgBodyProp, protocolVersion, phoneNum, streamNum, pkgCount = null, pkgNum = null, res = null;
         int offset = 0;
         msgId = new byte[]{originData[offset++],originData[offset++]};
         msgBodyProp = new byte[]{originData[offset++],originData[offset++]};
-        phoneNum = new byte[]{originData[offset++],originData[offset++],originData[offset++],
-                originData[offset++],originData[offset++],originData[offset++]};
+        // 通过消息体属性中的版本标识位 判断是否是 2019版本协议 并增加相关解析
+        boolean isVersion2019 =  jt808Helper.isVersion2019(msgBodyProp);
+        if (isVersion2019) {
+            protocolVersion = new byte[]{originData[offset++]};
+            phoneNum = new byte[]{
+                    originData[offset++],originData[offset++],originData[offset++],originData[offset++],originData[offset++],
+                    originData[offset++],originData[offset++],originData[offset++],originData[offset++],originData[offset++]
+            };
+        } else {
+            phoneNum = new byte[]{
+                    originData[offset++],originData[offset++],originData[offset++],
+                    originData[offset++],originData[offset++],originData[offset++]
+            };
+        }
         streamNum = new byte[]{originData[offset++],originData[offset++]};
-        boolean hasPackage = Jt808Helper.hasPackage(msgBodyProp);
+        boolean hasPackage = jt808Helper.hasPackage(msgBodyProp);
         if( hasPackage ){
             pkgCount = new byte[]{originData[offset++],originData[offset++]};
             pkgNum = new byte[]{originData[offset++],originData[offset]};
         }
 
-        String phone = ByteArrHelper.toHexString(phoneNum);
+        String phone = byteArrHelper.toHexString(phoneNum);
+
+        // 处理 如果加密 则使用终端 rsa 进行解密
+//        boolean useRsa = jt808Helper.checkRsa(msgBodyProp);
+//        if (useRsa) {
+//            // 获取客户端RSA公钥
+//            byte[] en = dataService.terminalRsa(phone);
+//        }
 
         // 相同身份的终端建立链接 原链接需要断开 也就是加入之前需要判断是否存在终端 存在关闭后在加入
-        if(sessionService.contains(phone)){
-            IoSession preSession = (IoSession) sessionService.get(phone);
+        if(sessionManagement.contains(phone)){
+            IoSession preSession = (IoSession) sessionManagement.get(phone);
             if (preSession.getId() != session.getId()) {
                 preSession.closeNow();
             }
         }
 
         // session 加入会话缓存
-        sessionService.set(phone, session);
+        sessionManagement.set(phone, session);
         if( hasPackage ){
-            int totalPkgNum = ByteArrHelper.twobyte2int(pkgCount);
-            int currentPkgNum = ByteArrHelper.twobyte2int(pkgNum);
+            int totalPkgNum = byteArrHelper.twobyte2int(pkgCount);
+            int currentPkgNum = byteArrHelper.twobyte2int(pkgNum);
             // 序号必须小于等于总包数 条件达成之后进行分包处理 否则不处理分包且不处理数据
             if(totalPkgNum >= currentPkgNum){
-                if(!sessionService.containsPackages(phone)){
+                if(!cacheService.containsPackages(phone)){
                     ConcurrentHashMap<Integer,byte[]> buf = new ConcurrentHashMap<>(totalPkgNum);
-                    sessionService.setPackages(phone, buf);
+                    cacheService.setPackages(phone, buf);
                 }
-                Map<Integer,byte[]> pkgBuf = sessionService.getPackages(phone);
-                pkgBuf.put(currentPkgNum,originData);
+                Map<Integer,byte[]> pkgBuf = cacheService.getPackages(phone);
+                pkgBuf.put(currentPkgNum, originData);
             }
             // 分包结束时需要对分包数据进行解析处理并返回应答 通过总包数和序号对比 判断是不是最后一包
             if( totalPkgNum == currentPkgNum ){
                 // 如果是 这个电话的最后一包
-                if(Jt808Helper.pkgAllReveived(sessionService, phone, totalPkgNum)){
+                if(jt808Helper.pkgAllReceived(phone, totalPkgNum)){
                     // 合并所有包 并解析
-                    res = data(Jt808Helper.allPkg(sessionService, phone,totalPkgNum));
+                    res = data(jt808Helper.allPkg(phone, totalPkgNum));
                 }else{
                     // 没有全部收到 需要补传 最初一包的流水号
                     byte[] originStreamNum = null;
@@ -170,18 +167,26 @@ public class MinaSessionHandler extends IoHandlerAdapter implements ApplicationC
                     byte[] idList = new byte[]{};
                     // 补传数量
                     byte num = 0;
-                    Map<Integer,byte[]> map = sessionService.getPackages(phone);
+                    Map<Integer,byte[]> map = cacheService.getPackages(phone);
                     for(int i = 1;i<=totalPkgNum;i++){
                         if(originStreamNum == null){
-                            originStreamNum = ByteArrHelper.subByte(map.get(1), 10, 12);
+                            if (isVersion2019) {
+                                originStreamNum = byteArrHelper.subByte(map.get(1), 15, 17);
+                            } else {
+                                originStreamNum = byteArrHelper.subByte(map.get(1), 10, 12);
+                            }
                         }
                         if(!map.containsKey(i)){
                             num++;
-                            idList = ByteArrHelper.union(idList, ByteArrHelper.subByte(map.get(i), 14, 16));
+                            if (isVersion2019) {
+                                idList = byteArrHelper.union(idList, byteArrHelper.subByte(map.get(i), 19, 21));
+                            } else {
+                                idList = byteArrHelper.union(idList, byteArrHelper.subByte(map.get(i), 14, 16));
+                            }
                         }
                     }
                     if(originStreamNum != null) {
-                        res = ResHelper.getPkgReq(phoneNum, originStreamNum, num, idList);
+                        res = resHelper.getPkgReq(phoneNum, originStreamNum, num, idList);
                     }
                 }
             }
@@ -189,15 +194,14 @@ public class MinaSessionHandler extends IoHandlerAdapter implements ApplicationC
             res =  data(originData);
         }
         if( res == null ){
-            res = ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+            res = resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
         }
         // 分包消息总长度
         int msgLen = jt808Config.getPackageLength();
         if( res.length > msgLen ){
             // 分包发送
-            Jt808Helper.sentByPkg(res,session);
+            jt808Helper.sentByPkg(res, session);
         }else{
-            Jt808Helper.addPlatStreamNum();
             session.write(res);
         }
     }
@@ -214,17 +218,27 @@ public class MinaSessionHandler extends IoHandlerAdapter implements ApplicationC
         int offset = 0;
 
         final byte[] msgId = new byte[]{originData[offset++],originData[offset++]};
-        offset++;offset++;
-        // 不再解析消息头
-        // byte[] msgBodyProp = null;
-        // msgBodyProp = new byte[]{originData[offset++],originData[offset++]};
-        final byte[] phoneNum = new byte[]{originData[offset++],originData[offset++],originData[offset++],
-                originData[offset++],originData[offset++],originData[offset++]};
+        final byte[] msgBodyProp = new byte[]{originData[offset++],originData[offset++]};
+        // 通过消息体属性中的版本标识位 判断是否是 2019版本协议 并增加相关解析
+        byte[] phoneNum = null;
+        if (jt808Helper.isVersion2019(msgBodyProp)) {
+            // 忽略 协议版本解析
+            offset++;
+            phoneNum = new byte[]{
+                    originData[offset++],originData[offset++],originData[offset++],originData[offset++],originData[offset++],
+                    originData[offset++],originData[offset++],originData[offset++],originData[offset++],originData[offset++]
+            };
+        } else {
+            phoneNum = new byte[]{
+                    originData[offset++],originData[offset++],originData[offset++],
+                    originData[offset++],originData[offset++],originData[offset++]
+            };
+        }
         final byte[] streamNum = new byte[]{originData[offset++],originData[offset++]};
         int msgLen = jt808Config.getPackageLength();
         if(originData.length > msgLen){
             // 超长的数据一定是分包合并后的数据 直接获取后边的数据即可 因为已经处理了尾部的校验位
-            msgBody = ByteArrHelper.subByte(originData, offset);
+            msgBody = byteArrHelper.subByte(originData, offset);
         }else{
             int bodyLength = originData.length-1-offset;
             msgBody = new byte[bodyLength];
@@ -233,28 +247,23 @@ public class MinaSessionHandler extends IoHandlerAdapter implements ApplicationC
             }
         }
 
-        String phone = ByteArrHelper.toHexString(phoneNum);
+        String phone = byteArrHelper.toHexString(phoneNum);
 
         // 检查鉴权记录 看是否链接后鉴权过 成功鉴权才能继续访问其他命令
         boolean isAuth;
         // 每次都判断终端鉴权 有些短连接如果每次鉴权 的话 很麻烦 所以推荐使用长链接Map
-        isAuth = sessionService.containsAuth(phone);
+        isAuth = cacheService.containsAuth(phone);
 
-        int msgIdInt = ByteArrHelper.twobyte2int(msgId);
+        int msgIdInt = byteArrHelper.twobyte2int(msgId);
 
         // 如果已经鉴权 则可以使用所有命令 未鉴权 则只能使用 终端注册 终端鉴权两个命令
         int terminalRegisterCode = 0x0100;
         int terminalAuthentication = 0x0102;
         if (!isAuth && msgIdInt != terminalRegisterCode && msgIdInt != terminalAuthentication ) {
-            return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
+            return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
         }
 
-        PackHandler handler ;
-        if (packHandlerMap.containsKey(msgIdInt)) {
-            handler = packHandlerMap.get(msgIdInt);
-        } else {
-            handler = noSupportHandler;
-        }
+        PackHandler handler = packHandlerManagement.getPackHandler(msgIdInt);
         return handler.handle(phoneNum, streamNum, msgId, msgBody);
     }
 }

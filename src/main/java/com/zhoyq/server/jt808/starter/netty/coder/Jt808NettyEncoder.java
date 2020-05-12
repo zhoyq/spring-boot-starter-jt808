@@ -19,6 +19,7 @@ import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -29,12 +30,16 @@ import java.util.List;
  */
 @Component
 public class Jt808NettyEncoder extends MessageToMessageEncoder<byte[]> {
+
+    @Autowired
+    private Jt808Helper jt808Helper;
+
     @Override
     protected void encode(ChannelHandlerContext ctx, byte[] msg, List<Object> out) throws Exception {
         // 添加验证
-        byte[] buf = Jt808Helper.addVerify(msg);
+        byte[] buf = jt808Helper.addVerify(msg);
         // 转义
-        buf = Jt808Helper.trans(buf);
+        buf = jt808Helper.trans(buf);
 
         out.add(Unpooled.wrappedBuffer(buf));
     }

@@ -17,6 +17,7 @@ package com.zhoyq.server.jt808.starter;
 
 import com.zhoyq.server.jt808.starter.config.Jt808Config;
 import com.zhoyq.server.jt808.starter.config.Jt808Starter;
+import com.zhoyq.server.jt808.starter.config.SimpleBeanConfig;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
@@ -29,7 +30,7 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import({Jt808Starter.class, Jt808Config.class})
+@Import({Jt808Starter.class, Jt808Config.class, SimpleBeanConfig.class})
 public @interface EnableJt808Server {
 
 }

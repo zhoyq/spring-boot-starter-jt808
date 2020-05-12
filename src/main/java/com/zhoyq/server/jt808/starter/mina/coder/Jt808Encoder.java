@@ -21,6 +21,7 @@ import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
@@ -32,14 +33,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class Jt808Encoder implements ProtocolEncoder {
 
+    @Autowired
+    private Jt808Helper jt808Helper;
+
     @Override
     public void encode(IoSession session, Object message, ProtocolEncoderOutput out) {
         byte[] buf = (byte[])message;
 
         // 添加验证
-        buf = Jt808Helper.addVerify(buf);
+        buf = jt808Helper.addVerify(buf);
         // 转义
-        buf = Jt808Helper.trans(buf);
+        buf = jt808Helper.trans(buf);
 
         out.write(IoBuffer.wrap(buf));
     }

@@ -23,7 +23,6 @@ import com.zhoyq.server.jt808.starter.helper.Analyzer;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
-import com.zhoyq.server.jt808.starter.service.SessionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,32 +37,39 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0704)
 public class Handler0x0704 implements PackHandler {
     @Autowired
-    private SessionService sessionService;
-    @Autowired
     private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+    @Autowired
+    private Analyzer analyzer;
+
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0704 定位数据批量上传  LocationDataUploadBatch");
 
         tpe.execute(() -> {
 
-            String phone = ByteArrHelper.toHexString(phoneNum);
+            String phone = byteArrHelper.toHexString(phoneNum);
 
             // 循环分析定位上报数据
             for (int pos = 3, len ; pos < msgBody.length; pos += len + Const.NUMBER_2) {
 
-                len = ByteArrHelper.twobyte2int(ByteArrHelper.subByte(msgBody,pos,pos + 2));
-                byte[] data = ByteArrHelper.subByte(msgBody,pos + 2,pos + 2 + len);
+                len = byteArrHelper.twobyte2int(byteArrHelper.subByte(msgBody,pos,pos + 2));
+                byte[] data = byteArrHelper.subByte(msgBody,pos + 2,pos + 2 + len);
 
-                LocationInfo locationInfo = Analyzer.analyzeLocation(data);
+                LocationInfo locationInfo = analyzer.analyzeLocation(data);
 
                 dataService.terminalLocation(phone, locationInfo);
             }
 
         });
 
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

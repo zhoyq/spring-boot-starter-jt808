@@ -37,13 +37,19 @@ public class Handler0x0700 implements PackHandler {
     private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0700 行驶记录上传  DriveDataUpload");
 
-        String phone = ByteArrHelper.toHexString(phoneNum);
-        int streamNumber = ByteArrHelper.twobyte2int(ByteArrHelper.subByte(msgBody,0,2));
+        String phone = byteArrHelper.toHexString(phoneNum);
+        int streamNumber = byteArrHelper.twobyte2int(byteArrHelper.subByte(msgBody,0,2));
         tpe.execute(() -> dataService.terminalAnswer(phone, streamNumber, "8700", "0700", msgBody));
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
     }
 }

@@ -15,25 +15,16 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
-
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * @author zhoyq
- * @date 2018-06-27
+ * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
+ * @date 2020/5/7
  */
 @Setter
 @Getter
-public class CameraInfo {
-    private byte id;
-    private byte[] comm;
-    private byte[] spaceTime;
-    private byte saveSign;
-    private byte resolution;
-    private byte quality;
-    private byte luminance;
-    private byte contrast;
-    private byte saturation;
-    private byte tone;
+public class SimAuthDto {
+    private String sim;
+    private String auth;
 }

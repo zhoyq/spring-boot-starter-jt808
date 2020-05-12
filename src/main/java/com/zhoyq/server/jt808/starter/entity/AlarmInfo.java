@@ -102,6 +102,21 @@ public class AlarmInfo {
     private boolean fatigueDrivingWarn;
 
     /**
+     * 违规行驶报警 持续报警
+     */
+    private boolean driverAgainstRules;
+
+    /**
+     * 胎压预警 持续报警
+     */
+    private boolean tirePressureWarning;
+
+    /**
+     * 右转盲区异常报警 持续报警
+     */
+    private boolean rightTurnBlindArea;
+
+    /**
      * 当天累计驾驶超时 持续报警
      */
     private boolean cumulativeDrivingTimeout;

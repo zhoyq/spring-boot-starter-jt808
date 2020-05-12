@@ -22,7 +22,6 @@ import com.zhoyq.server.jt808.starter.helper.Analyzer;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
-import com.zhoyq.server.jt808.starter.service.SessionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -40,21 +39,26 @@ public class Handler0x0200 implements PackHandler {
     @Autowired
     private DataService dataService;
     @Autowired
-    private SessionService sessionService;
-    @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private Analyzer analyzer;
+    @Autowired
+    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0200 终端位置信息汇报 LocationInfoReport");
 
         tpe.execute(() -> {
-            String phone = ByteArrHelper.toHexString(phoneNum);
-            LocationInfo locationInfo = Analyzer.analyzeLocation(msgBody);
+            String phone = byteArrHelper.toHexString(phoneNum);
+            LocationInfo locationInfo = analyzer.analyzeLocation(msgBody);
 
             dataService.terminalLocation(phone, locationInfo);
         });
 
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

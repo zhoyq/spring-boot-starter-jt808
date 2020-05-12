@@ -37,14 +37,20 @@ public class Handler0x0002 implements PackHandler {
     private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0002 终端心跳命令 TerminalHeartBeat");
         tpe.execute(() -> {
-            String phone = ByteArrHelper.toHexString(phoneNum);
+            String phone = byteArrHelper.toHexString(phoneNum);
             // 保存终端心跳
             dataService.terminalHeartbeat(phone);
         });
-        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+        return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

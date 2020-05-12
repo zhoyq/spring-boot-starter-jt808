@@ -22,7 +22,6 @@ import com.zhoyq.server.jt808.starter.helper.Analyzer;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
-import com.zhoyq.server.jt808.starter.service.SessionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -39,19 +38,26 @@ public class Handler0x0201 implements PackHandler {
     @Autowired
     private DataService dataService;
     @Autowired
-    private SessionService sessionService;
-    @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+    @Autowired
+    private Analyzer analyzer;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0201 位置信息查询应答 SearchLocationInfoAnswer");
         tpe.execute(() -> {
-            String phone = ByteArrHelper.toHexString(phoneNum);
-            LocationInfo locationInfo = Analyzer.analyzeLocation(ByteArrHelper.subByte(msgBody, 2));
+            String phone = byteArrHelper.toHexString(phoneNum);
+            LocationInfo locationInfo = analyzer.analyzeLocation(byteArrHelper.subByte(msgBody, 2));
 
+            // 作为应答 应该也需要调用应答接口才对
+            // 暂时调用定位解析定位数据
             dataService.terminalLocation(phone, locationInfo);
         });
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

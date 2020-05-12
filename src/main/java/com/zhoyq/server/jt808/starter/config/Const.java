@@ -26,6 +26,8 @@ public class Const {
     public final static String TERMINAL_REG_HAS_TERMINAL = "0000003";
     public final static String TERMINAL_REG_NO_TERMINAL = "0000004";
 
+    public final static String HEX_STR = "0123456789ABCDEF";
+
     public final static byte BIN_0X01 = 0x01;
     public final static byte BIN_0X02 = 0x02;
     public final static byte BIN_0X04 = 0x04;
@@ -45,4 +47,5 @@ public class Const {
 
     public final static int YEAR_2011 = 2011;
     public final static int YEAR_2013 = 2013;
+    public final static int YEAR_2019 = 2019;
 }

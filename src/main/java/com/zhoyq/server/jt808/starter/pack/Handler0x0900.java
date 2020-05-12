@@ -39,14 +39,22 @@ public class Handler0x0900 implements PackHandler {
     private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+    @Autowired
+    private Analyzer analyzer;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0900 数据上行透传 DataTransport");
         tpe.execute(() -> {
-            String phone = ByteArrHelper.toHexString(phoneNum);
-            DataTransportInfo dataTransportInfo = Analyzer.analyzeDataTransport(msgBody);
+            String phone = byteArrHelper.toHexString(phoneNum);
+            DataTransportInfo dataTransportInfo = analyzer.analyzeDataTransport(msgBody);
             dataService.dataTransport(phone, dataTransportInfo);
         });
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -40,6 +41,11 @@ public class Jt808NettyDecoder extends MessageToMessageDecoder<ByteBuf> {
     private static final byte MSG_BROKER = 0x7E;
     private static final int MSG_MIN_LEN = 15;
     private static final int MEG_MIN_LEN_WITH_PKG = 19;
+
+    @Autowired
+    private Jt808Helper jt808Helper;
+    @Autowired
+    private ByteArrHelper byteArrHelper;
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
@@ -115,8 +121,8 @@ public class Jt808NettyDecoder extends MessageToMessageDecoder<ByteBuf> {
                 msg.markReaderIndex();
                 msg.readBytes(bodyProp, 0, 5);
                 byte[] body = new byte[]{bodyProp[3],bodyProp[4]};
-                int sizeBuf = Jt808Helper.getMsgBodyLength(body);
-                boolean b = Jt808Helper.hasPackage(body);
+                int sizeBuf = jt808Helper.getMsgBodyLength(body);
+                boolean b = jt808Helper.hasPackage(body);
                 int size;
                 if(b){
                     size = sizeBuf + MEG_MIN_LEN_WITH_PKG;
@@ -137,17 +143,17 @@ public class Jt808NettyDecoder extends MessageToMessageDecoder<ByteBuf> {
                     // 还原
                     msg.resetReaderIndex();
                     log.trace("short data length {} data {} go to reread {} ",
-                            msg.readableBytes(), ByteArrHelper.toHexString(bytes), ctx.channel().remoteAddress());
+                            msg.readableBytes(), byteArrHelper.toHexString(bytes), ctx.channel().remoteAddress());
                 } else {
                     byte[] bytes = new byte[size];
                     msg.readBytes(bytes, 0, size);
                     // 验证得到的数据是否正确
                     if( bytes[bytes.length-1] == MSG_BROKER ){
-                        log.trace("origin data {} {}", ByteArrHelper.toHexString(bytes), ctx.channel().remoteAddress());
+                        log.trace("origin data {} {}", byteArrHelper.toHexString(bytes), ctx.channel().remoteAddress());
                         // 这里转义还原
-                        bytes = Jt808Helper.retrans(bytes);
+                        bytes = jt808Helper.retrans(bytes);
                         // 在这里验证校验码
-                        if(Jt808Helper.verify(bytes)){
+                        if(jt808Helper.verify(bytes)){
                             // 把字节转换为Java对象的工具类
                             out.add(bytes);
                             // 如果读取内容后还粘了包，就让父类再重读 一次，进行下一次解析
@@ -157,7 +163,7 @@ public class Jt808NettyDecoder extends MessageToMessageDecoder<ByteBuf> {
                             return msg.readableBytes() > 0;
                         }
                     }else{
-                        log.trace("wrong data to drop {} {}", ByteArrHelper.toHexString(bytes), ctx.channel().remoteAddress());
+                        log.trace("wrong data to drop {} {}", byteArrHelper.toHexString(bytes), ctx.channel().remoteAddress());
                         //如果按格式获取数据后 末尾不是0x7e 或者校验位不对 直接丢弃 还有剩余数据
                         //继续使用 没有 进行吓一条数据
                         return msg.readableBytes() > 0;

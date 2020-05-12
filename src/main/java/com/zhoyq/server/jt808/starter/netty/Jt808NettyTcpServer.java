@@ -38,6 +38,8 @@ import org.springframework.stereotype.Component;
 public class Jt808NettyTcpServer implements Jt808Server {
 
     private ServerChannel serverChannel;
+    private EventLoopGroup masterGroup;
+    private EventLoopGroup slaveGroup;
 
     @Autowired
     private Jt808Config jt808Config;
@@ -56,14 +58,13 @@ public class Jt808NettyTcpServer implements Jt808Server {
             return serverChannel.isActive();
         }
 
-        EventLoopGroup masterGroup = new NioEventLoopGroup(jt808Config.getMasterSize());
-        EventLoopGroup slaveGroup = new NioEventLoopGroup(jt808Config.getSlaveSize());
+        masterGroup = new NioEventLoopGroup(jt808Config.getMasterSize());
+        slaveGroup = new NioEventLoopGroup(jt808Config.getSlaveSize());
         ServerBootstrap serverBootstrap = new ServerBootstrap();
 
         serverBootstrap
                 .group(masterGroup, slaveGroup)
                 .channel(NioServerSocketChannel.class)
-//                .handler(new LoggingHandler())
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
@@ -75,26 +76,16 @@ public class Jt808NettyTcpServer implements Jt808Server {
                 .childOption(ChannelOption.TCP_NODELAY, jt808Config.getTcpNoDelay())
                 .childOption(ChannelOption.SO_KEEPALIVE, jt808Config.getKeepAlive());
 
-        try{
-            ChannelFuture channelFuture = serverBootstrap.bind().sync();
-            serverChannel = (ServerChannel) channelFuture.channel();
-            serverChannel.closeFuture().sync();
-            log.info("server start with port : {}", jt808Config.getPort());
-            return true;
-        } catch (InterruptedException e) {
-            log.warn(e.getMessage());
-            return false;
-        } finally {
-            slaveGroup.shutdownGracefully();
-            masterGroup.shutdownGracefully();
-        }
-
-
+        ChannelFuture channelFuture = serverBootstrap.bind(jt808Config.getPort());
+        serverChannel = (ServerChannel) channelFuture.channel();
+        return true;
     }
 
     @Override
     public boolean stop() {
         serverChannel.close();
+        masterGroup.shutdownGracefully();
+        slaveGroup.shutdownGracefully();
         return true;
     }
 }

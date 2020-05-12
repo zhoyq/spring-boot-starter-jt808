@@ -30,7 +30,7 @@ public class DriverInfo {
      */
     private String driverName;
     /**
-     * 司机身份证号 仅2011
+     * 司机身份证号 仅2011 2019
      */
     private String idCardNumber;
     /**

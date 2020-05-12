@@ -64,7 +64,6 @@ public class Jt808NettyUdpServer implements Jt808Server {
                 .group(masterGroup)
                 .channel(NioDatagramChannel.class)
                 .option(ChannelOption.SO_BROADCAST, true)
-//                .handler(new LoggingHandler())
                 .handler(new ChannelInitializer<NioDatagramChannel>() {
                     @Override
                     protected void initChannel(NioDatagramChannel channel) throws Exception {
@@ -74,20 +73,9 @@ public class Jt808NettyUdpServer implements Jt808Server {
                     }
                 });
 
-        try{
-            ChannelFuture channelFuture = serverBootstrap.bind(jt808Config.getPort()).sync();
-            serverChannel = channelFuture.channel();
-            serverChannel.closeFuture().sync();
-            log.info("server start with port : {}", jt808Config.getPort());
-            return true;
-        } catch (InterruptedException e) {
-            log.warn(e.getMessage());
-            return false;
-        } finally {
-            masterGroup.shutdownGracefully();
-        }
-
-
+        ChannelFuture channelFuture = serverBootstrap.bind(jt808Config.getPort());
+        serverChannel = channelFuture.channel();
+        return true;
     }
 
     @Override

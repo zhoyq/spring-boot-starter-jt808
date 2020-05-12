@@ -39,16 +39,24 @@ public class Handler0x0705 implements PackHandler {
     private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private Analyzer analyzer;
+    @Autowired
+    private ResHelper resHelper;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0705 can总线数据上传 CanDataUpload");
 
         tpe.execute(() -> {
-            String phone = ByteArrHelper.toHexString(phoneNum);
-            CanDataInfo canDataInfo = Analyzer.analyzeCan(msgBody);
+            String phone = byteArrHelper.toHexString(phoneNum);
+            CanDataInfo canDataInfo = analyzer.analyzeCan(msgBody);
             dataService.canData(phone, canDataInfo);
         });
 
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

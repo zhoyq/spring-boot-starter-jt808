@@ -21,28 +21,7 @@ import java.util.Map;
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2020/2/16
  */
-public interface SessionService {
-    /**
-     * 是否含此电话号码的会话
-     * @param phone 终端对应 12 位电话号码
-     * @return 是否含有
-     */
-    boolean contains(String phone);
-
-    /**
-     * 获取电话号码对应的会话
-     * @param phone 终端对应 12 位电话号码
-     * @return 会话
-     */
-    Object get(String phone);
-
-    /**
-     * 设置电话号码对应会话 存在替换
-     * @param phone 终端对应 12 位电话号码
-     * @param session 会话
-     */
-    void set(String phone, Object session);
-
+public interface CacheService {
     /**
      * 是否含此电话号码对应的包
      * @param phone 终端对应 12 位电话号码
@@ -92,16 +71,23 @@ public interface SessionService {
     void setAuth(String phone, String str);
 
     /**
-     * 设置电话号码对应的设备号
+     * 是否含此电话号码对应的包
      * @param phone 终端对应 12 位电话号码
-     * @param device 设备识别号
+     * @return 是否含有
      */
-    void setDevice(String phone, String device);
+    boolean containsSentPackages(String phone);
 
     /**
-     * 获取设备ID
+     * 设置电话号码对应的包组
      * @param phone 终端对应 12 位电话号码
-     * @return 设备ID
+     * @param packages 包列表
      */
-    String getDevice(String phone);
+    void setSentPackages(String phone, Map<Integer,byte[]> packages);
+
+    /**
+     * 获取电话号码对应的包组
+     * @param phone 终端对应 12 位电话号码
+     * @return 包列表
+     */
+    Map<Integer,byte[]> getSentPackages(String phone);
 }

@@ -16,13 +16,16 @@
 package com.zhoyq.server.jt808.starter.helper;
 
 import com.zhoyq.server.jt808.starter.config.Const;
-import com.zhoyq.server.jt808.starter.service.SessionService;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.session.IoSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -34,6 +37,13 @@ import java.util.Map;
 @Component
 public class Jt808Helper {
 
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+    @Autowired
+    private CacheService cacheService;
+
     /* ===================================
        = 协议内一般工具
      * =================================== */
@@ -42,13 +52,11 @@ public class Jt808Helper {
      * 平台流水号
      */
     private static int PLAT_STREAM_NUM = 1;
-    public static int getPlatStreamNum(){
-        return PLAT_STREAM_NUM;
+
+    public synchronized int getPlatStreamNum(){
+        return PLAT_STREAM_NUM++;
     }
-    public static void addPlatStreamNum(){
-        PLAT_STREAM_NUM++;
-    }
-    private static int getPkgPlatStreamNum(int j){
+    public synchronized int getPkgPlatStreamNum(int j){
         int buf = PLAT_STREAM_NUM;
         PLAT_STREAM_NUM = PLAT_STREAM_NUM+j;
         return buf;
@@ -59,7 +67,7 @@ public class Jt808Helper {
      * @param bodyProp 消息体属性
      * @return 消息体长度
      */
-    public static int getMsgBodyLength(byte[] bodyProp) {
+    public int getMsgBodyLength(byte[] bodyProp) {
         int length = 0;
         if( bodyProp.length == Const.NUMBER_2 ){
             int buf = 0x03ff;
@@ -75,7 +83,7 @@ public class Jt808Helper {
      * @param b 获取消息体内的流水号
      * @return 流水号
      */
-    public static int getStreamNumInMsgBody(byte[] b) {
+    public int getStreamNumInMsgBody(byte[] b) {
         return ((b[0] << 8) & 0xff00) ^ (b[1] & 0x00ff);
     }
 
@@ -88,12 +96,12 @@ public class Jt808Helper {
      * @param bytes 需要填充校验的消息数据
      * @return 填充校验后的数据
      */
-    public static byte[] addVerify(byte[] bytes) {
+    public byte[] addVerify(byte[] bytes) {
         byte verify = bytes[0];
         for(int i = 1;i<bytes.length;i++){
             verify = (byte) (verify^bytes[i]);
         }
-        return ByteArrHelper.union(bytes, new byte[]{verify});
+        return byteArrHelper.union(bytes, new byte[]{verify});
     }
 
     /**
@@ -101,24 +109,24 @@ public class Jt808Helper {
      * @param b 转义之前的数据
      * @return 转义之后的数据
      */
-    public static byte[] trans(byte[] b){
+    public byte[] trans(byte[] b){
         for(int i =0;i<b.length-1;i++){
             if(b[i] == 0x7d ){
-                b = ByteArrHelper.union(
-                        ByteArrHelper.subByte(b, 0, i+1),
+                b = byteArrHelper.union(
+                        byteArrHelper.subByte(b, 0, i+1),
                         new byte[]{0x01},
-                        ByteArrHelper.subByte(b, i+1)
+                        byteArrHelper.subByte(b, i+1)
                 );
             }else if(b[i] == 0x7e){
-                b = ByteArrHelper.union(
-                        ByteArrHelper.subByte(b, 0, i),
+                b = byteArrHelper.union(
+                        byteArrHelper.subByte(b, 0, i),
                         new byte[]{0x7d,0x02},
-                        ByteArrHelper.subByte(b, i+1)
+                        byteArrHelper.subByte(b, i+1)
                 );
             }
         }
-        b = ByteArrHelper.union(new byte[]{0x7e}, b);
-        b = ByteArrHelper.union(b, new byte[]{0x7e});
+        b = byteArrHelper.union(new byte[]{0x7e}, b);
+        b = byteArrHelper.union(b, new byte[]{0x7e});
         return b;
     }
 
@@ -131,7 +139,7 @@ public class Jt808Helper {
      * @param bytes 需要验证的数据
      * @return true 校验成功 false 校验失败
      */
-    public static boolean verify(byte[] bytes) {
+    public boolean verify(byte[] bytes) {
         boolean b = false;
         byte verify = bytes[0];
         for(int i = 1;i<bytes.length-1;i++){
@@ -140,7 +148,7 @@ public class Jt808Helper {
         if(verify==bytes[bytes.length-1]){
             b = true;
         }
-        log.trace("verify code is " + ByteArrHelper.toHexString(verify) + " return " + b);
+        log.trace("verify code is " + byteArrHelper.toHexString(verify) + " return " + b);
         return b;
     }
 
@@ -149,16 +157,16 @@ public class Jt808Helper {
      * @param b 需要转义还原的数据
      * @return 转义还原后的数据
      */
-    public static byte[] retrans(byte[] b){
-        byte[] buf = ByteArrHelper.subByte(b, 1,b.length-1);
+    public byte[] retrans(byte[] b){
+        byte[] buf = byteArrHelper.subByte(b, 1,b.length-1);
         for(int i =0;i<buf.length-1;i++){
             if(buf[i] == 0x7d && buf[i+1] == 0x01){
-                buf = ByteArrHelper.union(ByteArrHelper.subByte(buf, 0, i+1), ByteArrHelper.subByte(buf, i+2));
+                buf = byteArrHelper.union(byteArrHelper.subByte(buf, 0, i+1), byteArrHelper.subByte(buf, i+2));
             }else if(buf[i] == 0x7d && buf[i+1] == 0x02){
-                buf = ByteArrHelper.union(
-                        ByteArrHelper.subByte(buf, 0, i),
+                buf = byteArrHelper.union(
+                        byteArrHelper.subByte(buf, 0, i),
                         new byte[]{0x7e},
-                        ByteArrHelper.subByte(buf, i+2)
+                        byteArrHelper.subByte(buf, i+2)
                 );
             }
         }
@@ -170,7 +178,7 @@ public class Jt808Helper {
      * @param bodyProp 消息体属性
      * @return 是否分包
      */
-    public static boolean hasPackage(byte[] bodyProp) {
+    public boolean hasPackage(byte[] bodyProp) {
         if( bodyProp.length == Const.NUMBER_2 ){
             byte buf = (byte) (bodyProp[0] & 0x20);
             return buf!=0;
@@ -181,44 +189,59 @@ public class Jt808Helper {
 
     /**
      * 分包发送
+     * 通过消息体属性 分析是否是 2019 版本 在按照响应的版本 整理数据 发送
      * @param buf 需要发送的数据
      * @param session 会话对象
      */
-    public static void sentByPkg(byte[] buf, IoSession session) {
-        byte[] body = ByteArrHelper.subByte(buf, 12);
-        int pkgCount = body.length%1023==0?body.length/1023:body.length/1023+1;
-        byte[] msgId = ByteArrHelper.subByte(buf, 0, 2);
-        byte[] phoneNum = ByteArrHelper.subByte(buf, 4, 10);
+    public void sentByPkg(byte[] buf, IoSession session) {
+        byte[] msgBodyProp = new byte[]{buf[2], buf[3]};
+        boolean isVersion2019 = isVersion2019(msgBodyProp);
+
+        // 完整的消息体
+        byte[] body = byteArrHelper.subByte(buf, 12);
+        // 包数量
+        int pkgCount = body.length % 1023 == 0 ? body.length / 1023 : body.length / 1023 + 1;
+
+        // 消息ID
+        byte[] msgId = byteArrHelper.subByte(buf, 0, 2);
+        // Sim卡号
+        byte[] phoneNum;
+        if (isVersion2019) {
+            phoneNum = byteArrHelper.subByte(buf, 5, 15);
+        } else {
+            phoneNum = byteArrHelper.subByte(buf, 4, 10);
+        }
+
+        // 平台流水号 直接获取对应包数量的流水号
         int streamNum = getPkgPlatStreamNum(pkgCount);
-        for(int i = 1;i<=pkgCount;i++){
-            byte[] buff = new byte[]{};
-            buff = ByteArrHelper.union(buff, msgId);
-            // 最后一个
+        // 存储下发数据
+        String phone = byteArrHelper.toHexString(phoneNum);
+        Map<Integer, byte[]> sentPackages = cacheService.getSentPackages(phone);
+        if (sentPackages == null) {
+            cacheService.setSentPackages(phone, new HashMap<>());
+            sentPackages = cacheService.getSentPackages(phone);
+        } else {
+            sentPackages.clear();
+        }
+
+
+        for(int i = 1; i <= pkgCount; i++){
+            byte[] bodyBuf;
             if(pkgCount == i){
-                byte[] bodybuf = ByteArrHelper.subByte(body, (i-1)*1023);
-                byte[] bodyLength = new byte[]{(byte) ((bodybuf.length>>>8)&0xff),(byte) (bodybuf.length&0xff)};
-                buff = ByteArrHelper.union(
-                        buff,
-                        new byte[]{(byte) (bodyLength[0]^0x20) ,bodyLength[1]},
-                        phoneNum,
-                        new byte[]{(byte) ((streamNum>>>8)&0xff),(byte) (streamNum&0xff)},
-                        new byte[]{(byte) ((pkgCount>>>8)&0xff),(byte) (pkgCount&0xff)},
-                        new byte[]{(byte) ((i>>>8)&0xff),(byte) (i&0xff)},
-                        bodybuf
-                );
+                bodyBuf = byteArrHelper.subByte(body, (i-1) * 1023);
             }else{
-                byte[] bodybuf = ByteArrHelper.subByte(body, (i-1)*1023, i*1023);
-                buff = ByteArrHelper.union(
-                        buff,
-                        new byte[]{0x23,(byte) 0xFF},
-                        phoneNum,
-                        new byte[]{(byte) ((streamNum>>>8)&0xff),(byte) (streamNum&0xff)},
-                        new byte[]{(byte) ((pkgCount>>>8)&0xff),(byte) (pkgCount&0xff)},
-                        new byte[]{(byte) ((i>>>8)&0xff),(byte) (i&0xff)},
-                        bodybuf
-                );
+                bodyBuf = byteArrHelper.subByte(body, (i-1) * 1023, i * 1023);
             }
-            session.write(buff);
+            byte[] data = resHelper.warpPkg(
+                    msgId,
+                    phoneNum,
+                    pkgCount,
+                    i,
+                    streamNum,
+                    bodyBuf
+            );
+            sentPackages.put(i, data);
+            session.write(data);
             streamNum ++;
         }
     }
@@ -228,58 +251,74 @@ public class Jt808Helper {
      * @param buf 需要发送的数据
      * @param session 会话对象
      */
-    public static void sentByPkg(byte[] buf, ChannelHandlerContext session) {
-        byte[] body = ByteArrHelper.subByte(buf, 12);
-        int pkgCount = body.length%1023==0?body.length/1023:body.length/1023+1;
-        byte[] msgId = ByteArrHelper.subByte(buf, 0, 2);
-        byte[] phoneNum = ByteArrHelper.subByte(buf, 4, 10);
+    public void sentByPkg(byte[] buf, ChannelHandlerContext session) {
+        byte[] msgBodyProp = new byte[]{buf[2], buf[3]};
+        boolean isVersion2019 = isVersion2019(msgBodyProp);
+
+        // 完整的消息体
+        byte[] body = byteArrHelper.subByte(buf, 12);
+        // 包数量
+        int pkgCount = body.length % 1023 == 0 ? body.length / 1023 : body.length / 1023 + 1;
+
+        // 消息ID
+        byte[] msgId = byteArrHelper.subByte(buf, 0, 2);
+        // Sim卡号
+        byte[] phoneNum;
+        if (isVersion2019) {
+            phoneNum = byteArrHelper.subByte(buf, 5, 15);
+        } else {
+            phoneNum = byteArrHelper.subByte(buf, 4, 10);
+        }
+
+        // 平台流水号 直接获取对应包数量的流水号
         int streamNum = getPkgPlatStreamNum(pkgCount);
-        for(int i = 1;i<=pkgCount;i++){
-            byte[] buff = new byte[]{};
-            buff = ByteArrHelper.union(buff, msgId);
-            // 最后一个
+
+        // 存储下发数据
+        String phone = byteArrHelper.toHexString(phoneNum);
+        Map<Integer, byte[]> sentPackages = cacheService.getSentPackages(phone);
+        if (sentPackages == null) {
+            cacheService.setSentPackages(phone, new HashMap<>());
+            sentPackages = cacheService.getSentPackages(phone);
+        } else {
+            sentPackages.clear();
+        }
+
+        for(int i = 1; i <= pkgCount; i++){
+            byte[] bodyBuf;
             if(pkgCount == i){
-                byte[] bodybuf = ByteArrHelper.subByte(body, (i-1)*1023);
-                byte[] bodyLength = new byte[]{(byte) ((bodybuf.length>>>8)&0xff),(byte) (bodybuf.length&0xff)};
-                buff = ByteArrHelper.union(
-                        buff,
-                        new byte[]{(byte) (bodyLength[0]^0x20) ,bodyLength[1]},
-                        phoneNum,
-                        new byte[]{(byte) ((streamNum>>>8)&0xff),(byte) (streamNum&0xff)},
-                        new byte[]{(byte) ((pkgCount>>>8)&0xff),(byte) (pkgCount&0xff)},
-                        new byte[]{(byte) ((i>>>8)&0xff),(byte) (i&0xff)},
-                        bodybuf
-                );
+                bodyBuf = byteArrHelper.subByte(body, (i-1) * 1023);
             }else{
-                byte[] bodybuf = ByteArrHelper.subByte(body, (i-1)*1023, i*1023);
-                buff = ByteArrHelper.union(
-                        buff,
-                        new byte[]{0x23,(byte) 0xFF},
-                        phoneNum,
-                        new byte[]{(byte) ((streamNum>>>8)&0xff),(byte) (streamNum&0xff)},
-                        new byte[]{(byte) ((pkgCount>>>8)&0xff),(byte) (pkgCount&0xff)},
-                        new byte[]{(byte) ((i>>>8)&0xff),(byte) (i&0xff)},
-                        bodybuf
-                );
+                bodyBuf = byteArrHelper.subByte(body, (i-1) * 1023, i * 1023);
             }
-            session.writeAndFlush(buff);
+            byte[] data = resHelper.warpPkg(
+                    msgId,
+                    phoneNum,
+                    pkgCount,
+                    i,
+                    streamNum,
+                    bodyBuf
+            );
+            sentPackages.put(i, data);
+            session.writeAndFlush(data);
             streamNum ++;
         }
     }
 
-    public static byte[] allPkg(SessionService service, String phone, int totalPkgNum) {
-        Map<Integer,byte[]> map = service.getPackages(phone);
-        byte[] buf = ByteArrHelper.subByte(map.get(1), 0, map.get(1).length-1);
-        for(int i = 2;i<=totalPkgNum;i++){
+    // 通过验证号码长度 判断是否时 2019 版本 并且针对此版本获取分包数据
+    public byte[] allPkg(String phone, int totalPkgNum) {
+        Map<Integer,byte[]> map = cacheService.getPackages(phone);
+        // 分包是从1开始的 去掉校验位
+        byte[] buf = byteArrHelper.subByte(map.get(1), 0, map.get(1).length - 1);
+        for(int i = 2;i <= totalPkgNum; i++){
             byte[] pkg = map.get(i);
-            buf = ByteArrHelper.union(buf, ByteArrHelper.subByte(pkg, 16, map.get(1).length-1));
+            buf = byteArrHelper.union(buf, byteArrHelper.subByte(pkg, phone.length() == 20 ? 21 : 16, map.get(1).length - 1));
         }
         map.clear();
         return buf;
     }
 
-    public static boolean pkgAllReveived(SessionService service, String phone, int totalPkgNum) {
-        return service.containsPackages(phone) && service.getPackages(phone).size() == totalPkgNum;
+    public boolean pkgAllReceived(String phone, int totalPkgNum) {
+        return cacheService.containsPackages(phone) && cacheService.getPackages(phone).size() == totalPkgNum;
     }
 
 //    /**
@@ -293,7 +332,7 @@ public class Jt808Helper {
 //     * @param oneTime 是否一次性报警
 //     * @return 返回创建好的报警对象
 //     */
-//    private static Alarm createTerminalAlarm(String alarmName,int vehcielId,String terminalId,String sim,
+//    private Alarm createTerminalAlarm(String alarmName,int vehcielId,String terminalId,String sim,
 //                                             String gTime,boolean oneTime) {
 //        Alarm alarm = new Alarm();
 //        alarm.setAlarmOrigin(AlarmOrigin.TERMINAL);
@@ -327,7 +366,7 @@ public class Jt808Helper {
 //     * @param terminalId 车辆ID
 //     * @param gTime 报警时间
 //     */
-//    private static void checkAlarm(DataPersistenceService dataPersistenceService,
+//    private void checkAlarm(DataPersistenceService dataPersistenceService,
 //                                   byte alarmByte,byte buf,int idsPos,Integer[] ids,String alarmName,String terminalId,String gTime){
 //        // 保存一份到 mq
 //        if( (alarmByte & buf) == buf && ids[idsPos] == null ){
@@ -350,7 +389,7 @@ public class Jt808Helper {
 //     * @param phoneNum 电话号码字节数组
 //     * @param msgBody 消息体
 //     */
-//    public static void locationInformationProcessing(
+//    public void locationInformationProcessing(
 //            ThreadPoolExecutor tpe,
 //            MemeryService memeryService,
 //            DataPersistenceService dataPersistenceService,
@@ -363,22 +402,22 @@ public class Jt808Helper {
 //        byte[]  alarms,status,lon,lat,
 //                altitude,speed,direction,dateTime,attach;
 //
-//        alarms = ByteArrHelper.subByte(msgBody, 0, 4);
-//        status = ByteArrHelper.subByte(msgBody, 4, 8);
-//        lat = ByteArrHelper.subByte(msgBody, 8, 12);
-//        lon = ByteArrHelper.subByte(msgBody, 12, 16);
-//        altitude = ByteArrHelper.subByte(msgBody, 16, 18);
-//        speed = ByteArrHelper.subByte(msgBody, 18, 20);
-//        direction = ByteArrHelper.subByte(msgBody, 20, 22);
-//        dateTime = ByteArrHelper.subByte(msgBody, 22, 28);
-//        attach = ByteArrHelper.subByte(msgBody, 28);
+//        alarms = byteArrHelper.subByte(msgBody, 0, 4);
+//        status = byteArrHelper.subByte(msgBody, 4, 8);
+//        lat = byteArrHelper.subByte(msgBody, 8, 12);
+//        lon = byteArrHelper.subByte(msgBody, 12, 16);
+//        altitude = byteArrHelper.subByte(msgBody, 16, 18);
+//        speed = byteArrHelper.subByte(msgBody, 18, 20);
+//        direction = byteArrHelper.subByte(msgBody, 20, 22);
+//        dateTime = byteArrHelper.subByte(msgBody, 22, 28);
+//        attach = byteArrHelper.subByte(msgBody, 28);
 //
-//        double lonDouble = (double) (ByteArrHelper.fourbyte2int(lon)) / (double) 1000000;
-//        double latDouble = (double) (ByteArrHelper.fourbyte2int(lat)) / (double) 1000000;
-//        int altitudeInt = ByteArrHelper.twobyte2int(altitude);
+//        double lonDouble = (double) (byteArrHelper.fourbyte2int(lon)) / (double) 1000000;
+//        double latDouble = (double) (byteArrHelper.fourbyte2int(lat)) / (double) 1000000;
+//        int altitudeInt = byteArrHelper.twobyte2int(altitude);
 //        String dateTimeStr = getDataTime(dateTime);
-//        double speedDouble = (double) (ByteArrHelper.twobyte2int(speed)) / (double) 10;
-//        int course = ByteArrHelper.twobyte2int(direction);
+//        double speedDouble = (double) (byteArrHelper.twobyte2int(speed)) / (double) 10;
+//        int course = byteArrHelper.twobyte2int(direction);
 //        String deviceId = memeryService.getDeviceId(phoneNum);
 //        // 以下保存信息均保存一份到 mq 用于发送到页面上
 //        saveLocationInfo(tpe, dataPersistenceService, phoneNum, status,alarms,attach,dateTimeStr,lonDouble,
@@ -402,13 +441,13 @@ public class Jt808Helper {
 //        });
 //    }
 
-    public static String getDataTime(byte[] dateTime) {
-        return ByteArrHelper.getBCDStr(ByteArrHelper.subByte(dateTime, 0, 1)) + "-" +
-                ByteArrHelper.getBCDStr(ByteArrHelper.subByte(dateTime, 1, 2)) + "-" +
-                ByteArrHelper.getBCDStr(ByteArrHelper.subByte(dateTime, 2, 3)) + " " +
-                ByteArrHelper.getBCDStr(ByteArrHelper.subByte(dateTime, 3, 4)) + ":" +
-                ByteArrHelper.getBCDStr(ByteArrHelper.subByte(dateTime, 4, 5)) + ":" +
-                ByteArrHelper.getBCDStr(ByteArrHelper.subByte(dateTime, 5, 6));
+    public String getDataTime(byte[] dateTime) {
+        return byteArrHelper.getBCDStr(byteArrHelper.subByte(dateTime, 0, 1)) + "-" +
+                byteArrHelper.getBCDStr(byteArrHelper.subByte(dateTime, 1, 2)) + "-" +
+                byteArrHelper.getBCDStr(byteArrHelper.subByte(dateTime, 2, 3)) + " " +
+                byteArrHelper.getBCDStr(byteArrHelper.subByte(dateTime, 3, 4)) + ":" +
+                byteArrHelper.getBCDStr(byteArrHelper.subByte(dateTime, 4, 5)) + ":" +
+                byteArrHelper.getBCDStr(byteArrHelper.subByte(dateTime, 5, 6));
     }
 
 //    /**
@@ -418,7 +457,7 @@ public class Jt808Helper {
 //     * @param terminalId 终端标识
 //     * @param gTime 时间
 //     */
-//    private static void saveAlarmInfo(ThreadPoolExecutor tpe,
+//    private void saveAlarmInfo(ThreadPoolExecutor tpe,
 //                                      MemeryService memeryService,
 //                                      DataPersistenceService dataPersistenceService,
 //                                      byte[] phoneNum, byte[] alarms, String terminalId, String gTime){
@@ -502,7 +541,7 @@ public class Jt808Helper {
 //        });
 //    }
 //
-//    private static void saveLocationInfo(
+//    private void saveLocationInfo(
 //            ThreadPoolExecutor tpe,
 //            DataPersistenceService dataPersistenceService,
 //            byte[] phoneNum, byte[] status, byte[] alarms, byte[] attach,String gTime,
@@ -520,24 +559,24 @@ public class Jt808Helper {
 //            if(attach != null && attach.length != 0){
 //                while(pos < attach.length){
 //                    int attachBuf = (int)attach[pos+1];
-//                    byte[] b = ByteArrHelper.subByte(attach, pos, pos + attachBuf + 2);
+//                    byte[] b = byteArrHelper.subByte(attach, pos, pos + attachBuf + 2);
 //                    if(b[0] == (byte)0xE0){
 //                        // 如果是E0则 直接截取所有内容
-//                        b = ByteArrHelper.subByte(attach, pos);
+//                        b = byteArrHelper.subByte(attach, pos);
 //                        pos = attach.length;
 //                    }else{ pos += attachBuf + 2; }
 //                    switch (b[0]) {
 //                        case 0x01:
-//                            mileage = (double) (ByteArrHelper.fourbyte2int(ByteArrHelper.subByte(b, 2,6))) / (double) 10;
+//                            mileage = (double) (byteArrHelper.fourbyte2int(byteArrHelper.subByte(b, 2,6))) / (double) 10;
 //                            break;
 //                        case 0x02:
-//                            gas = (double) (ByteArrHelper.twobyte2int(ByteArrHelper.subByte(b, 2,4))) / (double) 10;
+//                            gas = (double) (byteArrHelper.twobyte2int(byteArrHelper.subByte(b, 2,4))) / (double) 10;
 //                            break;
 //                        case 0x03:
-//                            temp = (double) (ByteArrHelper.twobyte2int(ByteArrHelper.subByte(b, 2,4))) / (double) 10;
+//                            temp = (double) (byteArrHelper.twobyte2int(byteArrHelper.subByte(b, 2,4))) / (double) 10;
 //                            break;
 //                        case 0x04:
-//                            humanEnsureAlarmId = ByteArrHelper.twobyte2int(ByteArrHelper.subByte(b, 2,4));
+//                            humanEnsureAlarmId = byteArrHelper.twobyte2int(byteArrHelper.subByte(b, 2,4));
 //                            break;
 //                        case 0x11:
 //                            attachDesc.append(getOverSpeedAttach(b));
@@ -556,8 +595,8 @@ public class Jt808Helper {
 //                                    .append((b[3] & 0x02)==0?"":"休眠状态，").append("；");
 //                            break;
 //                        case 0x2B:
-//                            int ad0 = ByteArrHelper.twobyte2int(new byte[]{b[5],b[4]});
-//                            int ad1 = ByteArrHelper.twobyte2int(new byte[]{b[3],b[2]});
+//                            int ad0 = byteArrHelper.twobyte2int(new byte[]{b[5],b[4]});
+//                            int ad1 = byteArrHelper.twobyte2int(new byte[]{b[3],b[2]});
 //                            attachDesc.append("模拟量：").append(String.format("AD0 %s，AD1 %s",ad0,ad1)).append("；");
 //                            break;
 //                        case 0x30:
@@ -567,7 +606,7 @@ public class Jt808Helper {
 //                            attachDesc.append("GNSS 定位卫星数：").append(b[2]).append("；");
 //                            break;
 //                        case (byte)0xE0:
-//                            customData = ByteArrHelper.subByte(b,b[1] + 2);
+//                            customData = byteArrHelper.subByte(b,b[1] + 2);
 //                            break;
 //                        default:
 //                            break;
@@ -578,13 +617,13 @@ public class Jt808Helper {
 //            Date dateTimeBuf = null;
 //            try{ dateTimeBuf = sdf.parse(gTime); }catch(Exception e){log.warn(e.getMessage());}
 //            PositionInformation pi = new PositionInformation(terminalId, lonDouble,latDouble,altitudeInt,speedDouble,
-//                    course,dateTimeBuf,ByteArrHelper.union(alarms, status),getStatusDesc(status),mileage,gas,temp,
+//                    course,dateTimeBuf,byteArrHelper.union(alarms, status),getStatusDesc(status),mileage,gas,temp,
 //                    attachDesc.toString(),humanEnsureAlarmId,customData,getPhoneNum(phoneNum),bindInfo.getVehicleId());
 //            dataPersistenceService.savePositionInformation(pi);
 //        });
 //    }
 
-    private static String getStatusExtAttach(byte[] b){
+    private String getStatusExtAttach(byte[] b){
         String attachDesc = "扩展车辆信号状态位附加信息：";
         attachDesc += (b[5] & 0x01)==0?"":"近光灯，";
         attachDesc += (b[5] & 0x02)==0?"":"远光灯，";
@@ -605,15 +644,15 @@ public class Jt808Helper {
         return attachDesc;
     }
 
-    private static String getDriveTimeAttach(byte[] b){
+    private String getDriveTimeAttach(byte[] b){
         String attachDesc = "路段行驶时间不足/过长报警附加信息：";
-        attachDesc += "路段ID为" + ByteArrHelper.fourbyte2int(ByteArrHelper.subByte(b, 2, 6))
-                + "，路段行驶时间 " + ByteArrHelper.twobyte2int(ByteArrHelper.subByte(b, 6, 8))
+        attachDesc += "路段ID为" + byteArrHelper.fourbyte2int(byteArrHelper.subByte(b, 2, 6))
+                + "，路段行驶时间 " + byteArrHelper.twobyte2int(byteArrHelper.subByte(b, 6, 8))
                 + " 秒，结果 " + ((b[8]==0)?"不足":"过长") + "；";
         return attachDesc;
     }
 
-    private static String getInAndOutAttach(byte[] b){
+    private String getInAndOutAttach(byte[] b){
         StringBuilder attachDesc = new StringBuilder();
         attachDesc.append("进出区域/路线报警附加信息：");
         switch (b[7]) {
@@ -642,12 +681,12 @@ public class Jt808Helper {
             default:
                 break;
         }
-        attachDesc.append(ByteArrHelper.fourbyte2int(ByteArrHelper.subByte(b, 3,7)));
+        attachDesc.append(byteArrHelper.fourbyte2int(byteArrHelper.subByte(b, 3,7)));
         attachDesc.append("；");
         return attachDesc.toString();
     }
 
-    private static String getOverSpeedAttach(byte[] b){
+    private String getOverSpeedAttach(byte[] b){
         StringBuilder attachDesc = new StringBuilder();
         attachDesc.append("超速报警附加信息：");
         switch (b[2]) {
@@ -656,19 +695,19 @@ public class Jt808Helper {
                 break;
             case 1:
                 attachDesc.append("圆形区域，编号为")
-                        .append(ByteArrHelper.fourbyte2int(ByteArrHelper.subByte(b, 3, 7)));
+                        .append(byteArrHelper.fourbyte2int(byteArrHelper.subByte(b, 3, 7)));
                 break;
             case 2:
                 attachDesc.append("矩形区域，编号为")
-                        .append(ByteArrHelper.fourbyte2int(ByteArrHelper.subByte(b, 3, 7)));
+                        .append(byteArrHelper.fourbyte2int(byteArrHelper.subByte(b, 3, 7)));
                 break;
             case 3:
                 attachDesc.append("多边形区域，编号为")
-                        .append(ByteArrHelper.fourbyte2int(ByteArrHelper.subByte(b, 3, 7)));
+                        .append(byteArrHelper.fourbyte2int(byteArrHelper.subByte(b, 3, 7)));
                 break;
             case 4:
                 attachDesc.append("路段，编号为")
-                        .append(ByteArrHelper.fourbyte2int(ByteArrHelper.subByte(b, 3, 7)));
+                        .append(byteArrHelper.fourbyte2int(byteArrHelper.subByte(b, 3, 7)));
                 break;
             default:
                 break;
@@ -682,7 +721,7 @@ public class Jt808Helper {
      * @param status 状态位
      * @return 状态位描述
      */
-    private static String getStatusDesc(byte[] status) {
+    private String getStatusDesc(byte[] status) {
         String remarkSb = "";
         remarkSb += ((status[3] & 0x01) == 0 ? "ACC关；" : "ACC开；");
         remarkSb += ((status[3] & 0x02) == 0 ? "未定位；" : "定位；");
@@ -715,7 +754,7 @@ public class Jt808Helper {
      * @param b 标识
      * @return 多媒体信息描述
      */
-    public static String getMediaEventDesc(byte b) {
+    public String getMediaEventDesc(byte b) {
         String event;
         switch(b){
             case 0x00:
@@ -750,8 +789,97 @@ public class Jt808Helper {
     }
 
 
-    public static String toGB18030String(byte[] data) throws UnsupportedEncodingException {
-        return new String(data, "GB18030").trim();
+    public String toGBKString(byte[] data) throws UnsupportedEncodingException {
+        return new String(data, "GBK").trim();
     }
 
+    public String toAsciiString(byte[] data){
+        return new String(data, StandardCharsets.US_ASCII).trim();
+    }
+
+    /**
+     * 判断否是 2019 版本 协议
+     * 通过版本标识判断
+     * @param msgBodyProp 消息体属性
+     * @return 是否是2019版本
+     */
+    public boolean isVersion2019(byte[] msgBodyProp) {
+        return (msgBodyProp[0] & 0x40) == 0x40;
+    }
+
+    /**
+     * 检查是否是基本定位信息
+     * @param locationData 定位信息数据项
+     * @return 是否
+     */
+    public boolean checkLocationData(byte[] locationData) {
+        // 纬度[以度为单位的值乘以 10 的 6 次方，精确到百万分之一度]
+        byte[] latitude = byteArrHelper.subByte(locationData, 8, 12);
+        // 经度[以度为单位的值乘以 10 的 6 次方，精确到百万分之一度]
+        byte[] longitude = byteArrHelper.subByte(locationData, 12, 16);
+        // 高程 [单位 m]
+        byte[] height = byteArrHelper.subByte(locationData, 16, 18);
+        // 速度 [单位 0.1 km/h]
+        byte[] speed = byteArrHelper.subByte(locationData, 18, 20);
+        // 方向 [0~359 正北为0 顺时针]
+        byte[] direction = byteArrHelper.subByte(locationData, 20, 22);
+        // 时间 [yy-MM-dd-hh-mm-ss]
+        byte[] datetime = byteArrHelper.subByte(locationData, 22, 28);
+
+        double longitudeDouble = (double)byteArrHelper.fourbyte2int(longitude) / (double)1000000;
+        if(longitudeDouble > 180.0 || longitudeDouble < -180.0){
+            return false;
+        }
+        double latitudeDouble = (double)byteArrHelper.fourbyte2int(latitude) / (double)1000000;
+        if (latitudeDouble > 90.0 || latitudeDouble < -90.0) {
+            return false;
+        }
+        int heightInt = byteArrHelper.twobyte2int(height);
+        if (heightInt > 10000 || heightInt < 0) {
+            return false;
+        }
+        double speedDouble = (double) (byteArrHelper.twobyte2int(speed)) / (double) 10;
+        if (speedDouble < 0 || speedDouble > 600) {
+            return false;
+        }
+        int directionInt = byteArrHelper.twobyte2int(direction);
+        if (directionInt < 0 || directionInt > 359) {
+            return false;
+        }
+        String month = byteArrHelper.getBCDStr(new byte[]{datetime[1]});
+        int monthInt = Integer.parseInt(month);
+        if (monthInt < 1 || monthInt > 12) {
+            return false;
+        }
+        String day = byteArrHelper.getBCDStr(new byte[]{datetime[2]});
+        int dayInt = Integer.parseInt(day);
+        if (dayInt < 1 || dayInt > 31) {
+            return false;
+        }
+        String hour = byteArrHelper.getBCDStr(new byte[]{datetime[3]});
+        int hourInt = Integer.parseInt(hour);
+        if (hourInt < 1 || hourInt > 24) {
+            return false;
+        }
+        String minute = byteArrHelper.getBCDStr(new byte[]{datetime[4]});
+        int minuteInt = Integer.parseInt(minute);
+        if (minuteInt < 1 || minuteInt > 60) {
+            return false;
+        }
+        String second = byteArrHelper.getBCDStr(new byte[]{datetime[5]});
+        int secondInt = Integer.parseInt(second);
+        if (secondInt < 1 || secondInt > 60) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 检查是否使用了 ras 加密
+     * @param msgBodyProp 消息体属性
+     * @return 是否
+     */
+    public boolean checkRsa(byte[] msgBodyProp) {
+        return (msgBodyProp[0] & 0x04) == 0x04;
+    }
 }

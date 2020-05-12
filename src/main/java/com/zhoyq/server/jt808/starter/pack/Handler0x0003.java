@@ -19,8 +19,8 @@ import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import com.zhoyq.server.jt808.starter.service.DataService;
-import com.zhoyq.server.jt808.starter.service.SessionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -39,21 +39,26 @@ public class Handler0x0003 implements PackHandler {
     @Autowired
     private DataService dataService;
     @Autowired
-    private SessionService sessionService;
+    private CacheService cacheService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0003 终端注销  TerminalLogout");
         tpe.execute(()->{
             // 获取终端手机号码 12 位电话号码
-            String phone  = ByteArrHelper.toHexString(phoneNum);
+            String phone  = byteArrHelper.toHexString(phoneNum);
             // 数据库直接删除终端与车辆的关联
             dataService.terminalCancel(phone);
             // 直接删除终端之前的鉴权数据
-            sessionService.removeAuth(phone);
+            cacheService.removeAuth(phone);
         });
-        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+        return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

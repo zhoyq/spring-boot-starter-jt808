@@ -21,9 +21,9 @@ import com.zhoyq.server.jt808.starter.entity.LocationInfo;
 import com.zhoyq.server.jt808.starter.entity.MediaInfo;
 import com.zhoyq.server.jt808.starter.helper.Analyzer;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
+import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
-import com.zhoyq.server.jt808.starter.service.SessionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,35 +38,56 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0801)
 public class Handler0x0801 implements PackHandler {
     @Autowired
-    private SessionService sessionService;
-    @Autowired
     private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+    @Autowired
+    private Analyzer analyzer;
+    @Autowired
+    private Jt808Helper jt808Helper;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0801 多媒体数据上传 MediaInfoUpload");
 
         tpe.execute(() -> {
-            String phone = ByteArrHelper.toHexString(phoneNum);
-            // 多媒体信息
-            byte[] mediaInfoData = ByteArrHelper.subByte(msgBody, 0, 8);
-            // 位置信息
-            byte[] locationData = ByteArrHelper.subByte(msgBody, 8, 36);
-            // 多媒体数据包
-            byte[] mediaData = ByteArrHelper.subByte(msgBody, 36);
+            String phone = byteArrHelper.toHexString(phoneNum);
+            // 多媒体信息, 位置信息 , 多媒体数据包
+            byte[] mediaInfoData, locationData, mediaData;
+            mediaInfoData = byteArrHelper.subByte(msgBody, 0, 8);
+            locationData = byteArrHelper.subByte(msgBody, 8, 36);
+            if (phoneNum.length == 10) {
+                // 2019 版本存在
+                mediaData = byteArrHelper.subByte(msgBody, 36);
+            } else {
+                // 2013 版本存在 2011版本不存在
+                boolean isLocationData = jt808Helper.checkLocationData(locationData);
+                if (isLocationData) {
+                    mediaData = byteArrHelper.subByte(msgBody, 36);
+                } else {
+                    locationData = null;
+                    mediaData = byteArrHelper.subByte(msgBody, 8);
+                }
+            }
 
             // 存储多媒体信息
-            MediaInfo mediaInfo = Analyzer.analyzeMediaInfo(mediaInfoData);
+            MediaInfo mediaInfo = analyzer.analyzeMediaInfo(mediaInfoData);
             dataService.mediaInfo(phone, mediaInfo);
 
-            // 存储定位数据
-            LocationInfo locationInfo = Analyzer.analyzeLocation(locationData);
-            dataService.terminalLocation(phone, locationInfo);
+            if(locationData != null){
+                // 存储定位数据
+                LocationInfo locationInfo = analyzer.analyzeLocation(locationData);
+                dataService.terminalLocation(phone, locationInfo);
+            }
 
             // 存储多媒体数据包
             dataService.mediaPackage(phone, mediaData);
         });
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

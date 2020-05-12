@@ -39,22 +39,27 @@ public class Handler0x0A00 implements PackHandler {
     @Autowired
     private ThreadPoolExecutor tpe;
 
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+
     @Override
     public byte[] handle(byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0A00 终端RSA公钥 TerminalRSA");
         // 终端 RSA 公钥 { e, n }
-        byte[] e = ByteArrHelper.subByte(msgBody,0,4);
-        byte[] n = ByteArrHelper.subByte(msgBody,4);
+        byte[] e = byteArrHelper.subByte(msgBody,0,4);
+        byte[] n = byteArrHelper.subByte(msgBody,4);
         int maxLen = 128;
         if(n.length == maxLen){
             // 存储加密信息 以便收到数据后解密
             tpe.execute(()-> {
-                String phone = ByteArrHelper.toHexString(phoneNum);
+                String phone = byteArrHelper.toHexString(phoneNum);
                 dataService.terminalRsa(phone, e, n);
             });
-            return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+            return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
         }else{
-            return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
+            return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
         }
     }
 }

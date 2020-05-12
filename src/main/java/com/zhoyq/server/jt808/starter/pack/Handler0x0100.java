@@ -21,8 +21,8 @@ import com.zhoyq.server.jt808.starter.core.PackHandler;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import com.zhoyq.server.jt808.starter.service.DataService;
-import com.zhoyq.server.jt808.starter.service.SessionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,36 +43,64 @@ public class Handler0x0100 implements PackHandler {
     @Autowired
     private DataService dataService;
     @Autowired
-    private SessionService sessionService;
+    private CacheService cacheService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+    @Autowired
+    private Jt808Helper jt808Helper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0100 终端注册 TerminalRegister");
+        // 判断版本
+        int version;
+        if (phoneNum.length == 10) {
+            version = 2019;
+        } else {
+            if(msgBody.length > 37) {
+                version = 2013;
+            } else {
+                version = 2011;
+            }
+        }
 
-        String phone = ByteArrHelper.toHexString(phoneNum);
-        // 省域ID
-        byte[] provinceId = ByteArrHelper.subByte(msgBody, 0, 2);
-        // 市县域ID
-        byte[] cityId = ByteArrHelper.subByte(msgBody, 2, 4);
-        // 制造商ID
-        byte[] producerId = ByteArrHelper.subByte(msgBody, 4, 9);
-        // 终端型号
-        byte[] terminalType = ByteArrHelper.subByte(msgBody, 9, 29);
-        // 终端ID
-        byte[] terminalId = ByteArrHelper.subByte(msgBody, 29, 36);
-        // 车牌颜色 为0时 表示没有车牌
-        byte licenseColor = ByteArrHelper.subByte(msgBody, 36, 37)[0];
-        // 车牌号码[车牌颜色为0 时 表示VIN-车辆大架号]
-        byte[] license = ByteArrHelper.subByte(msgBody, 37);
+        String phone = byteArrHelper.toHexString(phoneNum);
+        // 省域ID, 市县域ID, 制造商ID, 终端型号, 终端ID, 车牌颜色 为0时 表示没有车牌, 车牌号码[车牌颜色为0 时 表示VIN-车辆大架号]
+        byte[] provinceId, cityId, producerId, terminalType, terminalId, licenseColor, license;
+        int offset = 0;
+        provinceId = byteArrHelper.subByte(msgBody, offset, offset += 2);
+        cityId = byteArrHelper.subByte(msgBody, offset, offset += 2);
+        if (version == 2019) {
+            producerId = byteArrHelper.subByte(msgBody, offset, offset += 11);
+        } else {
+            producerId = byteArrHelper.subByte(msgBody, offset, offset += 5);
+        }
+        if (version == 2019) {
+            terminalType = byteArrHelper.subByte(msgBody, offset, offset += 30);
+        } else if(version == 2013){
+            terminalType = byteArrHelper.subByte(msgBody, offset, offset += 20);
+        } else {
+            terminalType = byteArrHelper.subByte(msgBody, offset, offset += 8);
+        }
+        if(version == 2019){
+            terminalId = byteArrHelper.subByte(msgBody, offset, offset += 30);
+        } else {
+            terminalId = byteArrHelper.subByte(msgBody, offset, offset += 7);
+        }
+        licenseColor = byteArrHelper.subByte(msgBody, offset, offset += 1);
+        license = byteArrHelper.subByte(msgBody, offset);
 
         // 鉴权码需要在调用终端注册的时候自动生成 7 位数
         Future<String> authFuture = tpe.submit(()->{
             // 省域ID
-            int province = ByteArrHelper.twobyte2int(provinceId);
+            int province = byteArrHelper.twobyte2int(provinceId);
             // 市县域ID
-            int city = ByteArrHelper.twobyte2int(cityId);
+            int city = byteArrHelper.twobyte2int(cityId);
             // 制造商ID
             String manufacturer = null;
             // 终端型号
@@ -84,10 +112,10 @@ public class Handler0x0100 implements PackHandler {
             String registerLicense = null;
 
             try {
-                manufacturer = Jt808Helper.toGB18030String(producerId);
-                deviceType = Jt808Helper.toGB18030String(terminalType);
-                deviceId = Jt808Helper.toGB18030String(terminalId);
-                registerLicense = Jt808Helper.toGB18030String(license);
+                manufacturer = jt808Helper.toAsciiString(producerId);
+                deviceType = jt808Helper.toAsciiString(terminalType);
+                deviceId = jt808Helper.toAsciiString(terminalId);
+                registerLicense = jt808Helper.toGBKString(license);
             } catch (UnsupportedEncodingException e) {
                 log.warn(e.getMessage());
             }
@@ -100,7 +128,7 @@ public class Handler0x0100 implements PackHandler {
             // 通过设备ID、制造商ID、以及设备类型唯一查询出设备信息
             // 然后通过两者信息链接终端和车辆信息
             return dataService.terminalRegister(phone, province, city, manufacturer,
-                    deviceType, deviceId, licenseColor, registerLicense);
+                    deviceType, deviceId, licenseColor[0], registerLicense);
         });
 
         // 鉴权码
@@ -116,29 +144,24 @@ public class Handler0x0100 implements PackHandler {
         // 应答
         if(str == null){
             // 数据库查询或者之类的出现了异常 直接回复平台失败应答
-            return ResHelper.getPlatAnswer(phoneNum, streamNum,msgId,(byte)1);
+            return resHelper.getPlatAnswer(phoneNum, streamNum,msgId,(byte)1);
         }else if(Const.TERMINAL_REG_HAS_VEHICLE.equals(str)){
             // 车辆已经注册
-            return ResHelper.getTerminalRegisterAnswer(phoneNum, streamNum, (byte)1, str);
+            return resHelper.getTerminalRegisterAnswer(phoneNum, streamNum, (byte)1, str);
         }else if(Const.TERMINAL_REG_NO_VEHICLE.equals(str)){
             // 不存在的车辆
-            return ResHelper.getTerminalRegisterAnswer(phoneNum, streamNum, (byte)2, str);
+            return resHelper.getTerminalRegisterAnswer(phoneNum, streamNum, (byte)2, str);
         }else if(Const.TERMINAL_REG_HAS_TERMINAL.equals(str)){
             // 终端已经注册
-            return ResHelper.getTerminalRegisterAnswer(phoneNum, streamNum, (byte)3, str);
+            return resHelper.getTerminalRegisterAnswer(phoneNum, streamNum, (byte)3, str);
         }else if(Const.TERMINAL_REG_NO_TERMINAL.equals(str)){
             // 不存在的终端
-            return ResHelper.getTerminalRegisterAnswer(phoneNum, streamNum, (byte)4, str);
+            return resHelper.getTerminalRegisterAnswer(phoneNum, streamNum, (byte)4, str);
         }else{
             // 设置鉴权码
-            sessionService.setAuth(phone, str);
-            try{
-                sessionService.setDevice(phone, new String(terminalId,"GB18030"));
-            }catch(UnsupportedEncodingException e){
-                log.warn(e.getMessage());
-            }
+            cacheService.setAuth(phone, str);
             // 正常
-            return ResHelper.getTerminalRegisterAnswer(phoneNum, streamNum, (byte)0, str);
+            return resHelper.getTerminalRegisterAnswer(phoneNum, streamNum, (byte)0, str);
         }
     }
 }

@@ -13,47 +13,44 @@
  *
  */
 
-package com.zhoyq.server.jt808.starter.pack;
+package com.zhoyq.server.jt808.starter.config;
 
-import com.zhoyq.server.jt808.starter.core.Jt808Pack;
-import com.zhoyq.server.jt808.starter.core.PackHandler;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
-import com.zhoyq.server.jt808.starter.helper.ResHelper;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import com.zhoyq.server.jt808.starter.service.DataService;
+import com.zhoyq.server.jt808.starter.service.impl.HashMapCacheService;
+import com.zhoyq.server.jt808.starter.service.impl.SimpleDataServiceAdapter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.concurrent.ThreadPoolExecutor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * 事件报告
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
- * @date 2018/7/31
+ * @date 2020/5/4
  */
 @Slf4j
-@Jt808Pack(msgId = 0x0301)
-public class Handler0x0301 implements PackHandler {
-
-    @Autowired
-    private DataService dataService;
-    @Autowired
-    private ThreadPoolExecutor tpe;
+@Configuration
+public class SimpleBeanConfig {
 
     @Autowired
     private ByteArrHelper byteArrHelper;
-    @Autowired
-    private ResHelper resHelper;
 
-    @Override
-    public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
-        log.info("0301 事件报告 EventReport");
-        tpe.execute(()->{
-            // 事件上报ID
-            byte eventReportAnswerId = msgBody[0];
-            String phone = byteArrHelper.toHexString(phoneNum);
-            // 司机上报预置事件 存储数据库
-            dataService.eventReport(phone, eventReportAnswerId);
-        });
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
+    @Autowired
+    private Jt808Config jt808Config;
+
+    @Bean
+    @ConditionalOnMissingBean(DataService.class)
+    public DataService dataService() {
+        log.info("use default data service Bean.");
+        return new SimpleDataServiceAdapter(byteArrHelper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(CacheService.class)
+    public CacheService sessionService(){
+        log.info("use default session service Bean.");
+        return new HashMapCacheService();
     }
 }

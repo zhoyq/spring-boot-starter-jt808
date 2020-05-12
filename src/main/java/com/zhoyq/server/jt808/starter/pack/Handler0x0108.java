@@ -37,13 +37,19 @@ public class Handler0x0108 implements PackHandler {
     private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+
     @Override
     public byte[] handle(  byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0108 终端升级结果通知 TerminalUpdateResultReport");
-        String phone = ByteArrHelper.toHexString(phoneNum);
+        String phone = byteArrHelper.toHexString(phoneNum);
         // 保存命令到相应的下发指令
         tpe.execute(() -> dataService.terminalAnswer(phone, -1,
                 "8108", "0108", msgBody));
-        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+        return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

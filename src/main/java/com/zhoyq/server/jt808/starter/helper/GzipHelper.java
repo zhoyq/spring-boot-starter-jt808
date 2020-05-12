@@ -16,6 +16,7 @@
 package com.zhoyq.server.jt808.starter.helper;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,11 +28,12 @@ import java.util.zip.GZIPOutputStream;
  * @date 2020/2/20
  */
 @Slf4j
+@Component
 public class GzipHelper {
     /**
      * 使用gzip对数据进行压缩
      */
-    public static byte[] gzip(byte[] data){
+    public byte[] gzip(byte[] data){
         try{
             ByteArrayInputStream bais = new ByteArrayInputStream(data);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -58,7 +60,7 @@ public class GzipHelper {
     /**
      * 使用gzip对数据进行解压缩
      */
-    public static byte[] ungzip(byte[] data){
+    public byte[] ungzip(byte[] data){
         try{
             ByteArrayInputStream bais = new ByteArrayInputStream(data);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

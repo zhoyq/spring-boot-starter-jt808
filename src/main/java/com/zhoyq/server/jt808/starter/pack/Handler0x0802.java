@@ -38,17 +38,22 @@ public class Handler0x0802 implements PackHandler {
     private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0802 存储多媒体检索应答 SearchStoredMediaDataAnswer");
 
         // 保存下发指令对应应答里 需要时取消息体进行分析
         tpe.execute(() -> {
-            int platformStreamNumber = ByteArrHelper.twobyte2int(ByteArrHelper.subByte( msgBody, 0, 2));
-            String phone = ByteArrHelper.toHexString(phoneNum);
+            int platformStreamNumber = byteArrHelper.twobyte2int(byteArrHelper.subByte( msgBody, 0, 2));
+            String phone = byteArrHelper.toHexString(phoneNum);
             dataService.terminalAnswer(phone, platformStreamNumber, "8802", "0802", msgBody);
         });
 
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

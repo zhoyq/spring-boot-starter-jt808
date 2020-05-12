@@ -38,11 +38,17 @@ public class Handler0x0303 implements PackHandler {
     private DataService dataService;
     @Autowired
     private ThreadPoolExecutor tpe;
+
+    @Autowired
+    private ByteArrHelper byteArrHelper;
+    @Autowired
+    private ResHelper resHelper;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0303 信息点播/取消 InfoOrderOrCancel");
         tpe.execute(()->{
-            String phone = ByteArrHelper.toHexString(phoneNum);
+            String phone = byteArrHelper.toHexString(phoneNum);
             // 点播类型
             byte type = msgBody[0];
             // 点播或者取消
@@ -55,6 +61,6 @@ public class Handler0x0303 implements PackHandler {
                 dataService.cancelOrderInfo( phone, type );
             }
         });
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
     }
 }

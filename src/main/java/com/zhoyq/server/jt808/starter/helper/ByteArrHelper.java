@@ -15,10 +15,14 @@
 
 package com.zhoyq.server.jt808.starter.helper;
 
+import com.zhoyq.server.jt808.starter.config.Const;
+import org.springframework.stereotype.Component;
+
 /**
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2019/1/20
  */
+@Component
 public class ByteArrHelper {
 
     /**
@@ -27,7 +31,7 @@ public class ByteArrHelper {
      * @param buf
      * @return
      */
-    public static String toHexString(byte[] buf) {
+    public String toHexString(byte[] buf) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < buf.length; i++) {
             String str = Integer.toHexString(buf[i]);
@@ -47,7 +51,7 @@ public class ByteArrHelper {
      * @param subByte
      * @return
      */
-    public static String getBCDStr(byte[] subByte) {
+    public String getBCDStr(byte[] subByte) {
         byte b = subByte[0];
         byte b1 = (byte) (b & 0x0f);
         byte b2 = (byte) ((b >>> 4) & 0x0f);
@@ -65,7 +69,7 @@ public class ByteArrHelper {
      * @param subByte
      * @return
      */
-    public static String getBCDStrByArr(byte[] subByte) {
+    public String getBCDStrByArr(byte[] subByte) {
         String buf = "";
         for(int i=0;i<subByte.length;i++){
             buf += getBCDStr(new byte[]{subByte[i]});
@@ -79,7 +83,7 @@ public class ByteArrHelper {
      * @param buf
      * @return
      */
-    public static String toHexString(byte buf) {
+    public String toHexString(byte buf) {
         String str = Integer.toHexString(buf);
         if (str.length() > 2) {
             str = str.substring(str.length() - 2);
@@ -96,7 +100,7 @@ public class ByteArrHelper {
      * @param b2
      * @return
      */
-    public static byte[] union(byte[] b1, byte[] b2) {
+    public byte[] union(byte[] b1, byte[] b2) {
         byte[] buf = new byte[b1.length + b2.length];
         for (int i = 0; i < b1.length; i++) {
             buf[i] = b1[i];
@@ -113,7 +117,7 @@ public class ByteArrHelper {
      * @param b
      * @return
      */
-    public static byte[] union(byte[] ... b) {
+    public byte[] union(byte[] ... b) {
         byte[] buf;
         int len = 0;
         for(int i=0;i<b.length;i++){
@@ -137,7 +141,7 @@ public class ByteArrHelper {
      * @param start
      * @return
      */
-    public static byte[] subByte(byte[] data, int start) {
+    public byte[] subByte(byte[] data, int start) {
         byte[] buf = new byte[data.length - start];
         for (int n = 0, i = start; i < data.length; i++, n++) {
             buf[n] = data[i];
@@ -153,7 +157,7 @@ public class ByteArrHelper {
      * @param end
      * @return
      */
-    public static byte[] subByte(byte[] data, int start, int end) {
+    public byte[] subByte(byte[] data, int start, int end) {
         byte[] buf = new byte[end - start];
         for (int n = 0, i = start; i < end; i++, n++) {
             buf[n] = data[i];
@@ -167,7 +171,7 @@ public class ByteArrHelper {
      * @param b
      * @return
      */
-    public static int fourbyte2int(byte[] b) {
+    public int fourbyte2int(byte[] b) {
         return ((((b[0] << 24) & 0xff000000) ^ ((b[1] << 16) & 0x00ff0000))
                 ^ ((b[2] << 8) & 0x0000ff00)) ^ (b[3] & 0x000000ff);
     }
@@ -178,7 +182,7 @@ public class ByteArrHelper {
      * @param b
      * @return
      */
-    public static int twobyte2int(byte[] b) {
+    public int twobyte2int(byte[] b) {
         return ((b[0] << 8) & 0xff00) ^ (b[1] & 0x00ff);
     }
 
@@ -188,7 +192,7 @@ public class ByteArrHelper {
      * @param n
      * @return
      */
-    public static byte[] int2twobytes(int n) {
+    public byte[] int2twobytes(int n) {
         byte[] buf = new byte[2];
         buf[0] = (byte) ((n >>> 8) & 0x000000ff);
         buf[1] = (byte) (n & 0x000000ff);
@@ -201,12 +205,48 @@ public class ByteArrHelper {
      * @param n
      * @return
      */
-    public static byte[] int2fourbytes(int n) {
+    public byte[] int2fourbytes(int n) {
         byte[] buf = new byte[4];
         buf[0] = (byte) ((n >>> 24) & 0x000000ff);
         buf[1] = (byte) ((n >>> 16) & 0x000000ff);
         buf[2] = (byte) ((n >>> 8) & 0x000000ff);
         buf[3] = (byte) (n & 0x000000ff);
         return buf;
+    }
+
+    public byte[] hexStr2bytes(String hex){
+        if(hex.length()%2 != 0) {
+            hex = "0" + hex;
+        }
+        hex = hex.toUpperCase();
+        byte[] res = new byte[hex.length()/2];
+        for(int i = 0;i<res.length;i++){
+            int n = i*2;
+            int n_1 = n+1;
+            char c = hex.charAt(n);
+            char c_1 = hex.charAt(n_1);
+            int buf = Const.HEX_STR.indexOf(c);
+            int buf_1 = Const.HEX_STR.indexOf(c_1);
+            res[i] = (byte)(((buf<<4)&0x000000F0)^(buf_1&0x0000000f));
+        }
+        return res;
+    }
+
+    public byte[] long2eightbytes(long values) {
+        byte[] buffer = new byte[8];
+        for (int i = 0; i < 8; i++) {
+            int offset = 64 - (i + 1) * 8;
+            buffer[i] = (byte) ((values >> offset) & 0xff);
+        }
+        return buffer;
+    }
+
+    public long eightbytes2long(byte[] buffer) {
+        long  values = 0;
+        for (int i = 0; i < 8; i++) {
+            values <<= 8;
+            values|= (buffer[i] & 0xff);
+        }
+        return values;
     }
 }

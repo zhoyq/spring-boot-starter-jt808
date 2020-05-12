@@ -18,6 +18,7 @@ package com.zhoyq.server.jt808.starter.pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
@@ -28,9 +29,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class NoSupportHandler implements PackHandler {
+
+    @Autowired
+    private ResHelper resHelper;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.warn("不支持的终端命令！- no support terminal command id");
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 3);
+        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 3);
     }
 }

@@ -17,24 +17,31 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
+import com.zhoyq.server.jt808.starter.core.SessionManagement;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
-import com.zhoyq.server.jt808.starter.service.DataService;
+import com.zhoyq.server.jt808.starter.service.CacheService;
+import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.session.IoSession;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * 查询终端属性应答
+ * 2019 新增 终端补传分包请求
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
- * @date 2018/7/31
+ * @date 2020/5/5
  */
 @Slf4j
-@Jt808Pack(msgId = 0x0107)
-public class Handler0x0107 implements PackHandler {
+@Jt808Pack(msgId = 0x0005)
+public class Handler0x0005  implements PackHandler {
+
     @Autowired
-    private DataService dataService;
+    private CacheService cacheService;
+    @Autowired
+    private SessionManagement sessionManagement;
     @Autowired
     private ThreadPoolExecutor tpe;
 
@@ -44,13 +51,28 @@ public class Handler0x0107 implements PackHandler {
     private ResHelper resHelper;
 
     @Override
-    public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
-        log.info("0107 查询终端属性应答 SearchTerminalPropAnswer");
-        String phone = byteArrHelper.toHexString(phoneNum);
-        // 消息体中没有终端对应平台下发指令的流水号 所以指定流水号为 -1
-        int platformStreamNumber = -1;
-        // 保存命令到相应的下发指令
-        tpe.execute(() -> dataService.terminalAnswer(phone, platformStreamNumber, "8107", "0107", msgBody));
+    public byte[] handle(byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
+        log.info("0005 终端补传分包请求 terminal request patch");
+
+        tpe.execute(() -> {
+            String phone = byteArrHelper.toHexString(phoneNum);
+            Map<Integer, byte[]> sentPackages = cacheService.getSentPackages(phone);
+            Object session = sessionManagement.get(phone);
+            byte[] idList = byteArrHelper.subByte(msgBody, 4);
+            for (int i = 0; i < idList.length; i += 2) {
+                int id = byteArrHelper.twobyte2int(new byte[]{idList[i], idList[i + 1]});
+                byte[] pack = sentPackages.get(id);
+                if (pack != null) {
+                    if (session instanceof IoSession) {
+                        ((IoSession) session).write(pack);
+                    } else {
+                        ((ChannelHandlerContext) session).writeAndFlush(pack);
+                    }
+                }
+            }
+        });
+
+
         return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

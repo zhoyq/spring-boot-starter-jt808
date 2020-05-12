@@ -15,7 +15,10 @@
 
 package com.zhoyq.server.jt808.starter.service;
 
+import com.zhoyq.server.jt808.starter.dto.SimAuthDto;
 import com.zhoyq.server.jt808.starter.entity.*;
+
+import java.util.List;
 
 /**
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
@@ -29,6 +32,13 @@ public interface DataService {
      * @param n RSA 公钥 {e, n} 中的 n
      */
     void terminalRsa(String sim, byte[] e, byte[] n);
+
+    /**
+     * 获取终端RSA
+     * @param sim 卡号
+     * @return RSA en
+     */
+    byte[] terminalRsa(String sim);
 
     /**
      * 终端应答消息
@@ -140,4 +150,19 @@ public interface DataService {
      * @param data 上报数据
      */
     void compressData(String sim, byte[] data);
+
+    /**
+     * 终端鉴权
+     * @param phone 卡号
+     * @param authId 鉴权码
+     * @param imei 2019版的 IMEI 号
+     * @param softVersion 2019版的 软件版本号
+     */
+    void terminalAuth(String phone, String authId, String imei, String softVersion);
+
+    /**
+     * 查询数据库存储的所有卡号与鉴权码之间的关系
+     * @return 关系
+     */
+    List<SimAuthDto> simAuth();
 }

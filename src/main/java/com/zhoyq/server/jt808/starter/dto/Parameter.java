@@ -15,13 +15,16 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
-import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 终端控制参数
  * @author zhoyq
  * @date 2018-06-27
  */
+@Getter
+@Setter
 public class Parameter {
 
     // 参数ID
@@ -30,32 +33,6 @@ public class Parameter {
     private byte length;
     // 参数值
     private byte[] value;
-
-    public Parameter(byte[] b){
-        this.parameterId = ByteArrHelper.subByte(b, 0, 4);
-        this.length = b[4];
-        this.value = ByteArrHelper.subByte(b, 5, this.length + 5);
-    }
-
-    public byte[] getParameterId() {
-        return parameterId;
-    }
-    public void setParameterId(byte[] parameterId) {
-        this.parameterId = parameterId;
-    }
-    public byte getLength() {
-        return length;
-    }
-    public void setLength(byte length) {
-        this.length = length;
-    }
-    public byte[] getValue() {
-        return value;
-    }
-    public void setValue(byte[] value) {
-        this.value = value;
-    }
-
 
 }
 

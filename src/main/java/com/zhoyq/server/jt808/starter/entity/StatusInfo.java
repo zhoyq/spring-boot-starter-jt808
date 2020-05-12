@@ -57,6 +57,16 @@ public class StatusInfo {
     private boolean encryption;
 
     /**
+     * 1 紧急刹车系统采集的前撞预警
+     */
+    private boolean brakeSystemWarning;
+
+    /**
+     * 1 车道偏移预警
+     */
+    private boolean laneDepartureWarning;
+
+    /**
      * 0：空车；1：半载；2：保留；3：满载
      */
     private int cargo;
@@ -120,4 +130,9 @@ public class StatusInfo {
      * 0：未使用 Galileo 卫星进行定位；1：使用 Galileo 卫星进行定位
      */
     private boolean galileo;
+
+    /**
+     * 0 车辆处于停止状态 1 车辆处于行驶状态
+     */
+    private boolean vehicleStatus;
 }

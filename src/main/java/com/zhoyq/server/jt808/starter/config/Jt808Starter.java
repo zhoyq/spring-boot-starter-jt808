@@ -15,20 +15,20 @@
 
 package com.zhoyq.server.jt808.starter.config;
 
-import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.Jt808Server;
+import com.zhoyq.server.jt808.starter.dto.SimAuthDto;
 import com.zhoyq.server.jt808.starter.helper.CustomThreadFactory;
+import com.zhoyq.server.jt808.starter.service.CacheService;
+import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -42,11 +42,15 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @ComponentScan(basePackages = {
         "com.zhoyq.server.jt808.starter"
-}, includeFilters = @ComponentScan.Filter(Jt808Pack.class))
+})
 public class Jt808Starter implements ApplicationListener<ApplicationStartedEvent> {
 
     @Autowired
     private Jt808Config jt808Config;
+    @Autowired
+    private DataService dataService;
+    @Autowired
+    private CacheService cacheService;
 
     /**
      * 数据处理线程
@@ -65,6 +69,20 @@ public class Jt808Starter implements ApplicationListener<ApplicationStartedEvent
 
     @Override
     public void onApplicationEvent(ApplicationStartedEvent applicationStartedEvent) {
+
+        if (!jt808Config.getEnabled()) {
+            log.info("jt808 server is disabled !");
+            return;
+        }
+
+        // 初始化 session
+        List<SimAuthDto> list = dataService.simAuth();
+        if(list != null){
+            for (SimAuthDto sa: list) {
+                cacheService.setAuth(sa.getSim(), sa.getAuth());
+            }
+        }
+
         var serverKey = "jt808_" + jt808Config.getUse() + "_" + jt808Config.getProtocol();
 
         if (!applicationStartedEvent.getApplicationContext().containsBean(serverKey)) {
