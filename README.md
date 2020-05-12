@@ -25,6 +25,7 @@
 - 完整开发视频请访问[重构录屏](https://space.bilibili.com/37839961)
 - 基于开发包进行二次开发请访问[直播录屏](https://www.bilibili.com/video/BV1cg4y167jW/)
 - 详细说明请访问我的[博客](#)
+- 最小化启动项目已经开源，[欢迎访问](https://github.com/zhoyq/jt808-server-starter)
 - 作者 JDK 使用的是 openJDK 12 版本，还没有在其他 JDK 版本进行测试。
 
 **下面是基于maven简短的开发使用步骤，详细还请访问[直播录屏](https://www.bilibili.com/video/BV1cg4y167jW/)**
