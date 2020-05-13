@@ -55,16 +55,13 @@ public class Application {
 }
 ```
 
-3. 实现会话和持久化接口，因为项目中目前没有实现这两个Bean所以需要用户自己创建并实现，另外这两个Bean实际上也是用户主要逻辑的载体。
+3. 实现持久化接口，项目中已经有了基于 HashMap 的会话层的接口，仍需用户提供持久化的Bean。
 
 ```java
 import com.zhoyq.server.jt808.starter.service.DataService;
-import com.zhoyq.server.jt808.starter.service.SessionService;
 
 @Component
 public class SimpleDataService implements DataService
-@Component
-public class SimpleSessionService implements SessionService
 ```
 
 4. 然还有在 `application.yml` 中添加配置：
