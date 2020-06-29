@@ -83,7 +83,7 @@ public class Jt808Starter implements ApplicationListener<ApplicationStartedEvent
             }
         }
 
-        var serverKey = "jt808_" + jt808Config.getUse() + "_" + jt808Config.getProtocol();
+        String serverKey = "jt808_" + jt808Config.getUse() + "_" + jt808Config.getProtocol();
 
         if (!applicationStartedEvent.getApplicationContext().containsBean(serverKey)) {
             log.error("no jt808 server instance for key {} has been found !", serverKey);
