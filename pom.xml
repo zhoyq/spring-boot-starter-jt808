@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    
     <groupId>com.zhoyq</groupId>
-    <version>1.2.2</version>
+    <version>1.2.3-jdk1.8</version>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spring-boot-starter-jt808</artifactId>
     <packaging>jar</packaging>
@@ -45,9 +45,9 @@
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>14</java.version>
-        <maven.compiler.source>14</maven.compiler.source>
-        <maven.compiler.target>14</maven.compiler.target>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
 
         <lombok.version>1.18.10</lombok.version>
         <mina.version>2.1.3</mina.version>
