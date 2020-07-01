@@ -15,32 +15,20 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * 事件
  * @author zhoyq
  * @date 2018-06-27
  */
+@Builder
+@Setter
+@Getter
 public class Event {
     private byte id;
     private byte length;
     private byte[] content;
-    public byte getId() {
-        return id;
-    }
-    public void setId(byte id) {
-        this.id = id;
-    }
-    public byte getLength() {
-        return length;
-    }
-    public void setLength(byte length) {
-        this.length = length;
-    }
-    public byte[] getContent() {
-        return content;
-    }
-    public void setContent(byte[] content) {
-        this.content = content;
-    }
-
 }

@@ -22,6 +22,7 @@ import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.CacheService;
 import io.netty.channel.ChannelHandlerContext;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.session.IoSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,18 +37,12 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 @Slf4j
 @Jt808Pack(msgId = 0x0005)
+@AllArgsConstructor
 public class Handler0x0005  implements PackHandler {
-
-    @Autowired
     private CacheService cacheService;
-    @Autowired
     private SessionManagement sessionManagement;
-    @Autowired
     private ThreadPoolExecutor tpe;
-
-    @Autowired
     private ByteArrHelper byteArrHelper;
-    @Autowired
     private ResHelper resHelper;
 
     @Override

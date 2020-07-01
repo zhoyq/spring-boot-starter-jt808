@@ -25,6 +25,7 @@ import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.CacheService;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,22 +40,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Component
+@AllArgsConstructor
 public class NettySessionHandler extends ChannelInboundHandlerAdapter {
-
-    @Autowired
     private PackHandlerManagement packHandlerManagement;
-
-    @Autowired
     private SessionManagement sessionManagement;
-    @Autowired
     private CacheService cacheService;
-    @Autowired
     private Jt808Config jt808Config;
-    @Autowired
     private ByteArrHelper byteArrHelper;
-    @Autowired
     private ResHelper resHelper;
-    @Autowired
     private Jt808Helper jt808Helper;
 
     @Override
@@ -214,18 +207,30 @@ public class NettySessionHandler extends ChannelInboundHandlerAdapter {
         }
 
         String phone = byteArrHelper.toHexString(phoneNum);
-
-        // 检查鉴权记录 看是否链接后鉴权过 成功鉴权才能继续访问其他命令
-        boolean isAuth;
-        // 每次都判断终端鉴权 有些短连接如果每次鉴权 的话 很麻烦 所以推荐使用长链接Map
-        isAuth = cacheService.containsAuth(phone);
-
         int msgIdInt = byteArrHelper.twobyte2int(msgId);
 
-        // 如果已经鉴权 则可以使用所有命令 未鉴权 则只能使用 终端注册 终端鉴权两个命令
-        int terminalRegisterCode = 0x0100;
-        int terminalAuthentication = 0x0102;
-        if (!isAuth && msgIdInt != terminalRegisterCode && msgIdInt != terminalAuthentication ) {
+        // 检查鉴权记录 看是否链接后鉴权过 成功鉴权才能继续访问其他命令
+        // 每次都判断终端鉴权 有些短连接如果每次鉴权 的话 很麻烦 所以推荐使用长链接Map
+        boolean isAuth = cacheService.containsAuth(phone);
+
+        if(jt808Config.getAuth()) {
+            // 需要检查权限
+            // 如果未鉴权 则可以使用 authMsgId 中定义的命令
+            if (!isAuth) {
+                String[] authMsgIds = jt808Config.getAuthMsgId().split(",");
+                for (String authMsgId: authMsgIds){
+                    if (authMsgId.length() == 4 && msgIdInt == byteArrHelper.twobyte2int(byteArrHelper.hexStr2bytes(authMsgId))) {
+                        isAuth = true;
+                        break;
+                    }
+                }
+            }
+        } else {
+            // 不需要检查权限 直接设置为true 已授权
+            isAuth = true;
+        }
+
+        if (!isAuth) {
             return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
         }
 

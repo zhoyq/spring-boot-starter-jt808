@@ -17,6 +17,7 @@ package com.zhoyq.server.jt808.starter.core;
 
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.pack.NoSupportHandler;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Component
+@AllArgsConstructor
 public class PackHandlerManagement implements ApplicationContextAware {
 
     /**
@@ -43,10 +45,7 @@ public class PackHandlerManagement implements ApplicationContextAware {
     /**
      * 不支持的协议消息
      */
-    @Autowired
     private NoSupportHandler noSupportHandler;
-
-    @Autowired
     private ByteArrHelper byteArrHelper;
 
     /**

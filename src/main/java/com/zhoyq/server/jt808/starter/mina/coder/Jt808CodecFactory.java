@@ -15,6 +15,7 @@
 
 package com.zhoyq.server.jt808.starter.mina.coder;
 
+import lombok.AllArgsConstructor;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
@@ -28,12 +29,10 @@ import org.springframework.stereotype.Component;
  * @date 2018-06-22
  */
 @Component
+@AllArgsConstructor
 public class Jt808CodecFactory implements ProtocolCodecFactory {
 
-    @Autowired
     private ProtocolEncoder encoder;
-
-    @Autowired
     private CumulativeProtocolDecoder decoder;
 
     @Override

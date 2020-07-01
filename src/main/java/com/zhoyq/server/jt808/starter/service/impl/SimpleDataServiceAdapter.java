@@ -19,6 +19,7 @@ import com.zhoyq.server.jt808.starter.dto.SimAuthDto;
 import com.zhoyq.server.jt808.starter.entity.*;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -30,13 +31,10 @@ import java.util.List;
  * @date 2020/5/4
  */
 @Slf4j
+@AllArgsConstructor
 public class SimpleDataServiceAdapter implements DataService {
 
     private ByteArrHelper byteArrHelper;
-
-    public SimpleDataServiceAdapter(ByteArrHelper byteArrHelper) {
-        this.byteArrHelper = byteArrHelper;
-    }
 
     /**
      *  设备必须存在 才能存储完成

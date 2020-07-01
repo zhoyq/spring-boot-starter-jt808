@@ -17,6 +17,7 @@ package com.zhoyq.server.jt808.starter.helper;
 
 import com.zhoyq.server.jt808.starter.config.Const;
 import com.zhoyq.server.jt808.starter.entity.*;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,12 +32,9 @@ import java.util.List;
  */
 @Slf4j
 @Component
+@AllArgsConstructor
 public class Analyzer {
-
-    @Autowired
     private ByteArrHelper byteArrHelper;
-
-    @Autowired
     private Jt808Helper jt808Helper;
 
     /**
@@ -67,7 +65,7 @@ public class Analyzer {
      * @return 返回分析后的对象
      */
     public TerminalProperty analyzeTerminalProperty(byte[] data){
-        TerminalProperty terminalProperty = new TerminalProperty();
+        TerminalProperty terminalProperty = TerminalProperty.builder().build();
         // 终端类型
         byte[] terminalType = byteArrHelper.subByte(data, 0, 2);
         terminalProperty.setSupportBus((terminalType[1] & Const.BIN_0X01) == Const.BIN_0X01);
@@ -135,7 +133,7 @@ public class Analyzer {
      * @return 报警对象
      */
     public AlarmInfo analyzeAlarm(byte[] alarms) {
-        AlarmInfo alarmInfo = new AlarmInfo();
+        AlarmInfo alarmInfo = AlarmInfo.builder().build();
         alarmInfo.setEmergencyAlarm((alarms[3] & Const.BIN_0X01) == Const.BIN_0X01);
         alarmInfo.setOverSpeedAlarm((alarms[3] & Const.BIN_0X02) == Const.BIN_0X02);
         alarmInfo.setFatigueDrivingAlarm((alarms[3] & Const.BIN_0X04) == Const.BIN_0X04);
@@ -177,7 +175,7 @@ public class Analyzer {
      * @return 状态对象
      */
     public StatusInfo analyzeStatus(byte[] status) {
-        StatusInfo statusInfo = new StatusInfo();
+        StatusInfo statusInfo = StatusInfo.builder().build();
         statusInfo.setAcc((status[3] & Const.BIN_0X01) == Const.BIN_0X01);
         statusInfo.setPositioning((status[3] & Const.BIN_0X02) == Const.BIN_0X02);
         statusInfo.setSouth((status[3] & Const.BIN_0X04) == Const.BIN_0X04);
@@ -261,14 +259,14 @@ public class Analyzer {
         String datetimeString = jt808Helper.getDataTime(datetime);
         List<LocationAttachInfo> attachInfoList = new ArrayList<>();
         this.analyzeAttache((id, data) -> {
-            LocationAttachInfo attachInfo = new LocationAttachInfo();
+            LocationAttachInfo attachInfo = LocationAttachInfo.builder().build();
             attachInfo.setId(id);
             attachInfo.setData(data);
             attachInfoList.add(attachInfo);
         }, attache);
 
 
-        LocationInfo locationInfo = new LocationInfo();
+        LocationInfo locationInfo = LocationInfo.builder().build();
         locationInfo.setAlarmInfo(alarmInfo);
         locationInfo.setStatusInfo(statusInfo);
         locationInfo.setLongitude(longitudeDouble);
@@ -358,7 +356,7 @@ public class Analyzer {
         // 从业资格证发证机构名称
         byte[] certificatePublishAgentName = byteArrHelper.subByte(data,nameLength + 62);
 
-        DriverInfo driverInfo = new DriverInfo();
+        DriverInfo driverInfo = DriverInfo.builder().build();
 
         try {
             driverInfo.setDriverName(jt808Helper.toGBKString(name));
@@ -375,8 +373,8 @@ public class Analyzer {
     }
 
     private DriverInfo analyzeDriver2013(byte[] data){
-        DriverInfo driverInfo = new DriverInfo();
-        driverInfo.setDriverAlarmInfo(new DriverAlarmInfo());
+        DriverInfo driverInfo = DriverInfo.builder().build();
+        driverInfo.setDriverAlarmInfo(DriverAlarmInfo.builder().build());
 
         if(data[0] == Const.NUMBER_1){
             // 驾驶员上班 卡插入
@@ -444,8 +442,8 @@ public class Analyzer {
     }
 
     private DriverInfo analyzeDriver2019(byte[] data){
-        DriverInfo driverInfo = new DriverInfo();
-        driverInfo.setDriverAlarmInfo(new DriverAlarmInfo());
+        DriverInfo driverInfo = DriverInfo.builder().build();
+        driverInfo.setDriverAlarmInfo(DriverAlarmInfo.builder().build());
 
         if(data[0] == Const.NUMBER_1){
             // 驾驶员上班 卡插入
@@ -525,7 +523,7 @@ public class Analyzer {
      */
     public CanDataInfo analyzeCan(byte[] data) {
 
-        CanDataInfo canDataInfo = new CanDataInfo();
+        CanDataInfo canDataInfo = CanDataInfo.builder().build();
 
         canDataInfo.setTimestamp(System.currentTimeMillis());
 
@@ -548,7 +546,7 @@ public class Analyzer {
         for(int pos = 0, len = 12;pos < data.length; pos += len){
             byte[] head = byteArrHelper.subByte(data, pos,pos + 4);
             byte[] tail = byteArrHelper.subByte(data, pos + 4,pos + len);
-            CanDataItem item = new CanDataItem();
+            CanDataItem item = CanDataItem.builder().build();
 
             int headInt = byteArrHelper.fourbyte2int(head);
 
@@ -568,7 +566,7 @@ public class Analyzer {
      * @return 分析结果
      */
     public MediaInfo analyzeMediaInfo(byte[] data) {
-        MediaInfo mediaInfo = new MediaInfo();
+        MediaInfo mediaInfo = MediaInfo.builder().build();
         mediaInfo.setMediaId(byteArrHelper.fourbyte2int(byteArrHelper.subByte(data,0,4)));
         mediaInfo.setMediaType(data[4]);
         mediaInfo.setMediaFormat(data[5]);
@@ -583,7 +581,7 @@ public class Analyzer {
      * @return 分析结果
      */
     public DataTransportInfo analyzeDataTransport(byte[] data) {
-        DataTransportInfo dataTransportInfo = new DataTransportInfo();
+        DataTransportInfo dataTransportInfo = DataTransportInfo.builder().build();
         dataTransportInfo.setType(data[0]);
         dataTransportInfo.setData(byteArrHelper.subByte(data, 1));
         return dataTransportInfo;

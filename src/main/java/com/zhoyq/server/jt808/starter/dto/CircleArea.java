@@ -15,11 +15,18 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * 圆形区域
  * @author zhoyq
  * @date 2018-06-27
  */
+@Builder
+@Setter
+@Getter
 public class CircleArea {
     private byte[] id;
     private byte[] prop;
@@ -30,59 +37,4 @@ public class CircleArea {
     private byte[] endTime;
     private byte[] highestSpeed;
     private byte overSpeedTime;
-    public byte[] getId() {
-        return id;
-    }
-    public void setId(byte[] id) {
-        this.id = id;
-    }
-    public byte[] getProp() {
-        return prop;
-    }
-    public void setProp(byte[] prop) {
-        this.prop = prop;
-    }
-    public byte[] getLat() {
-        return lat;
-    }
-    public void setLat(byte[] lat) {
-        this.lat = lat;
-    }
-    public byte[] getLon() {
-        return lon;
-    }
-    public void setLon(byte[] lon) {
-        this.lon = lon;
-    }
-    public byte[] getRadius() {
-        return radius;
-    }
-    public void setRadius(byte[] radius) {
-        this.radius = radius;
-    }
-    public byte[] getBeginTime() {
-        return beginTime;
-    }
-    public void setBeginTime(byte[] beginTime) {
-        this.beginTime = beginTime;
-    }
-    public byte[] getEndTime() {
-        return endTime;
-    }
-    public void setEndTime(byte[] endTime) {
-        this.endTime = endTime;
-    }
-    public byte[] getHighestSpeed() {
-        return highestSpeed;
-    }
-    public void setHighestSpeed(byte[] highestSpeed) {
-        this.highestSpeed = highestSpeed;
-    }
-    public byte getOverSpeedTime() {
-        return overSpeedTime;
-    }
-    public void setOverSpeedTime(byte overSpeedTime) {
-        this.overSpeedTime = overSpeedTime;
-    }
-
 }

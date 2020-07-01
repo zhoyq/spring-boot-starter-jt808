@@ -15,11 +15,18 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * 拐点
  * @author zhoyq
  * @date 2018-06-27
  */
+@Builder
+@Setter
+@Getter
 public class TurnPoint {
     private byte[] id;
     private byte[] routeId;
@@ -31,65 +38,4 @@ public class TurnPoint {
     private byte[] driveLowerValue;
     private byte[] highestSpeed;
     private byte overSpeedTime;
-    public byte[] getId() {
-        return id;
-    }
-    public void setId(byte[] id) {
-        this.id = id;
-    }
-    public byte[] getRouteId() {
-        return routeId;
-    }
-    public void setRouteId(byte[] routeId) {
-        this.routeId = routeId;
-    }
-    public byte[] getLat() {
-        return lat;
-    }
-    public void setLat(byte[] lat) {
-        this.lat = lat;
-    }
-    public byte[] getLon() {
-        return lon;
-    }
-    public void setLon(byte[] lon) {
-        this.lon = lon;
-    }
-    public byte getWidth() {
-        return width;
-    }
-    public void setWidth(byte width) {
-        this.width = width;
-    }
-    public byte getProp() {
-        return prop;
-    }
-    public void setProp(byte prop) {
-        this.prop = prop;
-    }
-    public byte[] getDriveOverValue() {
-        return driveOverValue;
-    }
-    public void setDriveOverValue(byte[] driveOverValue) {
-        this.driveOverValue = driveOverValue;
-    }
-    public byte[] getDriveLowerValue() {
-        return driveLowerValue;
-    }
-    public void setDriveLowerValue(byte[] driveLowerValue) {
-        this.driveLowerValue = driveLowerValue;
-    }
-    public byte[] getHighestSpeed() {
-        return highestSpeed;
-    }
-    public void setHighestSpeed(byte[] highestSpeed) {
-        this.highestSpeed = highestSpeed;
-    }
-    public byte getOverSpeedTime() {
-        return overSpeedTime;
-    }
-    public void setOverSpeedTime(byte overSpeedTime) {
-        this.overSpeedTime = overSpeedTime;
-    }
-
 }

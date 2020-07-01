@@ -20,6 +20,7 @@ import com.zhoyq.server.jt808.starter.dto.SimAuthDto;
 import com.zhoyq.server.jt808.starter.helper.CustomThreadFactory;
 import com.zhoyq.server.jt808.starter.service.CacheService;
 import com.zhoyq.server.jt808.starter.service.DataService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -43,13 +44,11 @@ import java.util.concurrent.TimeUnit;
 @ComponentScan(basePackages = {
         "com.zhoyq.server.jt808.starter"
 })
+@AllArgsConstructor
 public class Jt808Starter implements ApplicationListener<ApplicationStartedEvent> {
 
-    @Autowired
     private Jt808Config jt808Config;
-    @Autowired
     private DataService dataService;
-    @Autowired
     private CacheService cacheService;
 
     /**

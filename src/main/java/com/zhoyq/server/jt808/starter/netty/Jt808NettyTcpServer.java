@@ -25,6 +25,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.string.LineEncoder;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,21 +36,16 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("jt808_netty_tcp")
+@AllArgsConstructor
 public class Jt808NettyTcpServer implements Jt808Server {
 
-    private ServerChannel serverChannel;
-    private EventLoopGroup masterGroup;
-    private EventLoopGroup slaveGroup;
+    private static ServerChannel serverChannel;
+    private static EventLoopGroup masterGroup;
+    private static EventLoopGroup slaveGroup;
 
-    @Autowired
     private Jt808Config jt808Config;
-
-    @Autowired
     private NettySessionHandler handler;
-
-    @Autowired
     private Jt808NettyEncoder encoder;
-    @Autowired
     private Jt808NettyDecoder decoder;
 
     @Override

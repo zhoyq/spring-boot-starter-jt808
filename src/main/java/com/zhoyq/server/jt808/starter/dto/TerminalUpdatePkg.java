@@ -15,11 +15,18 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * 终端升级包
  * @author zhoyq
  * @date 2018-06-27
  */
+@Builder
+@Setter
+@Getter
 public class TerminalUpdatePkg {
     private byte updateType;
     private byte[] producerId;
@@ -27,41 +34,4 @@ public class TerminalUpdatePkg {
     private byte[] version;
     private byte[] dataLength;
     private byte[] data;
-    public byte getUpdateType() {
-        return updateType;
-    }
-    public void setUpdateType(byte updateType) {
-        this.updateType = updateType;
-    }
-    public byte[] getProducerId() {
-        return producerId;
-    }
-    public void setProducerId(byte[] producerId) {
-        this.producerId = producerId;
-    }
-    public byte getVersionLength() {
-        return versionLength;
-    }
-    public void setVersionLength(byte versionLength) {
-        this.versionLength = versionLength;
-    }
-    public byte[] getVersion() {
-        return version;
-    }
-    public void setVersion(byte[] version) {
-        this.version = version;
-    }
-    public byte[] getDataLength() {
-        return dataLength;
-    }
-    public void setDataLength(byte[] dataLength) {
-        this.dataLength = dataLength;
-    }
-    public byte[] getData() {
-        return data;
-    }
-    public void setData(byte[] data) {
-        this.data = data;
-    }
-
 }

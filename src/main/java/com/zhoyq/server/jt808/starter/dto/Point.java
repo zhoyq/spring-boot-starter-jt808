@@ -15,25 +15,19 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * 点
  * @author zhoyq
  * @date 2018-06-27
  */
+@Builder
+@Setter
+@Getter
 public class Point {
     private byte[] lat;
     private byte[] lon;
-    public byte[] getLat() {
-        return lat;
-    }
-    public void setLat(byte[] lat) {
-        this.lat = lat;
-    }
-    public byte[] getLon() {
-        return lon;
-    }
-    public void setLon(byte[] lon) {
-        this.lon = lon;
-    }
-
 }

@@ -15,33 +15,20 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * 信息点播的信息项目
  * @author zhoyq
  * @date 2018-06-27
  */
+@Builder
+@Setter
+@Getter
 public class InfoForOrder {
-
     private byte type;
     private byte[] length;
     private byte[] name;
-    public byte getType() {
-        return type;
-    }
-    public void setType(byte type) {
-        this.type = type;
-    }
-    public byte[] getLength() {
-        return length;
-    }
-    public void setLength(byte[] length) {
-        this.length = length;
-    }
-    public byte[] getName() {
-        return name;
-    }
-    public void setName(byte[] name) {
-        this.name = name;
-    }
-
 }

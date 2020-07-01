@@ -17,6 +17,7 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.PackHandler;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,9 +29,8 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
+@AllArgsConstructor
 public class NoSupportHandler implements PackHandler {
-
-    @Autowired
     private ResHelper resHelper;
 
     @Override

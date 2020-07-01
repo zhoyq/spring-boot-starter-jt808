@@ -45,6 +45,9 @@ public class Jt808Config {
      */
     private Integer port = 10001;
 
+    private Boolean auth = true;
+    private String authMsgId = "0100,0102";
+
     // ====\/ for mina
 
     private Integer processCount = 2;
@@ -65,8 +68,14 @@ public class Jt808Config {
 
     private Boolean tcpNoDelay = true;
     private Boolean keepAlive = true;
-    private Integer rsaHandleUnit = 117;        // rsa 超长数据处理单元 默认最长117
-    private Boolean enabled = true;             // 是否启用
+    /**
+     * rsa 超长数据处理单元 默认最长117
+     */
+    private Integer rsaHandleUnit = 117;
+    /**
+     * 是否启用
+     */
+    private Boolean enabled = true;
 
     // ====\/ for execute thread
 

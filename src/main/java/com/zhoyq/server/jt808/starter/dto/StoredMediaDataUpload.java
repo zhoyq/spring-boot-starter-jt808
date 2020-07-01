@@ -15,10 +15,17 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * @author zhoyq
  * @date 2018-06-27
  */
+@Builder
+@Setter
+@Getter
 public class StoredMediaDataUpload {
     private byte type;
     private byte routeId;
@@ -26,41 +33,4 @@ public class StoredMediaDataUpload {
     private byte[] beginTime;
     private byte[] endTime;
     private byte delSign;
-    public byte getType() {
-        return type;
-    }
-    public void setType(byte type) {
-        this.type = type;
-    }
-    public byte getRouteId() {
-        return routeId;
-    }
-    public void setRouteId(byte routeId) {
-        this.routeId = routeId;
-    }
-    public byte getEventCode() {
-        return eventCode;
-    }
-    public void setEventCode(byte eventCode) {
-        this.eventCode = eventCode;
-    }
-    public byte[] getBeginTime() {
-        return beginTime;
-    }
-    public void setBeginTime(byte[] beginTime) {
-        this.beginTime = beginTime;
-    }
-    public byte[] getEndTime() {
-        return endTime;
-    }
-    public void setEndTime(byte[] endTime) {
-        this.endTime = endTime;
-    }
-    public byte getDelSign() {
-        return delSign;
-    }
-    public void setDelSign(byte delSign) {
-        this.delSign = delSign;
-    }
-
 }
