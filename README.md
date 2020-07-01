@@ -158,6 +158,7 @@ public class TestController {
     }
     @GetMapping("/test")
     public String test(String sim, byte[] data) {
+        // data 是不包含校验码以及转义的数据 因为发送之前会自动添加校验码以及转义数据 
         session.write(sim, data);
         return "下发指令成功";
     }
