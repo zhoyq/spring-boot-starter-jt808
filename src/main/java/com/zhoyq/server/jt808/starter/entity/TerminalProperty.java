@@ -15,15 +15,15 @@
 
 package com.zhoyq.server.jt808.starter.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2020/2/18
  */
-@Slf4j
+@Builder
 @Getter
 @Setter
 public class TerminalProperty {

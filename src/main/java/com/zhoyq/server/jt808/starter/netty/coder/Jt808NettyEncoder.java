@@ -19,7 +19,7 @@ import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -29,9 +29,9 @@ import java.util.List;
  * @date 2020/2/17
  */
 @Component
+@AllArgsConstructor
 public class Jt808NettyEncoder extends MessageToMessageEncoder<byte[]> {
 
-    @Autowired
     private Jt808Helper jt808Helper;
 
     @Override

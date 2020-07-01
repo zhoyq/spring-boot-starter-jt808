@@ -20,6 +20,7 @@ import com.zhoyq.server.jt808.starter.service.CacheService;
 import com.zhoyq.server.jt808.starter.service.DataService;
 import com.zhoyq.server.jt808.starter.service.impl.HashMapCacheService;
 import com.zhoyq.server.jt808.starter.service.impl.SimpleDataServiceAdapter;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -32,12 +33,10 @@ import org.springframework.context.annotation.Configuration;
  */
 @Slf4j
 @Configuration
+@AllArgsConstructor
 public class SimpleBeanConfig {
 
-    @Autowired
     private ByteArrHelper byteArrHelper;
-
-    @Autowired
     private Jt808Config jt808Config;
 
     @Bean

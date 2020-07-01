@@ -15,6 +15,7 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,16 +24,21 @@ import lombok.Setter;
  * @author zhoyq
  * @date 2018-06-27
  */
-@Getter
+@Builder
 @Setter
+@Getter
 public class Parameter {
-
-    // 参数ID
+    /**
+     * 参数ID
+     */
     private byte[] parameterId;
-    // 参数值长度
+    /**
+     * 参数值长度
+     */
     private byte length;
-    // 参数值
+    /**
+     * 参数值
+     */
     private byte[] value;
-
 }
 

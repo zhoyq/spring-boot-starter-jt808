@@ -18,9 +18,9 @@ package com.zhoyq.server.jt808.starter.helper;
 import com.zhoyq.server.jt808.starter.config.Const;
 import com.zhoyq.server.jt808.starter.service.CacheService;
 import io.netty.channel.ChannelHandlerContext;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.session.IoSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
@@ -35,13 +35,9 @@ import java.util.Map;
  */
 @Slf4j
 @Component
+@AllArgsConstructor
 public class Jt808Helper {
-
-    @Autowired
     private ByteArrHelper byteArrHelper;
-    @Autowired
-    private ResHelper resHelper;
-    @Autowired
     private CacheService cacheService;
 
     /* ===================================
@@ -232,7 +228,7 @@ public class Jt808Helper {
             }else{
                 bodyBuf = byteArrHelper.subByte(body, (i-1) * 1023, i * 1023);
             }
-            byte[] data = resHelper.warpPkg(
+            byte[] data = warpPkg(
                     msgId,
                     phoneNum,
                     pkgCount,
@@ -243,6 +239,41 @@ public class Jt808Helper {
             sentPackages.put(i, data);
             session.write(data);
             streamNum ++;
+        }
+    }
+
+    /**
+     * 包装返回值
+     * @param msgId 消息ID
+     * @param phoneNum 电话
+     * @param total 分包总数
+     * @param count 分包序号 从1开始
+     * @param platStreamNum 平台流水号
+     * @param msgBody 消息体
+     * @return 返回值
+     */
+    public byte[] warpPkg (byte[] msgId, byte[] phoneNum,int total, int count, int platStreamNum, byte[] msgBody) {
+        int bodyLen = msgBody.length;
+        if (phoneNum.length == 10) {
+            // 2019
+            return byteArrHelper.union(
+                    msgId,
+                    new byte[]{(byte)(((bodyLen>>>8) & 0x03) | 0x40),(byte) (bodyLen&0xff), 0x01},
+                    phoneNum,
+                    new byte[]{(byte) ((platStreamNum>>>8)&0xff),(byte) (platStreamNum&0xff)},
+                    new byte[]{(byte) ((total>>>8)&0xff),(byte) (total&0xff)},
+                    new byte[]{(byte) ((count>>>8)&0xff),(byte) (count&0xff)},
+                    msgBody);
+        } else {
+            // 2011 2013
+            return byteArrHelper.union(
+                    msgId,
+                    new byte[]{(byte)((bodyLen>>>8) & 0x03),(byte) (bodyLen&0xff)},
+                    phoneNum,
+                    new byte[]{(byte) ((platStreamNum>>>8)&0xff),(byte) (platStreamNum&0xff)},
+                    new byte[]{(byte) ((total>>>8)&0xff),(byte) (total&0xff)},
+                    new byte[]{(byte) ((count>>>8)&0xff),(byte) (count&0xff)},
+                    msgBody);
         }
     }
 
@@ -290,7 +321,7 @@ public class Jt808Helper {
             }else{
                 bodyBuf = byteArrHelper.subByte(body, (i-1) * 1023, i * 1023);
             }
-            byte[] data = resHelper.warpPkg(
+            byte[] data = warpPkg(
                     msgId,
                     phoneNum,
                     pkgCount,

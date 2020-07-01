@@ -17,6 +17,7 @@ package com.zhoyq.server.jt808.starter.helper;
 
 import com.zhoyq.server.jt808.starter.dto.CameraInfo;
 import com.zhoyq.server.jt808.starter.dto.Parameter;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,12 +26,13 @@ import org.springframework.stereotype.Component;
  * @date 2020/5/6
  */
 @Component
+@AllArgsConstructor
 public class DtoHelper {
     @Autowired
     private ByteArrHelper byteArrHelper;
 
     public Parameter genParameter(byte[] data){
-        Parameter p = new Parameter();
+        Parameter p = Parameter.builder().build();
         p.setParameterId(byteArrHelper.subByte(data, 0, 4));
         p.setLength(data[4]);
         p.setValue(byteArrHelper.subByte(data, 5, p.getLength() + 5));
@@ -38,7 +40,7 @@ public class DtoHelper {
     }
 
     public CameraInfo genCameraInfo(byte[] data){
-        CameraInfo c = new CameraInfo();
+        CameraInfo c = CameraInfo.builder().build();
         c.setId(data[0]);
         c.setComm(byteArrHelper.subByte(data, 1, 3));
         c.setSpaceTime(byteArrHelper.subByte(data, 3, 5));

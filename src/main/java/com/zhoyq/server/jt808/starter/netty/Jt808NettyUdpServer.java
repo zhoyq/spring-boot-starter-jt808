@@ -26,6 +26,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,19 +37,14 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component("jt808_netty_udp")
+@AllArgsConstructor
 public class Jt808NettyUdpServer implements Jt808Server {
 
-    private Channel serverChannel;
+    private static Channel serverChannel;
 
-    @Autowired
     private Jt808Config jt808Config;
-
-    @Autowired
     private NettySessionHandler handler;
-
-    @Autowired
     private Jt808NettyEncoder encoder;
-    @Autowired
     private Jt808NettyDecoder decoder;
 
     @Override

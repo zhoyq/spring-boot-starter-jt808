@@ -15,46 +15,22 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * 联系人
  * @author zhoyq
  * @date 2018-06-27
  */
+@Builder
+@Setter
+@Getter
 public class Contact {
     private byte sign;
     private byte phoneNumLength;
     private byte[] phoneNum;
     private byte nameLength;
     private byte[] name;
-    public byte getSign() {
-        return sign;
-    }
-    public void setSign(byte sign) {
-        this.sign = sign;
-    }
-    public byte getPhoneNumLength() {
-        return phoneNumLength;
-    }
-    public void setPhoneNumLength(byte phoneNumLength) {
-        this.phoneNumLength = phoneNumLength;
-    }
-    public byte[] getPhoneNum() {
-        return phoneNum;
-    }
-    public void setPhoneNum(byte[] phoneNum) {
-        this.phoneNum = phoneNum;
-    }
-    public byte getNameLength() {
-        return nameLength;
-    }
-    public void setNameLength(byte nameLength) {
-        this.nameLength = nameLength;
-    }
-    public byte[] getName() {
-        return name;
-    }
-    public void setName(byte[] name) {
-        this.name = name;
-    }
-
 }

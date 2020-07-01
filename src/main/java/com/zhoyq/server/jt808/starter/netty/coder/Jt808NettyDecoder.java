@@ -23,8 +23,8 @@ import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.AttributeKey;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -35,6 +35,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
+@AllArgsConstructor
 public class Jt808NettyDecoder extends MessageToMessageDecoder<ByteBuf> {
     private static final AttributeKey<ByteBuf> BUFFER = AttributeKey.valueOf("buffer");
 
@@ -42,9 +43,7 @@ public class Jt808NettyDecoder extends MessageToMessageDecoder<ByteBuf> {
     private static final int MSG_MIN_LEN = 15;
     private static final int MEG_MIN_LEN_WITH_PKG = 19;
 
-    @Autowired
     private Jt808Helper jt808Helper;
-    @Autowired
     private ByteArrHelper byteArrHelper;
 
     @Override

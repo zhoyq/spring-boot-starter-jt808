@@ -19,6 +19,7 @@ import com.zhoyq.server.jt808.starter.config.Jt808Config;
 import com.zhoyq.server.jt808.starter.helper.CustomThreadFactory;
 import com.zhoyq.server.jt808.starter.core.Jt808Server;
 import com.zhoyq.server.jt808.starter.mina.coder.Jt808CodecFactory;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
@@ -38,15 +39,13 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Component("jt808_mina_tcp")
+@AllArgsConstructor
 public class Jt808MinaTcpServer implements Jt808Server {
 
-    private NioSocketAcceptor acceptor;
+    private static NioSocketAcceptor acceptor;
 
-    @Autowired
     private Jt808Config jt808Config;
-    @Autowired
     private IoHandler handler;
-    @Autowired
     private Jt808CodecFactory jt808CodecFactory;
 
     @Override

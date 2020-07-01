@@ -17,6 +17,7 @@ package com.zhoyq.server.jt808.starter.mina.coder;
 
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
@@ -31,11 +32,10 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
+@AllArgsConstructor
 public class Jt808Decoder extends CumulativeProtocolDecoder {
 
-    @Autowired
     private Jt808Helper jt808Helper;
-    @Autowired
     private ByteArrHelper byteArrHelper;
 
     private static final byte MSG_BROKER = 0x7E;

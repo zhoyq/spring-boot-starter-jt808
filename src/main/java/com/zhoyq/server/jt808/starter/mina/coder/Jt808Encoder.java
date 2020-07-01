@@ -16,12 +16,12 @@
 package com.zhoyq.server.jt808.starter.mina.coder;
 
 import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
@@ -31,9 +31,9 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
+@AllArgsConstructor
 public class Jt808Encoder implements ProtocolEncoder {
 
-    @Autowired
     private Jt808Helper jt808Helper;
 
     @Override

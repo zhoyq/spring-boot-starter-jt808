@@ -18,6 +18,7 @@ package com.zhoyq.server.jt808.starter.pack;
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,9 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @Slf4j
 @Jt808Pack(msgId = 0x0004)
+@AllArgsConstructor
 public class Handler0x0004 implements PackHandler {
-
-    @Autowired
     private ResHelper resHelper;
 
     @Override

@@ -7,18 +7,27 @@
 
 ## 版本特性
 
+### 20200701 v1.2.4 v1.2.4-jdk1.8
+
+- :sparkles: 增加配置 `auth` 以及 `authMsgId` 用于控制权限
+- :art: 调整代码，更新依赖，更新JDK到14
+
+### 20200629 v1.2.3-jdk1.8
+
+- :sparkles: 提供 JDK 1.8 版本的支持
+
 ### 20200512 v1.2.2
 
-- :boom: 兼容交通标准808协议的2011、2013、2019版本
-- :boom: 基于 Spring 系列框架，充分利用 Spring 的优势，改写扩展都很简单（自定义消息包处理器）
-- :anger: 修复报警和状态解析的异常
+- :sparkles: 兼容交通标准808协议的2011、2013、2019版本
+- :sparkles: 基于 Spring 系列框架，充分利用 Spring 的优势，改写扩展都很简单（自定义消息包处理器）
+- :bug: 修复报警和状态解析的异常
 
 ### 20200503 v1.0.1
 
-- :boom: 处理分包粘包
-- :boom: 兼容交通标准808协议的2011、2013版本
-- :boom: 超长指令分包下发（一般是超过1K）
-- :boom: 分包处理（上传信息分包会合并解析）
+- :sparkles: 处理分包粘包
+- :sparkles: 兼容交通标准808协议的2011、2013版本
+- :sparkles: 超长指令分包下发（一般是超过1K）
+- :sparkles: 分包处理（上传信息分包会合并解析）
 
 ## 如何开发
 
@@ -26,7 +35,7 @@
 - 基于开发包进行二次开发请访问[直播录屏](https://www.bilibili.com/video/BV1cg4y167jW/)
 - 详细说明请访问我的[博客](https://www.zhoyq.com/2020/05/30/%E8%BD%A6%E8%81%94%E7%BD%91/%E3%80%90JT808%E3%80%91Spring%20Boot%20Stater%20Jt808%20%E7%AE%80%E5%8D%95%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/)
 - 最小化启动项目已经开源，[欢迎访问](https://github.com/zhoyq/jt808-server-starter)
-- 作者 JDK 使用的是 openJDK 12 版本，还没有在其他 JDK 版本进行测试。
+- 作者 JDK 使用的是 openJDK 14 版本，同时还提供 openJDK 1.8 编译版本，还没有在其他 JDK 版本进行测试。
 
 **下面是基于maven简短的开发使用步骤，详细还请访问[直播录屏](https://www.bilibili.com/video/BV1cg4y167jW/)**
 
@@ -36,7 +45,7 @@
 <dependency>
     <groupId>com.zhoyq</groupId>
     <artifactId>spring-boot-starter-jt808</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.4</version>
 </dependency>
 ```
 
@@ -61,7 +70,7 @@ public class Application {
 import com.zhoyq.server.jt808.starter.service.DataService;
 
 @Component
-public class SimpleDataService implements DataService
+public class SimpleDataService implements DataService{}
 ```
 
 4. 然还有在 `application.yml` 中添加配置：
@@ -90,9 +99,9 @@ jt808:
   slaveSize: 10
   tcpNoDelay: true
   keepAlive: true
+  auth: true
+  authMsgId: "0100,0102"
 ```
-
-> 建议使用 mina 配置，因为作者之前写的工程就是基于 mina 写的，当然我也写了 netty 的版本。
 
 至此，启动程序，祝生活愉快。
 
@@ -124,7 +133,36 @@ public class HeartbeatPackHandler implements PackHandler {
 当然，应答需要自己组织，开发包里也提供了工具类 `ResHelper`，只要定义好类，实现 `PackHandler` 接口并且使用 `@Jt808Pack` 注解即可。
 当然也可以使用这种方式定义协议之外的消息，比如使用保留的消息位定义用户自己的消息类型。
 
-> 注意：鉴权的逻辑还没有开放，未鉴权只能访问终端注册和终端鉴权两个包处理器。
+## FAQ
+
+1. 我下载了最小化程序并启动但是发送定位信息却没有反应？
+
+答：首先，程序本身实现了鉴权逻辑，在没有进行终端注册和鉴权的情况下只接受这两个消息，并且返回失败应答；
+其次，第一次进行终端注册的时候，会调用 `DataService.terminalRegister` 进行终端注册，此时返回的字符串就是鉴权码，
+鉴权码会被缓存（推荐使用`redis`，使用默认的 `hashmap` 会在重启后丢失鉴权信息），并在终端鉴权时使用，
+如果没有实现 `DataService.terminalRegister` 这部分逻辑，也会导致失败应答；
+最后，我在 `1.2.4` 版本之后加入了权限控制可选配置 `auth` 和 `authMagId` 选项，`auth` 代表是否检查权限，`authMsgId` 代表
+权限开启时，可以不需要权限就访问的消息ID。这样就可以自己控制需要的权限了。
+
+2. 我启动了程序，如何下发指令呢？
+
+```java
+// ...
+import com.zhoyq.server.jt808.starter.core.SessionManagement;
+
+@RestController
+public class TestController {
+    private SessionManagement session;
+    public TestController(SessionManagement session) {
+        this.session = session;
+    }
+    @GetMapping("/test")
+    public String test(String sim, byte[] data) {
+        session.write(sim, data);
+        return "下发指令成功";
+    }
+}
+```
 
 ## 授权
 

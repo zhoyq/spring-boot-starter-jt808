@@ -23,6 +23,7 @@ import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.CacheService;
 import com.zhoyq.server.jt808.starter.service.DataService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,20 +39,13 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 @Slf4j
 @Jt808Pack(msgId = 0x0100)
+@AllArgsConstructor
 public class Handler0x0100 implements PackHandler {
-
-    @Autowired
     private DataService dataService;
-    @Autowired
     private CacheService cacheService;
-    @Autowired
     private ThreadPoolExecutor tpe;
-
-    @Autowired
     private ByteArrHelper byteArrHelper;
-    @Autowired
     private ResHelper resHelper;
-    @Autowired
     private Jt808Helper jt808Helper;
 
     @Override

@@ -15,11 +15,18 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * 矩形区域
  * @author zhoyq
  * @date 2018-06-27
  */
+@Builder
+@Setter
+@Getter
 public class RectangleArea {
     private byte[] id;
     private byte[] prop;
@@ -31,65 +38,4 @@ public class RectangleArea {
     private byte[] endTime;
     private byte[] highestSpeed;
     private byte overSpeedTime;
-    public byte[] getId() {
-        return id;
-    }
-    public void setId(byte[] id) {
-        this.id = id;
-    }
-    public byte[] getProp() {
-        return prop;
-    }
-    public void setProp(byte[] prop) {
-        this.prop = prop;
-    }
-    public byte[] getLeftUpLat() {
-        return leftUpLat;
-    }
-    public void setLeftUpLat(byte[] leftUpLat) {
-        this.leftUpLat = leftUpLat;
-    }
-    public byte[] getLeftUpLon() {
-        return leftUpLon;
-    }
-    public void setLeftUpLon(byte[] leftUpLon) {
-        this.leftUpLon = leftUpLon;
-    }
-    public byte[] getRightDownLat() {
-        return rightDownLat;
-    }
-    public void setRightDownLat(byte[] rightDownLat) {
-        this.rightDownLat = rightDownLat;
-    }
-    public byte[] getRightDownLon() {
-        return rightDownLon;
-    }
-    public void setRightDownLon(byte[] rightDownLon) {
-        this.rightDownLon = rightDownLon;
-    }
-    public byte[] getBeginTime() {
-        return beginTime;
-    }
-    public void setBeginTime(byte[] beginTime) {
-        this.beginTime = beginTime;
-    }
-    public byte[] getEndTime() {
-        return endTime;
-    }
-    public void setEndTime(byte[] endTime) {
-        this.endTime = endTime;
-    }
-    public byte[] getHighestSpeed() {
-        return highestSpeed;
-    }
-    public void setHighestSpeed(byte[] highestSpeed) {
-        this.highestSpeed = highestSpeed;
-    }
-    public byte getOverSpeedTime() {
-        return overSpeedTime;
-    }
-    public void setOverSpeedTime(byte overSpeedTime) {
-        this.overSpeedTime = overSpeedTime;
-    }
-
 }

@@ -15,6 +15,10 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 /**
@@ -22,6 +26,9 @@ import java.util.List;
  * @author zhoyq
  * @date 2018-06-27
  */
+@Builder
+@Setter
+@Getter
 public class Route {
     private byte[] id;
     private byte[] prop;
@@ -29,41 +36,4 @@ public class Route {
     private byte[] endTime;
     private byte[] pointNum;
     private List<TurnPoint> list;
-    public byte[] getId() {
-        return id;
-    }
-    public void setId(byte[] id) {
-        this.id = id;
-    }
-    public byte[] getProp() {
-        return prop;
-    }
-    public void setProp(byte[] prop) {
-        this.prop = prop;
-    }
-    public byte[] getBeginTime() {
-        return beginTime;
-    }
-    public void setBeginTime(byte[] beginTime) {
-        this.beginTime = beginTime;
-    }
-    public byte[] getEndTime() {
-        return endTime;
-    }
-    public void setEndTime(byte[] endTime) {
-        this.endTime = endTime;
-    }
-    public byte[] getPointNum() {
-        return pointNum;
-    }
-    public void setPointNum(byte[] pointNum) {
-        this.pointNum = pointNum;
-    }
-    public List<TurnPoint> getList() {
-        return list;
-    }
-    public void setList(List<TurnPoint> list) {
-        this.list = list;
-    }
-
 }
