@@ -144,7 +144,9 @@ public class Jt808Helper {
         if(verify==bytes[bytes.length-1]){
             b = true;
         }
-        log.trace("verify code is " + byteArrHelper.toHexString(verify) + " return " + b);
+        if (!b) {
+            log.warn("verify code is " + byteArrHelper.toHexString(verify) + " return " + b);
+        }
         return b;
     }
 
