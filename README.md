@@ -7,6 +7,10 @@
 
 ## 版本特性
 
+### 20200704 v1.2.5
+
+- :bug: 修复消息读取逻辑 （B站网友 果子狸猫么么 反馈）
+
 ### 20200701 v1.2.4 v1.2.4-jdk1.8
 
 - :sparkles: 增加配置 `auth` 以及 `authMsgId` 用于控制权限
@@ -158,11 +162,16 @@ public class TestController {
     }
     @GetMapping("/test")
     public String test(String sim, byte[] data) {
+        // data 是不包含校验码以及转义的数据 因为发送之前会自动添加校验码以及转义数据 
         session.write(sim, data);
         return "下发指令成功";
     }
 }
 ```
+
+## 致谢
+
+- 感谢 [B站网友 果子狸猫么么](https://space.bilibili.com/30198711) 反馈的功能性BUG
 
 ## 授权
 

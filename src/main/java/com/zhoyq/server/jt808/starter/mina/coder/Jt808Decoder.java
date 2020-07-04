@@ -39,8 +39,15 @@ public class Jt808Decoder extends CumulativeProtocolDecoder {
     private ByteArrHelper byteArrHelper;
 
     private static final byte MSG_BROKER = 0x7E;
+    /**
+     * 含标识位
+     */
     private static final int MSG_MIN_LEN = 15;
+    /**
+     * 含标识位
+     */
     private static final int MEG_MIN_LEN_WITH_PKG = 19;
+    private static final int MAX_READ_LEN = 1024 * 10;
 
     /**
      * 这里处理的是网络原因引起的分包 粘包
@@ -49,69 +56,83 @@ public class Jt808Decoder extends CumulativeProtocolDecoder {
      *    会将内容放进IoSession中，等下次来数据后就自动拼装再交给本类的doDecode
      * 3、当内容多时，返回true，因为需要再将本批数据进行读取，父类会将剩余的数据再次推送本
      *    类的doDecode
+     *
+     * 20200704 感谢B站网友 果子狸猫么么
+     * 1、先转义 检查校验码 在解析检查长度
      */
     @Override
     protected boolean doDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out) {
         // 有数据时，读取前 8 字节判断消息长度
         if (in.remaining() > 0) {
+            // 标记初始位置
             in.mark();
+            // 读取一字节 检查是否标识位
             byte byteBuf = in.get();
             if( byteBuf == MSG_BROKER ){
-                // 还原读取情况
+                // 设置一个长度缓存
+                int pos = 1;
+                // 是标识位 循环读取 直到 下一个标识位 为止
+                for(int i = 0;i < in.remaining();){
+                    byteBuf = in.get();
+                    pos ++;
+                    if( byteBuf == MSG_BROKER ){
+                        // 读取到 下一个标识位 并且重置缓存
+                        break;
+                    }
+                }
+                // 循环终结 但是 还是没找到最后的标识位
+                // 继续读取 重新解析
+                if (byteBuf != MSG_BROKER) {
+                    // FIXME 如果只有一个 标识位 会导致一直读取的问题 需要设置一个限定长度 读取超过这个长度 就直接丢弃
+                    // 目前设置成 10K 以后会加入配置
+                    if (pos < MAX_READ_LEN) {
+                        in.reset();
+                    }
+                    return false;
+                }
+                // 小于最小包长度 截断 重新读取 剩余的 字节
+                if (pos < MSG_MIN_LEN) {
+                    log.warn("data is too short ... drop !");
+                    return in.remaining() > 0;
+                }
+                // 重置缓存
                 in.reset();
-                byte[] bodyProp = new byte[5];
-                in.mark();
-                in.get(bodyProp, 0, 5);
-                byte[] body = new byte[]{bodyProp[3],bodyProp[4]};
+                // 读取缓存
+                byte[] packageBuf = new byte[pos];
+                in.get(packageBuf);
+                log.trace("origin data : {}", byteArrHelper.toHexString(packageBuf));
+                // 转义 转义后的值 已经去掉了 标识位
+                packageBuf = jt808Helper.retrans(packageBuf);
+                log.trace("trans data : {}", byteArrHelper.toHexString(packageBuf));
+                // 校验失败 丢掉当前包 继续读取剩余的字节
+                boolean verify = jt808Helper.verify(packageBuf);
+                if (!verify) {
+                    log.warn("verify failed {}", session.getRemoteAddress());
+                    return in.remaining() > 0;
+                }
+                // 校验成功 检查 长度 并输出到下一步操作
+                byte[] body = byteArrHelper.subByte(packageBuf, 2, 4);
                 int sizeBuf = jt808Helper.getMsgBodyLength(body);
                 boolean b = jt808Helper.hasPackage(body);
                 int size;
                 if(b){
-                    size = sizeBuf + MEG_MIN_LEN_WITH_PKG;
+                    size = sizeBuf + MEG_MIN_LEN_WITH_PKG - 2;
                 }else{
-                    size = sizeBuf + MSG_MIN_LEN;
+                    size = sizeBuf + MSG_MIN_LEN - 2;
                 }
-                // 还原读取情况
-                in.reset();
-                log.trace("the real pkg length is " + size);
 
-                // 如果消息内容不够，则重置，相当于不读取size
-                if (size > in.remaining() || size < MSG_MIN_LEN ) {
-                    // 标记
-                    in.mark();
-                    // 读取以显示
-                    byte[] bytes = new byte[in.remaining()];
-                    in.get(bytes, 0, in.remaining());
-                    // 还原
-                    in.reset();
-                    log.trace("short data length "+in.remaining()+" data "+ byteArrHelper.toHexString(bytes) +" go to reread " + session.getRemoteAddress());
-                } else {
-                    byte[] bytes = new byte[size];
-                    in.get(bytes, 0, size);
-                    // 验证得到的数据是否正确
-                    if( bytes[bytes.length-1] == MSG_BROKER ){
-                        log.trace("origin data " + byteArrHelper.toHexString(bytes) + " " + session.getRemoteAddress());
-                        // 这里转义还原
-                        bytes = jt808Helper.retrans(bytes);
-                        // 在这里验证校验码
-                        if(jt808Helper.verify(bytes)){
-                            // 把字节转换为Java对象的工具类
-                            out.write(bytes);
-                            // 如果读取内容后还粘了包，就让父类再重读 一次，进行下一次解析
-                            return in.remaining() > 0;
-                        }else{
-                            // 如果读取内容后还粘了包，就让父类再重读 一次，进行下一次解析
-                            return in.remaining() > 0;
-                        }
-                    }else{
-                        log.trace("wrong data to drop " + byteArrHelper.toHexString(bytes) + " " + session.getRemoteAddress());
-                        //如果按格式获取数据后 末尾不是0x7e 或者校验位不对 直接丢弃 还有剩余数据
-                        //继续使用 没有 进行吓一条数据
-                        return in.remaining() > 0;
-                    }
+                // 检查长度
+                if(size == packageBuf.length) {
+                    // 长度符合 输出
+                    log.info("handle data : {}", byteArrHelper.toHexString(packageBuf));
+                    out.write(packageBuf);
+                    return in.remaining() > 0;
                 }
+                // 长度不符合
+                log.warn("wrong data length expected {}, real {} drop !", size, packageBuf.length);
+                return in.remaining() > 0;
             }else{
-                log.trace("wrong data structure " + session.getRemoteAddress());
+                log.warn("wrong data structure {}", session.getRemoteAddress());
                 for(int i = 0;i<in.remaining();){
                     if( in.get() == MSG_BROKER ){
                         // 如果发送数据不正确 找到下一个0x7e 截断后 再读取一遍
