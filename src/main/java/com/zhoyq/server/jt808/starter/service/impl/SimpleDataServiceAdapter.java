@@ -91,7 +91,7 @@ public class SimpleDataServiceAdapter implements DataService {
     }
 
     @Override
-    public void terminalLocation(String phone, LocationInfo locationInfo) {
+    public void terminalLocation(String phone, LocationInfo locationInfo, Integer mediaId) {
         log.info("{}, location", phone);
     }
 
@@ -131,7 +131,7 @@ public class SimpleDataServiceAdapter implements DataService {
     }
 
     @Override
-    public void mediaPackage(String phone, byte[] mediaData) {
+    public void mediaPackage(String phone, byte[] mediaData, Integer mediaId) {
         log.info("{}, media package", phone);
     }
 

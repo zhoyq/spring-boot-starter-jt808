@@ -60,7 +60,7 @@ public class Handler0x0704 implements PackHandler {
 
                 LocationInfo locationInfo = analyzer.analyzeLocation(data);
 
-                dataService.terminalLocation(phone, locationInfo);
+                dataService.terminalLocation(phone, locationInfo, null);
             }
 
         });

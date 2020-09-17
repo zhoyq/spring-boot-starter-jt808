@@ -56,4 +56,9 @@ public class MediaInfo {
      * 通道ID
      */
     private int tunnelId;
+
+    /**
+     * 用于连接 多媒体信息 定位信息 和 实体数据
+     */
+    private String linkId;
 }
