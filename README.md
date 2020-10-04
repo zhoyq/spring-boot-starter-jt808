@@ -7,6 +7,11 @@
 
 ## 版本特性
 
+### 20201004 v1.3.1
+
+- :arrow_up: 更新 JDK 版本到 15
+- :arrow_up: 更新 SpringBoot 版本到 2.3.4.RELEASE
+
 ### 20200917 v1.3.0
 
 - :construction: 0x0801 添加多媒体数据、定位数据以及多媒体实体数据之间的关联（非兼容性更新）
@@ -39,7 +44,7 @@
 
 ## 版本升级
 
-### 1.2.x 升级 1.3.0
+### 1.2.x 升级 1.3.1
 
 `DataService` 接口有变动，重新实现 `terminalLocation`、`mediaPackage` 两个方法即可。
 
@@ -61,7 +66,7 @@
 <dependency>
     <groupId>com.zhoyq</groupId>
     <artifactId>spring-boot-starter-jt808</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 ```
 
