@@ -77,11 +77,11 @@ public class Handler0x0801 implements PackHandler {
             if(locationData != null){
                 // 存储定位数据
                 LocationInfo locationInfo = analyzer.analyzeLocation(locationData);
-                dataService.terminalLocation(phone, locationInfo);
+                dataService.terminalLocation(phone, locationInfo, mediaInfo.getMediaId());
             }
 
             // 存储多媒体数据包
-            dataService.mediaPackage(phone, mediaData);
+            dataService.mediaPackage(phone, mediaData, mediaInfo.getMediaId());
         });
         return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }

@@ -7,7 +7,13 @@
 
 ## 版本特性
 
-### 20200704 v1.2.5
+### 20201004 v1.3.1 v1.3.1-jdk1.8
+
+- :arrow_up: 更新 JDK 版本到 15
+- :arrow_up: 更新 SpringBoot 版本到 2.3.4.RELEASE
+- :construction: 0x0801 添加多媒体数据、定位数据以及多媒体实体数据之间的关联（非兼容性更新）
+
+### 20200704 v1.2.5 v1.2.5-jdk1.8
 
 - :bug: 修复消息读取逻辑 （B站网友 果子狸猫么么 反馈）
 
@@ -33,6 +39,14 @@
 - :sparkles: 超长指令分包下发（一般是超过1K）
 - :sparkles: 分包处理（上传信息分包会合并解析）
 
+## 版本升级
+
+### 1.2.x 升级 1.3.1
+
+`DataService` 接口有变动，重新实现 `terminalLocation`、`mediaPackage` 两个方法即可。
+
+连个接口增加了参数 mediaId，用于 0x0801 多媒体数据上传 时，连接多媒体消息、定位数据以及实体数据。
+
 ## 如何开发
 
 - 完整开发视频请访问[重构录屏](https://space.bilibili.com/37839961)
@@ -49,7 +63,7 @@
 <dependency>
     <groupId>com.zhoyq</groupId>
     <artifactId>spring-boot-starter-jt808</artifactId>
-    <version>1.2.4</version>
+    <version>1.3.1</version>
 </dependency>
 ```
 

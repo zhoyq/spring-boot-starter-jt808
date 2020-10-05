@@ -51,7 +51,7 @@ public class Handler0x0200 implements PackHandler {
             String phone = byteArrHelper.toHexString(phoneNum);
             LocationInfo locationInfo = analyzer.analyzeLocation(msgBody);
 
-            dataService.terminalLocation(phone, locationInfo);
+            dataService.terminalLocation(phone, locationInfo, null);
         });
 
         return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);

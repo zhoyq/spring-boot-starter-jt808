@@ -80,8 +80,9 @@ public interface DataService {
      * 保存定位信息、报警信息（包含持续和瞬间）、附加信息
      * @param sim 终端对应 12 位电话号码
      * @param locationInfo 定位信息 + 报警信息 + 附加信息 | 计算后的平台信息（可以放到计划任务延迟计算）
+     * @param mediaId 连接多媒体数据的ID
      */
-    void terminalLocation(String sim, LocationInfo locationInfo);
+    void terminalLocation(String sim, LocationInfo locationInfo, Integer mediaId);
 
     /**
      * 事件上报
@@ -134,8 +135,9 @@ public interface DataService {
      * 存储多媒体实体信息
      * @param sim 终端对应 12 位电话号码
      * @param mediaData 数据包
+     * @param mediaId 连接多媒体数据的ID
      */
-    void mediaPackage(String sim, byte[] mediaData);
+    void mediaPackage(String sim, byte[] mediaData, Integer mediaId);
 
     /**
      * 保存透传数据
