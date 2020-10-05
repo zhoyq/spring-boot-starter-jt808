@@ -25,6 +25,7 @@ import org.springframework.stereotype.Component;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>

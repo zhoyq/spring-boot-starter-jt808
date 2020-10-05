@@ -52,7 +52,7 @@ public class Handler0x0201 implements PackHandler {
 
             // 作为应答 应该也需要调用应答接口才对
             // 暂时调用定位解析定位数据
-            dataService.terminalLocation(phone, locationInfo);
+            dataService.terminalLocation(phone, locationInfo, null);
         });
         return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
