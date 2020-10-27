@@ -55,7 +55,7 @@ public class PackHandlerManagement implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         // 仅一次性初始化完成
         if(packHandlerMap == null){
-            packHandlerMap = new ConcurrentHashMap<>();
+            packHandlerMap = new ConcurrentHashMap<>(30);
 
             Map<String, Object> handlers =  applicationContext.getBeansWithAnnotation(Jt808Pack.class);
             for (Map.Entry<String, Object> entry : handlers.entrySet()) {

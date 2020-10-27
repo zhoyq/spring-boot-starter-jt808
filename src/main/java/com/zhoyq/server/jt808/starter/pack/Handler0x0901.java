@@ -23,7 +23,6 @@ import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.ThreadPoolExecutor;
 

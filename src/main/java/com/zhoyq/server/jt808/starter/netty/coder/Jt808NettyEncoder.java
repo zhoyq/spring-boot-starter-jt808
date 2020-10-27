@@ -15,7 +15,7 @@
 
 package com.zhoyq.server.jt808.starter.netty.coder;
 
-import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
+import com.zhoyq.server.jt808.starter.core.Coder;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
@@ -32,15 +32,11 @@ import java.util.List;
 @AllArgsConstructor
 public class Jt808NettyEncoder extends MessageToMessageEncoder<byte[]> {
 
-    private Jt808Helper jt808Helper;
+    private Coder coder;
 
     @Override
     protected void encode(ChannelHandlerContext ctx, byte[] msg, List<Object> out) throws Exception {
-        // 添加验证
-        byte[] buf = jt808Helper.addVerify(msg);
-        // 转义
-        buf = jt808Helper.trans(buf);
-
+        byte[] buf = coder.encode(msg);
         out.add(Unpooled.wrappedBuffer(buf));
     }
 }

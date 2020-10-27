@@ -22,7 +22,6 @@ import com.zhoyq.server.jt808.starter.service.impl.HashMapCacheService;
 import com.zhoyq.server.jt808.starter.service.impl.SimpleDataServiceAdapter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
