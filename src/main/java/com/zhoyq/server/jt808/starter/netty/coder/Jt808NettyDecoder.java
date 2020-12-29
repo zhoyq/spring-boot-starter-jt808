@@ -20,6 +20,7 @@ import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.AttributeKey;
@@ -45,6 +46,7 @@ import java.util.List;
 @Slf4j
 @Component
 @AllArgsConstructor
+@ChannelHandler.Sharable
 public class Jt808NettyDecoder extends MessageToMessageDecoder<ByteBuf> {
     private static final AttributeKey<ByteBuf> BUFFER = AttributeKey.valueOf("buffer");
 

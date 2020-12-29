@@ -341,10 +341,12 @@ public class Jt808Helper {
     public byte[] allPkg(String phone, int totalPkgNum) {
         Map<Integer,byte[]> map = cacheService.getPackages(phone);
         // 分包是从1开始的 去掉校验位
-        byte[] buf = byteArrHelper.subByte(map.get(1), 0, map.get(1).length - 1);
-        for(int i = 2;i <= totalPkgNum; i++){
+        // 截掉消息总包数和包序号
+        byte[] buf = byteArrHelper.subByte(map.get(1), 0, phone.length() == 20 ? 16 : 12);
+        buf = byteArrHelper.union(buf, byteArrHelper.subByte(map.get(1), phone.length() == 20 ? 21 : 16, map.get(1).length - 1));
+        for (int i = 2; i <= totalPkgNum; i++) {
             byte[] pkg = map.get(i);
-            buf = byteArrHelper.union(buf, byteArrHelper.subByte(pkg, phone.length() == 20 ? 21 : 16, map.get(1).length - 1));
+            buf = byteArrHelper.union(buf, byteArrHelper.subByte(pkg, phone.length() == 20 ? 21 : 16, map.get(i).length - 1));
         }
         map.clear();
         return buf;
@@ -656,36 +658,36 @@ public class Jt808Helper {
 //        });
 //    }
 
-    private String getStatusExtAttach(byte[] b){
+    private String getStatusExtAttach(byte[] b) {
         String attachDesc = "扩展车辆信号状态位附加信息：";
-        attachDesc += (b[5] & 0x01)==0?"":"近光灯，";
-        attachDesc += (b[5] & 0x02)==0?"":"远光灯，";
-        attachDesc += (b[5] & 0x04)==0?"":"右转向灯，";
-        attachDesc += (b[5] & 0x08)==0?"":"左转向灯，";
-        attachDesc += (b[5] & 0x10)==0?"":"制动，";
-        attachDesc += (b[5] & 0x20)==0?"":"倒档，";
-        attachDesc += (b[5] & 0x40)==0?"":"雾灯，";
-        attachDesc += (b[5] & 0x80)==0?"":"示廓灯，";
-        attachDesc += (b[4] & 0x01)==0?"":"喇叭，";
-        attachDesc += (b[4] & 0x02)==0?"":"空调，";
-        attachDesc += (b[4] & 0x04)==0?"":"空挡，";
-        attachDesc += (b[4] & 0x08)==0?"":"缓速器，";
-        attachDesc += (b[4] & 0x10)==0?"":"ABS，";
-        attachDesc += (b[4] & 0x20)==0?"":"加热器，";
-        attachDesc += (b[4] & 0x40)==0?"":"离合器，";
+        attachDesc += (b[5] & 0x01) == 0 ? "" : "近光灯，";
+        attachDesc += (b[5] & 0x02) == 0 ? "" : "远光灯，";
+        attachDesc += (b[5] & 0x04) == 0 ? "" : "右转向灯，";
+        attachDesc += (b[5] & 0x08) == 0 ? "" : "左转向灯，";
+        attachDesc += (b[5] & 0x10) == 0 ? "" : "制动，";
+        attachDesc += (b[5] & 0x20) == 0 ? "" : "倒档，";
+        attachDesc += (b[5] & 0x40) == 0 ? "" : "雾灯，";
+        attachDesc += (b[5] & 0x80) == 0 ? "" : "示廓灯，";
+        attachDesc += (b[4] & 0x01) == 0 ? "" : "喇叭，";
+        attachDesc += (b[4] & 0x02) == 0 ? "" : "空调，";
+        attachDesc += (b[4] & 0x04) == 0 ? "" : "空挡，";
+        attachDesc += (b[4] & 0x08) == 0 ? "" : "缓速器，";
+        attachDesc += (b[4] & 0x10) == 0 ? "" : "ABS，";
+        attachDesc += (b[4] & 0x20) == 0 ? "" : "加热器，";
+        attachDesc += (b[4] & 0x40) == 0 ? "" : "离合器，";
         attachDesc += "；";
         return attachDesc;
     }
 
-    private String getDriveTimeAttach(byte[] b){
+    private String getDriveTimeAttach(byte[] b) {
         String attachDesc = "路段行驶时间不足/过长报警附加信息：";
         attachDesc += "路段ID为" + byteArrHelper.fourbyte2int(byteArrHelper.subByte(b, 2, 6))
                 + "，路段行驶时间 " + byteArrHelper.twobyte2int(byteArrHelper.subByte(b, 6, 8))
-                + " 秒，结果 " + ((b[8]==0)?"不足":"过长") + "；";
+                + " 秒，结果 " + ((b[8] == 0) ? "不足" : "过长") + "；";
         return attachDesc;
     }
 
-    private String getInAndOutAttach(byte[] b){
+    private String getInAndOutAttach(byte[] b) {
         StringBuilder attachDesc = new StringBuilder();
         attachDesc.append("进出区域/路线报警附加信息：");
         switch (b[7]) {
@@ -714,12 +716,12 @@ public class Jt808Helper {
             default:
                 break;
         }
-        attachDesc.append(byteArrHelper.fourbyte2int(byteArrHelper.subByte(b, 3,7)));
+        attachDesc.append(byteArrHelper.fourbyte2int(byteArrHelper.subByte(b, 3, 7)));
         attachDesc.append("；");
         return attachDesc.toString();
     }
 
-    private String getOverSpeedAttach(byte[] b){
+    private String getOverSpeedAttach(byte[] b) {
         StringBuilder attachDesc = new StringBuilder();
         attachDesc.append("超速报警附加信息：");
         switch (b[2]) {
@@ -751,6 +753,7 @@ public class Jt808Helper {
 
     /**
      * 获取状态位描述信息
+     *
      * @param status 状态位
      * @return 状态位描述
      */
@@ -784,12 +787,13 @@ public class Jt808Helper {
 
     /**
      * 获取多媒体信息描述
+     *
      * @param b 标识
      * @return 多媒体信息描述
      */
     public String getMediaEventDesc(byte b) {
         String event;
-        switch(b){
+        switch (b) {
             case 0x00:
                 event = "平台下发指令";
                 break;
@@ -826,13 +830,14 @@ public class Jt808Helper {
         return new String(data, "GBK").trim();
     }
 
-    public String toAsciiString(byte[] data){
+    public String toAsciiString(byte[] data) {
         return new String(data, StandardCharsets.US_ASCII).trim();
     }
 
     /**
      * 判断否是 2019 版本 协议
      * 通过版本标识判断
+     *
      * @param msgBodyProp 消息体属性
      * @return 是否是2019版本
      */
@@ -842,6 +847,7 @@ public class Jt808Helper {
 
     /**
      * 检查是否是基本定位信息
+     *
      * @param locationData 定位信息数据项
      * @return 是否
      */
@@ -859,11 +865,11 @@ public class Jt808Helper {
         // 时间 [yy-MM-dd-hh-mm-ss]
         byte[] datetime = byteArrHelper.subByte(locationData, 22, 28);
 
-        double longitudeDouble = (double)byteArrHelper.fourbyte2int(longitude) / (double)1000000;
-        if(longitudeDouble > 180.0 || longitudeDouble < -180.0){
+        double longitudeDouble = (double) byteArrHelper.fourbyte2int(longitude) / (double) 1000000;
+        if (longitudeDouble > 180.0 || longitudeDouble < -180.0) {
             return false;
         }
-        double latitudeDouble = (double)byteArrHelper.fourbyte2int(latitude) / (double)1000000;
+        double latitudeDouble = (double) byteArrHelper.fourbyte2int(latitude) / (double) 1000000;
         if (latitudeDouble > 90.0 || latitudeDouble < -90.0) {
             return false;
         }
@@ -909,6 +915,7 @@ public class Jt808Helper {
 
     /**
      * 检查是否使用了 ras 加密
+     *
      * @param msgBodyProp 消息体属性
      * @return 是否
      */

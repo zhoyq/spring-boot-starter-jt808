@@ -17,6 +17,7 @@ package com.zhoyq.server.jt808.starter.netty.coder;
 
 import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,7 @@ import java.util.List;
  */
 @Component
 @AllArgsConstructor
+@ChannelHandler.Sharable
 public class Jt808NettyEncoder extends MessageToMessageEncoder<byte[]> {
 
     private Jt808Helper jt808Helper;

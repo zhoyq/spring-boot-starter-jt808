@@ -23,11 +23,11 @@ import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.CacheService;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Component
 @AllArgsConstructor
+@ChannelHandler.Sharable
 public class NettySessionHandler extends ChannelInboundHandlerAdapter {
     private PackHandlerManagement packHandlerManagement;
     private SessionManagement sessionManagement;
