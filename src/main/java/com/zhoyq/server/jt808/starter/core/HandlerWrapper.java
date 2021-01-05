@@ -219,6 +219,11 @@ public class HandlerWrapper {
         int msgLen = jt808Config.getPackageLength();
         if(originData.length > msgLen){
             // 超长的数据一定是分包合并后的数据 直接获取后边的数据即可 因为已经处理了尾部的校验位
+
+            // 过滤掉消息包封装项
+            // 感谢 https://github.com/bigbeef 提交的建议
+
+            offset += 4;
             msgBody = byteArrHelper.subByte(originData, offset);
         }else{
             int bodyLength = originData.length-1-offset;
