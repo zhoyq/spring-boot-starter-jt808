@@ -130,14 +130,19 @@ public class HandlerWrapper {
                     cacheService.setPackages(phone, buf);
                 }
                 Map<Integer,byte[]> pkgBuf = cacheService.getPackages(phone);
-                pkgBuf.put(currentPkgNum, originData);
+                if (pkgBuf != null) {
+                    pkgBuf.put(currentPkgNum, originData);
+                }
             }
             // 分包结束时需要对分包数据进行解析处理并返回应答 通过总包数和序号对比 判断是不是最后一包
             if( totalPkgNum == currentPkgNum ){
                 // 如果是 这个电话的最后一包
                 if(jt808Helper.pkgAllReceived(phone, totalPkgNum)){
                     // 合并所有包 并解析
-                    res = handlePackage(jt808Helper.allPkg(phone, totalPkgNum));
+                    byte[] allPkgData = jt808Helper.allPkg(phone, totalPkgNum);
+                    if (allPkgData != null) {
+                        res = handlePackage(allPkgData);
+                    }
                 }else{
                     // 没有全部收到 需要补传 最初一包的流水号
                     byte[] originStreamNum = null;
@@ -146,20 +151,22 @@ public class HandlerWrapper {
                     // 补传数量
                     byte num = 0;
                     Map<Integer,byte[]> map = cacheService.getPackages(phone);
-                    for(int i = 1;i<=totalPkgNum;i++){
-                        if(originStreamNum == null){
-                            if (isVersion2019) {
-                                originStreamNum = byteArrHelper.subByte(map.get(1), 15, 17);
-                            } else {
-                                originStreamNum = byteArrHelper.subByte(map.get(1), 10, 12);
+                    if (map != null) {
+                        for(int i = 1;i<=totalPkgNum;i++){
+                            if(originStreamNum == null){
+                                if (isVersion2019) {
+                                    originStreamNum = byteArrHelper.subByte(map.get(1), 15, 17);
+                                } else {
+                                    originStreamNum = byteArrHelper.subByte(map.get(1), 10, 12);
+                                }
                             }
-                        }
-                        if(!map.containsKey(i)){
-                            num++;
-                            if (isVersion2019) {
-                                idList = byteArrHelper.union(idList, byteArrHelper.subByte(map.get(i), 19, 21));
-                            } else {
-                                idList = byteArrHelper.union(idList, byteArrHelper.subByte(map.get(i), 14, 16));
+                            if(!map.containsKey(i)){
+                                num++;
+                                if (isVersion2019) {
+                                    idList = byteArrHelper.union(idList, byteArrHelper.subByte(map.get(i), 19, 21));
+                                } else {
+                                    idList = byteArrHelper.union(idList, byteArrHelper.subByte(map.get(i), 14, 16));
+                                }
                             }
                         }
                     }
