@@ -7,9 +7,12 @@
 
 ## 版本特性
 
-### 20201027 v1.3.2
+### 20201027 v1.3.2 v1.3.2-jdk1.8
 
-- :construction: 精简部分重复代码（尚未测试）
+- :hammer: 将消息包流水号 分配给各个连接处理
+- :bug: 修复内置缓存内存泄露的风险
+- :bug: 修复分包消息处理问题
+- :construction: 精简部分重复代码
 
 ### 20201004 v1.3.1 v1.3.1-jdk1.8
 
@@ -45,7 +48,7 @@
 
 ## 版本升级
 
-### 1.2.x 升级 1.3.1
+### 1.2.x 升级 1.3.2
 
 `DataService` 接口有变动，重新实现 `terminalLocation`、`mediaPackage` 两个方法即可。
 
@@ -67,7 +70,7 @@
 <dependency>
     <groupId>com.zhoyq</groupId>
     <artifactId>spring-boot-starter-jt808</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 ```
 
@@ -190,6 +193,8 @@ public class TestController {
 ## 致谢
 
 - 感谢 [B站网友 果子狸猫么么](https://space.bilibili.com/30198711) 反馈的功能性BUG
+- 感谢 [GITHUB网友 大黄蜂coder](https://github.com/bigbeef) 反馈的BUG
+- 感谢 [GITEE网友 杨顾](https://gitee.com/andy_yanggu) 反馈的修改意见和BUG
 
 ## 授权
 
