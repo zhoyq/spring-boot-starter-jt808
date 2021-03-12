@@ -39,24 +39,11 @@ import java.util.Map;
 public class Jt808Helper {
     private ByteArrHelper byteArrHelper;
     private CacheService cacheService;
+    private ResHelper resHelper;
 
     /* ===================================
        = 协议内一般工具
      * =================================== */
-
-    /**
-     * 平台流水号
-     */
-    private static int PLAT_STREAM_NUM = 1;
-
-    public synchronized int getPlatStreamNum(){
-        return PLAT_STREAM_NUM++;
-    }
-    public synchronized int getPkgPlatStreamNum(int j){
-        int buf = PLAT_STREAM_NUM;
-        PLAT_STREAM_NUM = PLAT_STREAM_NUM+j;
-        return buf;
-    }
 
     /**
      * 获取消息体长度
@@ -211,7 +198,7 @@ public class Jt808Helper {
         }
 
         // 平台流水号 直接获取对应包数量的流水号
-        int streamNum = getPkgPlatStreamNum(pkgCount);
+        int streamNum = resHelper.getPkgPlatStreamNum(phoneNum, pkgCount);
         // 存储下发数据
         String phone = byteArrHelper.toHexString(phoneNum);
         Map<Integer, byte[]> sentPackages = cacheService.getSentPackages(phone);
@@ -304,7 +291,7 @@ public class Jt808Helper {
         }
 
         // 平台流水号 直接获取对应包数量的流水号
-        int streamNum = getPkgPlatStreamNum(pkgCount);
+        int streamNum = resHelper.getPkgPlatStreamNum(phoneNum, pkgCount);
 
         // 存储下发数据
         String phone = byteArrHelper.toHexString(phoneNum);

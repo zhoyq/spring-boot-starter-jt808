@@ -21,8 +21,10 @@ package com.zhoyq.server.jt808.starter.config;
  * @date 2020/2/16
  */
 public class Const {
+    public final static String PLATFORM_STREAM_NUMBER = "platformStreamNumber";
+
     public final static String TCP = "tcp";
-    public static final String USE_MINA = "mina";
+    public final static String USE_MINA = "mina";
 
     public final static String TERMINAL_REG_HAS_VEHICLE = "0000001";
     public final static String TERMINAL_REG_NO_VEHICLE = "0000002";

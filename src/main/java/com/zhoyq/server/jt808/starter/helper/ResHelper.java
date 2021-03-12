@@ -15,9 +15,14 @@
 
 package com.zhoyq.server.jt808.starter.helper;
 
+import com.zhoyq.server.jt808.starter.config.Const;
+import com.zhoyq.server.jt808.starter.core.SessionManagement;
 import com.zhoyq.server.jt808.starter.dto.*;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.AttributeKey;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.session.IoSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +41,48 @@ import java.util.List;
 public class ResHelper {
 
     private ByteArrHelper byteArrHelper;
-    private Jt808Helper jt808Helper;
+    private SessionManagement sessionManagement;
+
+    /**
+     * 获取 平台 流水号
+     * @param phoneNum 卡号
+     */
+    public int getPlatStreamNum(byte[] phoneNum) {
+        return getPkgPlatStreamNum(phoneNum, 1);
+    }
+
+    /**
+     * 获取 平台 流水号
+     * @param phoneNum 卡号
+     */
+    public int getPkgPlatStreamNum(byte[] phoneNum, int number) {
+        String phone = byteArrHelper.toHexString(phoneNum);
+        Object session = sessionManagement.get(phone);
+
+        if (session == null) {
+            return 0;
+        }
+
+        int ret = 0;
+
+        if (session instanceof IoSession) {
+            IoSession ioSession = (IoSession)session;
+            Object streamNumber = ioSession.getAttribute(Const.PLATFORM_STREAM_NUMBER);
+            if (streamNumber != null) {
+                ret = (int)streamNumber;
+            }
+            ioSession.setAttribute(Const.PLATFORM_STREAM_NUMBER, ret + number);
+        } else if (session instanceof ChannelHandlerContext ){
+            ChannelHandlerContext ctx = (ChannelHandlerContext)session;
+            Object streamNumber = ctx.channel().attr(AttributeKey.valueOf(Const.PLATFORM_STREAM_NUMBER)).get();
+            if (streamNumber != null) {
+                ret = (int)streamNumber;
+            }
+            ctx.channel().attr(AttributeKey.valueOf(Const.PLATFORM_STREAM_NUMBER)).set(ret + number);
+        }
+
+        return ret;
+    }
 
     /**
      * 包装返回值
@@ -45,7 +91,7 @@ public class ResHelper {
      * @return 返回值
      */
     public byte[] warp (byte[] msgId, byte[] phoneNum) {
-        int platStreamNum = jt808Helper.getPlatStreamNum();
+        int platStreamNum = getPlatStreamNum(phoneNum);
         if (phoneNum.length == 10) {
             // 2019
             return byteArrHelper.union(
@@ -74,7 +120,7 @@ public class ResHelper {
      */
     public byte[] warp (byte[] msgId, byte[] phoneNum, byte[] msgBody) {
         int bodyLen = msgBody.length;
-        int platStreamNum = jt808Helper.getPlatStreamNum();
+        int platStreamNum = getPlatStreamNum(phoneNum);
         if (phoneNum.length == 10) {
             // 2019
             return byteArrHelper.union(

@@ -7,6 +7,8 @@ import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.CacheService;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 import org.apache.mina.core.session.IoSession;
 import org.springframework.stereotype.Component;
 
@@ -87,8 +89,11 @@ public class HandlerWrapper {
 
     public void handleSession(IoSession session) {
         // 相同身份的终端建立链接 原链接需要断开 也就是加入之前需要判断是否存在终端 存在关闭后在加入
+        // 平台流水号 绑定到 session 一直增加即可
+        int platStreamNumber = 0;
         if(sessionManagement.contains(phone)){
             IoSession preSession = (IoSession) sessionManagement.get(phone);
+            platStreamNumber = (int)preSession.getAttribute(Const.PLATFORM_STREAM_NUMBER);
             if (preSession.getId() != session.getId()) {
                 preSession.closeNow();
             }
@@ -96,12 +101,16 @@ public class HandlerWrapper {
 
         // session 加入会话缓存
         sessionManagement.set(phone, session);
+        session.setAttribute(phone, platStreamNumber);
     }
 
     public void handleSession(ChannelHandlerContext ctx) {
         // 相同身份的终端建立链接 原链接需要断开 也就是加入之前需要判断是否存在终端 存在关闭后在加入
+        // 平台流水号 绑定到 session 一直增加即可
+        int platStreamNumber = 0;
         if(sessionManagement.contains(phone)){
             ChannelHandlerContext preSession = (ChannelHandlerContext)sessionManagement.get(phone);
+            platStreamNumber = (int)preSession.channel().attr(AttributeKey.valueOf(Const.PLATFORM_STREAM_NUMBER)).get();
             if (!preSession.name().equals(ctx.name())) {
                 preSession.close();
             }
@@ -109,6 +118,7 @@ public class HandlerWrapper {
 
         // session 加入会话缓存
         sessionManagement.set(phone, ctx);
+        ctx.channel().attr(AttributeKey.valueOf(Const.PLATFORM_STREAM_NUMBER)).set(platStreamNumber);
     }
 
     /**
