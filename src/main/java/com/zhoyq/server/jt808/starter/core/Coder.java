@@ -23,10 +23,12 @@ public class Coder {
      * 含标识位
      */
     private static final int MSG_MIN_LEN = 15;
+    private static final int MSG_MIN_LEN_2019 = 20;
     /**
      * 含标识位
      */
     private static final int MEG_MIN_LEN_WITH_PKG = 19;
+    private static final int MEG_MIN_LEN_WITH_PKG_2019 = 24;
     private static final int MAX_READ_LEN = 1024 * 10;
 
     /**
@@ -92,12 +94,21 @@ public class Coder {
                 // 校验成功 检查 长度 并输出到下一步操作
                 byte[] body = byteArrHelper.subByte(packageBuf, 2, 4);
                 int sizeBuf = jt808Helper.getMsgBodyLength(body);
+                boolean version2019 = jt808Helper.isVersion2019(body);
                 boolean b = jt808Helper.hasPackage(body);
                 int size;
                 if(b){
-                    size = sizeBuf + MEG_MIN_LEN_WITH_PKG - 2;
+                    if (version2019) {
+                        size = sizeBuf + MEG_MIN_LEN_WITH_PKG_2019 - 2;
+                    } else {
+                        size = sizeBuf + MEG_MIN_LEN_WITH_PKG - 2;
+                    }
                 }else{
-                    size = sizeBuf + MSG_MIN_LEN - 2;
+                    if (version2019) {
+                        size = sizeBuf + MSG_MIN_LEN_2019 - 2;
+                    } else {
+                        size = sizeBuf + MSG_MIN_LEN - 2;
+                    }
                 }
 
                 // 检查长度

@@ -25,7 +25,6 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.AttributeKey;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -43,7 +42,6 @@ import java.util.List;
  * @date 2020/2/17
  */
 @Slf4j
-@Component
 @AllArgsConstructor
 public class Jt808NettyDecoder extends MessageToMessageDecoder<ByteBuf> {
     private static final AttributeKey<ByteBuf> BUFFER = AttributeKey.valueOf("buffer");

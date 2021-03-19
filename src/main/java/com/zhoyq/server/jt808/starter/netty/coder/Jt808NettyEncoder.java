@@ -20,7 +20,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -28,7 +27,6 @@ import java.util.List;
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2020/2/17
  */
-@Component
 @AllArgsConstructor
 public class Jt808NettyEncoder extends MessageToMessageEncoder<byte[]> {
 

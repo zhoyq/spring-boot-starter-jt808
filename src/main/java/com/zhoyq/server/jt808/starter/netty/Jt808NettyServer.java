@@ -17,6 +17,9 @@ package com.zhoyq.server.jt808.starter.netty;
 
 import com.zhoyq.server.jt808.starter.config.Const;
 import com.zhoyq.server.jt808.starter.config.Jt808Config;
+import com.zhoyq.server.jt808.starter.core.BufferWrapper;
+import com.zhoyq.server.jt808.starter.core.Coder;
+import com.zhoyq.server.jt808.starter.core.HandlerWrapper;
 import com.zhoyq.server.jt808.starter.core.Jt808Server;
 import com.zhoyq.server.jt808.starter.netty.coder.Jt808NettyDecoder;
 import com.zhoyq.server.jt808.starter.netty.coder.Jt808NettyEncoder;
@@ -45,9 +48,9 @@ public class Jt808NettyServer implements Jt808Server {
     private static EventLoopGroup slaveGroup;
 
     private Jt808Config jt808Config;
-    private NettySessionHandler handler;
-    private Jt808NettyEncoder encoder;
-    private Jt808NettyDecoder decoder;
+    private HandlerWrapper handlerWrapper;
+    private BufferWrapper bufferWrapper;
+    private Coder coder;
 
     @Override
     public boolean start() {
@@ -69,9 +72,9 @@ public class Jt808NettyServer implements Jt808Server {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            socketChannel.pipeline().addLast(encoder);
-                            socketChannel.pipeline().addLast(decoder);
-                            socketChannel.pipeline().addLast(handler);
+                            socketChannel.pipeline().addLast(new Jt808NettyEncoder(coder));
+                            socketChannel.pipeline().addLast(new Jt808NettyDecoder(coder, bufferWrapper));
+                            socketChannel.pipeline().addLast(new NettySessionHandler(handlerWrapper));
                         }
                     })
                     .childOption(ChannelOption.TCP_NODELAY, jt808Config.getTcpNoDelay())
@@ -89,9 +92,9 @@ public class Jt808NettyServer implements Jt808Server {
                     .handler(new ChannelInitializer<NioDatagramChannel>() {
                         @Override
                         protected void initChannel(NioDatagramChannel channel) throws Exception {
-                            channel.pipeline().addLast(encoder);
-                            channel.pipeline().addLast(decoder);
-                            channel.pipeline().addLast(handler);
+                            channel.pipeline().addLast(new Jt808NettyEncoder(coder));
+                            channel.pipeline().addLast(new Jt808NettyDecoder(coder, bufferWrapper));
+                            channel.pipeline().addLast(new NettySessionHandler(handlerWrapper));
                         }
                     });
 

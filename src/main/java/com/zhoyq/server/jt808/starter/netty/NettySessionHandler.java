@@ -20,7 +20,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
@@ -29,7 +28,6 @@ import java.util.Arrays;
  * @date 2020/2/17
  */
 @Slf4j
-@Component
 @AllArgsConstructor
 public class NettySessionHandler extends ChannelInboundHandlerAdapter {
     private HandlerWrapper handlerWrapper;
