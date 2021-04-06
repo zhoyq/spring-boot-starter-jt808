@@ -193,7 +193,7 @@ public class TestController {
 ### 程序更新规则是怎么样的？
 
 目前的规则就是按照版本滚动更新，旧版本（包含发布版本）不会提供升级补丁或者更新pr，作者升级会考虑兼容性，也会给出解决方案，
-所以还是手动升级到最新版本比较好。另外，新的PR可以提交到 `devekop` 分支 ( 如果能提交到 [github](https://github.com/zhoyq/spring-boot-starter-jt808/tree/develop) 就更好了 )，其他分支（已经固定）暂时不接受 `PR` 提交。
+所以还是手动升级到最新版本比较好。另外，新的PR可以提交到 `develop` 分支 ( 如果能提交到 [github](https://github.com/zhoyq/spring-boot-starter-jt808/tree/develop) 就更好了 )，其他分支（已经固定）暂时不接受 `PR` 提交。
 
 ## 致谢
 
