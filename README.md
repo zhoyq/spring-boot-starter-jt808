@@ -160,7 +160,7 @@ public class HeartbeatPackHandler implements PackHandler {
 
 ## FAQ
 
-1. 我下载了最小化程序并启动但是发送定位信息却没有反应？
+### 我下载了最小化程序并启动但是发送定位信息却没有反应？
 
 答：首先，程序本身实现了鉴权逻辑，在没有进行终端注册和鉴权的情况下只接受这两个消息，并且返回失败应答；
 其次，第一次进行终端注册的时候，会调用 `DataService.terminalRegister` 进行终端注册，此时返回的字符串就是鉴权码，
@@ -169,7 +169,7 @@ public class HeartbeatPackHandler implements PackHandler {
 最后，我在 `1.2.4` 版本之后加入了权限控制可选配置 `auth` 和 `authMagId` 选项，`auth` 代表是否检查权限，`authMsgId` 代表
 权限开启时，可以不需要权限就访问的消息ID。这样就可以自己控制需要的权限了。
 
-2. 我启动了程序，如何下发指令呢？
+### 我启动了程序，如何下发指令呢？
 
 ```java
 // ...
@@ -189,6 +189,11 @@ public class TestController {
     }
 }
 ```
+
+### 程序更新规则是怎么样的？
+
+目前的规则就是按照版本滚动更新，旧版本（包含发布版本）不会提供升级补丁或者更新pr，作者升级会考虑兼容性，也会给出解决方案，
+所以还是手动升级到最新版本比较好。另外，新的PR可以提交到 `devekop` 分支 ( 如果能提交到 [github](https://github.com/zhoyq/spring-boot-starter-jt808/tree/develop) 就更好了 )，其他分支（已经固定）暂时不接受 `PR` 提交。
 
 ## 致谢
 
