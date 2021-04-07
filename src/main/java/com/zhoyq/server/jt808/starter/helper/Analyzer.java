@@ -290,10 +290,13 @@ public class Analyzer {
         // 版本信息
         int ver = 0;
 
-        if(phoneNum.length == 10){
+        if(phoneNum.length == Const.NUMBER_10){
             ver = Const.YEAR_2019;
         } else {
-            if(data[0] == Const.NUMBER_1 || data[0] == Const.NUMBER_2 ){
+            // 拔卡 没有信息 只有7字节消息
+            if(data[Const.NUMBER_0] == Const.NUMBER_2 && data.length == Const.NUMBER_7){
+                ver = Const.YEAR_2013;
+            } else if(data[Const.NUMBER_0] == Const.NUMBER_1 && data.length >= Const.NUMBER_8){
                 if( data[Const.NUMBER_7] == Const.NUMBER_0 ) {
                     // 这里需要通过解析消息长度判断版本
                     int len2011 = 0, len2013 = 0;

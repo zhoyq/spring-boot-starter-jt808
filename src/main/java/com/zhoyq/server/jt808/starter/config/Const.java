@@ -49,6 +49,8 @@ public class Const {
     public final static int NUMBER_4 = 4;
     public final static int NUMBER_7 = 7;
     public final static int NUMBER_8 = 8;
+    public final static int NUMBER_9 = 9;
+    public final static int NUMBER_10 = 10;
 
     public final static int YEAR_2011 = 2011;
     public final static int YEAR_2013 = 2013;

@@ -48,11 +48,6 @@ public class Handler0x0702 implements PackHandler {
 
         String phone = byteArrHelper.toHexString(phoneNum);
 
-        if(msgBody.length < 8){
-            log.warn("{} data length is too short!", phone);
-            return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
-        }
-
         DriverInfo driverInfo = analyzer.analyzeDriver(phoneNum, msgBody);
         // 如果等于空 则解析错误 直接返回失败应答
         if (driverInfo == null) {
