@@ -394,6 +394,11 @@ public class Analyzer {
 
         driverInfo.setDatetime(gTime);
 
+        // 拔卡则不再继续解析
+        if(driverInfo.getDriverAlarmInfo().isPullOutCard()){
+            return driverInfo;
+        }
+
         switch (data[7]){
             case 0x00:
                 // IC 卡读卡成功 读取驾驶员信息
@@ -453,15 +458,20 @@ public class Analyzer {
             // 驾驶员上班 卡插入
             driverInfo.getDriverAlarmInfo().setPullOutCard(false);
         }else if(data[0] == Const.NUMBER_2){
-            // 驾驶员下班 卡拔出
+            // 驾驶员下班 卡拔出 没有其他信息
             driverInfo.getDriverAlarmInfo().setPullOutCard(true);
         }else{
-            // 2013 第一个字节 不支持其他形式
+            // 2019 第一个字节 不支持其他形式
             return null;
         }
         String gTime = jt808Helper.getDataTime(byteArrHelper.subByte(data,1,7));
 
         driverInfo.setDatetime(gTime);
+
+        // 拔卡则不再继续解析
+        if(driverInfo.getDriverAlarmInfo().isPullOutCard()){
+            return driverInfo;
+        }
 
         switch (data[7]){
             case 0x00:
