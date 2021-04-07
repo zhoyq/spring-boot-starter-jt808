@@ -27,8 +27,8 @@ public class Coder {
     /**
      * 含标识位
      */
-    private static final int MEG_MIN_LEN_WITH_PKG = 19;
-    private static final int MEG_MIN_LEN_WITH_PKG_2019 = 24;
+    private static final int MSG_MIN_LEN_WITH_PKG = 19;
+    private static final int MSG_MIN_LEN_WITH_PKG_2019 = 24;
     private static final int MAX_READ_LEN = 1024 * 10;
 
     /**
@@ -99,9 +99,9 @@ public class Coder {
                 int size;
                 if(b){
                     if (version2019) {
-                        size = sizeBuf + MEG_MIN_LEN_WITH_PKG_2019 - 2;
+                        size = sizeBuf + MSG_MIN_LEN_WITH_PKG_2019 - 2;
                     } else {
-                        size = sizeBuf + MEG_MIN_LEN_WITH_PKG - 2;
+                        size = sizeBuf + MSG_MIN_LEN_WITH_PKG - 2;
                     }
                 }else{
                     if (version2019) {
@@ -115,6 +115,7 @@ public class Coder {
                 if(size == packageBuf.length) {
                     // 长度符合 输出
                     log.info("handle data : {}", byteArrHelper.toHexString(packageBuf));
+                    // 带有校验位的完整消息
                     wrapper.write(packageBuf);
                     return wrapper.remaining() > 0;
                 }
