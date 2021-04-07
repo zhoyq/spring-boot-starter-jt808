@@ -23,7 +23,6 @@ import io.netty.util.AttributeKey;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.session.IoSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
@@ -47,15 +46,16 @@ public class ResHelper {
      * 获取 平台 流水号
      * @param phoneNum 卡号
      */
-    public int getPlatStreamNum(byte[] phoneNum) {
+    private int getPlatStreamNum(byte[] phoneNum) {
         return getPkgPlatStreamNum(phoneNum, 1);
     }
 
     /**
      * 获取 平台 流水号
      * @param phoneNum 卡号
+     * @param number 获取数量
      */
-    public int getPkgPlatStreamNum(byte[] phoneNum, int number) {
+    private int getPkgPlatStreamNum(byte[] phoneNum, int number) {
         String phone = byteArrHelper.toHexString(phoneNum);
         Object session = sessionManagement.get(phone);
 
@@ -90,7 +90,7 @@ public class ResHelper {
      * @param phoneNum 电话
      * @return 返回值
      */
-    public byte[] warp (byte[] msgId, byte[] phoneNum) {
+    private byte[] warp (byte[] msgId, byte[] phoneNum) {
         int platStreamNum = getPlatStreamNum(phoneNum);
         if (phoneNum.length == 10) {
             // 2019
@@ -118,7 +118,7 @@ public class ResHelper {
      * @param msgBody 消息体
      * @return 返回值
      */
-    public byte[] warp (byte[] msgId, byte[] phoneNum, byte[] msgBody) {
+    private byte[] warp (byte[] msgId, byte[] phoneNum, byte[] msgBody) {
         int bodyLen = msgBody.length;
         int platStreamNum = getPlatStreamNum(phoneNum);
         if (phoneNum.length == 10) {
@@ -156,6 +156,7 @@ public class ResHelper {
                 phoneNum,
                 byteArrHelper.union(terminalStreamNum, terminalMsgId, new byte[]{by}));
     }
+
     /**
      * 0x8003 补传分包请求
      * @param phoneNum           sim卡号
@@ -171,6 +172,24 @@ public class ResHelper {
                 byteArrHelper.union(originStreamNum, new byte[]{num}, idList)
         );
     }
+
+    /**
+     * v2019 新增
+     * 0x8004 查询服务器时间应答
+     * @param phoneNum 卡号
+     * @return 返回值
+     */
+    public byte[] queryServerDateTime(byte[] phoneNum) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
+        String timeHex = sdf.format(new Date(System.currentTimeMillis()));
+        byte[] timeBytes = byteArrHelper.hexStr2bytes(timeHex);
+        return warp(
+                new byte[]{(byte)0x80, 0x04},
+                phoneNum,
+                timeBytes
+        );
+    }
+
     /**
      * 0x8100 终端注册应答
      * @param phoneNum  电话号码
@@ -199,6 +218,7 @@ public class ResHelper {
                 byteArrHelper.union(terminalStreamNum, e)
         );
     }
+
     /**
      * 0x8103 设置终端参数
      * @param phoneNum SIM卡号
@@ -219,6 +239,7 @@ public class ResHelper {
                 buf
         );
     }
+
     /**
      * 0x8104 查询所有终端参数
      * @param phoneNum       电话号码
@@ -230,6 +251,7 @@ public class ResHelper {
                 phoneNum
         );
     }
+
     /**
      * 0x8105 终端控制
      * @param phoneNum       电话号码
@@ -265,6 +287,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{num}, parameters)
         );
     }
+
     /**
      * 0x8107 查询终端属性
      * @param phoneNum 电话号码
@@ -276,6 +299,7 @@ public class ResHelper {
                 phoneNum
         );
     }
+
     /**
      * 0x8108 下发终端升级包
      * @param phoneNum 电话号码
@@ -295,6 +319,7 @@ public class ResHelper {
                         tup.getData())
         );
     }
+
     /**
      * 0x8201 位置信息查询
      * @param phoneNum 电话号码
@@ -306,6 +331,7 @@ public class ResHelper {
                 phoneNum
         );
     }
+
     /**
      * 0x8202 临时位置跟踪
      * @param phoneNum 电话号码
@@ -320,6 +346,7 @@ public class ResHelper {
                 byteArrHelper.union(space, date)
         );
     }
+
     /**
      * 0x8203 人工确认报警消息
      * @param phoneNum 电话号码
@@ -334,14 +361,17 @@ public class ResHelper {
                 byteArrHelper.union(alarmStreamNum, alarmType)
         );
     }
+
     /**
      * 0x8300 文本信息下发
+     * 注意：由于2019版本增加了一个文本类型，所以在下发时会根据 phoneNum 长度判断版本封装 消息体
      * @param phoneNum 电话号码
      * @param sign 标识位
-     * @param text 文本 最长1024字节 需自己控制长度
+     * @param type 文本类型
+     * @param text 文本信息 最长1024字节 需自己控制长度
      * @return 返回值
      */
-    public byte[] sentTextInfo(byte[] phoneNum, byte sign, String text){
+    public byte[] sentTextInfo(byte[] phoneNum, byte sign, byte type, String text){
         byte[] str;
         try {
             str = text.getBytes("GBK");
@@ -352,9 +382,10 @@ public class ResHelper {
         return warp(
                 new byte[]{(byte) 0x83, 0x00},
                 phoneNum,
-                byteArrHelper.union(new byte[]{sign}, str)
+                phoneNum.length == 10 ? byteArrHelper.union(new byte[]{sign, type}, str) : byteArrHelper.union(new byte[]{sign}, str)
         );
     }
+
     /**
      * 0x8301 事件设置
      * @param phoneNum      电话号码
@@ -375,6 +406,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{type, num}, buf)
         );
     }
+
     /**
      * 0x8302 提问下发
      * @param phoneNum      电话号码
@@ -403,6 +435,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{sign, length}, ques, buf)
         );
     }
+
     /**
      * 0x8303 信息点播菜单设置
      * @param phoneNum       电话号码
@@ -423,6 +456,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{type, num}, buf)
         );
     }
+
     /**
      * 0x8304 信息服务
      * @param phoneNum      电话号码
@@ -445,6 +479,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{type}, length, str)
         );
     }
+
     /**
      * 0x8400 电话回拨
      * @param phoneNum        卡号
@@ -466,6 +501,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{sign}, str)
         );
     }
+
     /**
      * 0x8401 设置电话本
      * @param phoneNum      卡号
@@ -488,19 +524,25 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{type, num}, buf)
         );
     }
+
     /**
      * 0x8500 车辆控制
+     * 注意：2019版本 增加参数 会按照号码长度判断发送
      * @param phoneNum       卡号
-     * @param controllSign   控制标识
+     * @param controlTypeNum   控制类型数量 2019版本
+     * @param controlType   控制类型 2019版本
+     * @param controlSign   控制标识 2011、2013版本
      * @return 返回值
      */
-    public byte[] vehicleControll(byte[] phoneNum,byte controllSign){
+    public byte[] vehicleControl(byte[] phoneNum,int controlTypeNum, byte[] controlType, byte controlSign){
+        byte[] controlTypeNumber = byteArrHelper.int2twobytes(controlTypeNum);
         return warp(
                 new byte[]{(byte) 0x85,0x00},
                 phoneNum,
-                new byte[]{controllSign}
+                phoneNum.length == 10 ? byteArrHelper.union(controlTypeNumber, controlType) : new byte[]{controlSign}
         );
     }
+
     /**
      * 0x8600 设置圆形区域
      * @param phoneNum        卡号
@@ -520,6 +562,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{prop, num}, buf)
         );
     }
+
     /**
      * 0x8601 删除圆形区域
      * @param phoneNum       卡号
@@ -534,6 +577,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{areaNum}, areaIds)
         );
     }
+
     /**
      * 0x8602 设置矩形区域
      * @param phoneNum 卡号
@@ -553,6 +597,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{prop, num}, buf)
         );
     }
+
     /**
      * 0x8603 删除矩形区域
      * @param phoneNum 卡号
@@ -567,6 +612,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{num}, areaIds)
         );
     }
+
     /**
      * 0x8604 设置多边形区域
      * @param phoneNum 卡号
@@ -584,6 +630,7 @@ public class ResHelper {
                 buf
         );
     }
+
     /**
      * 0x8605 删除多边形区域
      * @param phoneNum 卡号
@@ -598,6 +645,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{num}, areaIds)
         );
     }
+
     /**
      * 0x8606 设置路线
      * @param phoneNum 卡号
@@ -616,6 +664,7 @@ public class ResHelper {
                 buf
         );
     }
+
     /**
      * 0x8607 删除路线
      * @param phoneNum 卡号
@@ -630,6 +679,24 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{num}, areaIds)
         );
     }
+
+    /**
+     * v2019
+     * 0x8608 查询区域或者线路数据
+     * @param phoneNum 卡号
+     * @param searchType 查询类型
+     * @param searchNum 查询数量
+     * @param searchIds 查询ID列表
+     * @return 返回值
+     */
+    public byte[] searchAreaOrRoute(byte[] phoneNum,byte searchType,byte[] searchNum,byte[] searchIds){
+        return warp(
+                new byte[]{(byte) 0x86,0x08},
+                phoneNum,
+                byteArrHelper.union(new byte[]{searchType}, searchNum, searchIds)
+        );
+    }
+
     /**
      * 0x8700 行驶记录采集命令
      * @param phoneNum       电话号码
@@ -644,6 +711,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{comm}, data)
         );
     }
+
     /**
      * 0x8701 行驶记录参数下传
      * @param phoneNum 卡号
@@ -658,6 +726,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{comm}, data)
         );
     }
+
     /**
      * 0x8702 驾驶员身份信息上报
      * @param phoneNum 卡号
@@ -669,6 +738,7 @@ public class ResHelper {
                 phoneNum
         );
     }
+
     /**
      * 0x8800 多媒体上传应答
      * @param phoneNum 卡号
@@ -684,6 +754,7 @@ public class ResHelper {
                 byteArrHelper.union(mediaId, new byte[]{pkgNum}, pkgIds)
         );
     }
+
     /**
      * 0x8801 摄像头立即拍摄
      * @param phoneNum 卡号
@@ -703,6 +774,7 @@ public class ResHelper {
                                 info.getContrast(),info.getSaturation(),info.getTone()})
         );
     }
+
     /**
      * 0x8802 存储多媒体检索
      * @param phoneNum 卡号
@@ -716,6 +788,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{s.getType(),s.getRouteId(),s.getEventCode()}, s.getBeginTime(), s.getEndTime())
         );
     }
+
     /**
      * 0x8803 存储多媒体上传
      * @param phoneNum 卡号
@@ -733,6 +806,7 @@ public class ResHelper {
                         new byte[]{s.getDelSign()})
         );
     }
+
     /**
      * 0x8804 录音开始命令
      * @param phoneNum 卡号
@@ -749,6 +823,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{comm}, recordTime, new byte[]{saveSign,audioSamplingRate})
         );
     }
+
     /**
      * 0x8805 单条存储多媒体信息检索上传
      * @param phoneNum 卡号
@@ -763,6 +838,7 @@ public class ResHelper {
                 byteArrHelper.union(id, new byte[]{delSign})
         );
     }
+
     /**
      * 0x8900 数据下行透传
      * @param phoneNum 卡号
@@ -777,6 +853,7 @@ public class ResHelper {
                 byteArrHelper.union(new byte[]{type}, data)
         );
     }
+
     /**
      * 0x8A00 平台RSA公钥
      * @param phoneNum 卡号
@@ -789,23 +866,6 @@ public class ResHelper {
                 new byte[]{(byte) 0x8A,0x00},
                 phoneNum,
                 byteArrHelper.union(p1, p2)
-        );
-    }
-
-    /**
-     * v2019 新增
-     * 0x8004 查询服务器时间应答
-     * @param phoneNum 卡号
-     * @return 返回值
-     */
-    public byte[] queryServerDateTime(byte[] phoneNum) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
-        String timeHex = sdf.format(new Date(System.currentTimeMillis()));
-        byte[] timeBytes = byteArrHelper.hexStr2bytes(timeHex);
-        return warp(
-                new byte[]{(byte)0x80, 0x04},
-                phoneNum,
-                timeBytes
         );
     }
 }
