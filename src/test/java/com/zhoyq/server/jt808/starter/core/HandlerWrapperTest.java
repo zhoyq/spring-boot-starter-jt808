@@ -1,6 +1,7 @@
 package com.zhoyq.server.jt808.starter.core;
 
 import com.zhoyq.server.jt808.starter.config.Const;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -81,23 +82,17 @@ public class HandlerWrapperTest {
         }
         final byte[] streamNum = new byte[]{originData[offset++],originData[offset++]};
         int msgLen = 1024;
-//        if(originData.length > msgLen){
-//            // 超长的数据一定是分包合并后的数据 直接获取后边的数据即可 因为已经处理了尾部的校验位
-//
-//            // 过滤掉消息包封装项
-//            // 感谢 https://github.com/bigbeef 提交的建议
-//
-//            offset += 4;
-//            msgBody = subByte(originData, offset);
-//        }else{
-//            int bodyLength = originData.length-offset;
-//            msgBody = new byte[bodyLength];
-//            for(int i=0;i<msgBody.length;i++){
-//                msgBody[i] = originData[offset++];
-//            }
-//        }
-        msgBody = subByte(originData, offset);
+        if(originData.length > msgLen){
+            offset += 4;
+            msgBody = subByte(originData, offset);
+        }else{
+            int bodyLength = originData.length - 1 - offset;
+            msgBody = new byte[bodyLength];
+            for(int i=0;i<msgBody.length;i++){
+                msgBody[i] = originData[offset++];
+            }
+        }
 
-        System.out.println(toHexString(msgBody));
+        Assert.assertTrue("02210407104816".equals(toHexString(msgBody)));
     }
 }

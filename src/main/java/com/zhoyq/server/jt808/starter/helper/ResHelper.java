@@ -16,6 +16,7 @@
 package com.zhoyq.server.jt808.starter.helper;
 
 import com.zhoyq.server.jt808.starter.config.Const;
+import com.zhoyq.server.jt808.starter.constant.SendDataType;
 import com.zhoyq.server.jt808.starter.core.SessionManagement;
 import com.zhoyq.server.jt808.starter.dto.*;
 import io.netty.channel.ChannelHandlerContext;
@@ -55,7 +56,7 @@ public class ResHelper {
      * @param phoneNum 卡号
      * @param number 获取数量
      */
-    private int getPkgPlatStreamNum(byte[] phoneNum, int number) {
+    int getPkgPlatStreamNum(byte[] phoneNum, int number) {
         String phone = byteArrHelper.toHexString(phoneNum);
         Object session = sessionManagement.get(phone);
 
@@ -85,10 +86,10 @@ public class ResHelper {
     }
 
     /**
-     * 包装返回值
+     * 包装命令
      * @param msgId 消息ID
      * @param phoneNum 电话
-     * @return 返回值
+     * @return 命令
      */
     private byte[] warp (byte[] msgId, byte[] phoneNum) {
         int platStreamNum = getPlatStreamNum(phoneNum);
@@ -112,11 +113,11 @@ public class ResHelper {
     }
 
     /**
-     * 包装返回值
+     * 包装命令
      * @param msgId 消息ID
      * @param phoneNum 电话
      * @param msgBody 消息体
-     * @return 返回值
+     * @return 命令
      */
     private byte[] warp (byte[] msgId, byte[] phoneNum, byte[] msgBody) {
         int bodyLen = msgBody.length;
@@ -177,7 +178,7 @@ public class ResHelper {
      * v2019 新增
      * 0x8004 查询服务器时间应答
      * @param phoneNum 卡号
-     * @return 返回值
+     * @return 命令
      */
     public byte[] queryServerDateTime(byte[] phoneNum) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
@@ -224,7 +225,7 @@ public class ResHelper {
      * @param phoneNum SIM卡号
      * @param num 数量
      * @param list 列表
-     * @return 返回值
+     * @return 命令
      */
     public byte[] setTerminalParameters(byte[] phoneNum, byte num, List<Parameter> list){
         byte[] buf = new byte[]{num};
@@ -243,7 +244,7 @@ public class ResHelper {
     /**
      * 0x8104 查询所有终端参数
      * @param phoneNum       电话号码
-     * @return - 返回值
+     * @return - 命令
      */
     public byte[] searchTerminalParameters(byte[] phoneNum){
         return warp(
@@ -257,7 +258,7 @@ public class ResHelper {
      * @param phoneNum       电话号码
      * @param comm           命令字
      * @param value          参数
-     * @return 返回值
+     * @return 命令
      */
     public byte[] terminalControll(byte[] phoneNum,byte comm,byte[] value){
         byte[] answer;
@@ -278,7 +279,7 @@ public class ResHelper {
      * @param phoneNum      电话号码
      * @param num           参数总数
      * @param parameters    参数id列表
-     * @return 返回值
+     * @return 命令
      */
     public byte[] searchSpecifyTerminalParameters(byte[] phoneNum,byte num,byte[] parameters){
         return warp(
@@ -291,7 +292,7 @@ public class ResHelper {
     /**
      * 0x8107 查询终端属性
      * @param phoneNum 电话号码
-     * @return 返回值
+     * @return 命令
      */
     public byte[] searchTerminalProps(byte[] phoneNum){
         return warp(
@@ -304,7 +305,7 @@ public class ResHelper {
      * 0x8108 下发终端升级包
      * @param phoneNum 电话号码
      * @param tup 更新包
-     * @return 返回值
+     * @return 命令
      */
     public byte[] sentTerminalUpdatePkg(byte[] phoneNum ,TerminalUpdatePkg tup){
         return warp(
@@ -323,7 +324,7 @@ public class ResHelper {
     /**
      * 0x8201 位置信息查询
      * @param phoneNum 电话号码
-     * @return 返回值
+     * @return 命令
      */
     public byte[] searchLocationInfo(byte[] phoneNum){
         return warp(
@@ -337,7 +338,7 @@ public class ResHelper {
      * @param phoneNum 电话号码
      * @param space 时间间隔 s
      * @param date 有效期 s
-     * @return 返回值
+     * @return 命令
      */
     public byte[] temporaryLocationTrace(byte[] phoneNum,byte[] space,byte[] date){
         return warp(
@@ -352,7 +353,7 @@ public class ResHelper {
      * @param phoneNum 电话号码
      * @param alarmStreamNum 报警流水
      * @param alarmType 报警类型
-     * @return 返回值
+     * @return 命令
      */
     public byte[] makeSureAlarms(byte[] phoneNum,byte[] alarmStreamNum,byte[] alarmType){
         return warp(
@@ -369,7 +370,7 @@ public class ResHelper {
      * @param sign 标识位
      * @param type 文本类型
      * @param text 文本信息 最长1024字节 需自己控制长度
-     * @return 返回值
+     * @return 命令
      */
     public byte[] sentTextInfo(byte[] phoneNum, byte sign, byte type, String text){
         byte[] str;
@@ -392,7 +393,7 @@ public class ResHelper {
      * @param type          设置类型
      * @param num           事件总数
      * @param list          事件项列表
-     * @return 返回值
+     * @return 命令
      */
     public byte[] setEvent(byte[] phoneNum, byte type, byte num, List<Event> list){
         byte[] buf = new byte[]{};
@@ -414,7 +415,7 @@ public class ResHelper {
      * @param length        问题内容长度
      * @param question      问题
      * @param list          候选答案列表
-     * @return 返回值
+     * @return 命令
      */
     public byte[] sentQuestion(byte[] phoneNum, byte sign, byte length, String question, List<CandidateAnswer> list){
         byte[] ques;
@@ -442,7 +443,7 @@ public class ResHelper {
      * @param type           设置类型
      * @param num            信息项总数
      * @param list           信息项列表
-     * @return 返回值
+     * @return 命令
      */
     public byte[] setInfoOrderMenu(byte[] phoneNum, byte type, byte num, List<InfoForOrder> list){
         byte[] buf = new byte[]{};
@@ -463,7 +464,7 @@ public class ResHelper {
      * @param type          信息类型
      * @param length        信息长度
      * @param content       信息内容
-     * @return 返回值
+     * @return 命令
      */
     public byte[] InfoService(byte[] phoneNum, byte type, byte[] length, String content){
         byte[] str;
@@ -485,7 +486,7 @@ public class ResHelper {
      * @param phoneNum        卡号
      * @param sign            标识
      * @param tel             回拨电话
-     * @return 返回值
+     * @return 命令
      */
     public byte[] telephoneCallBack(byte[] phoneNum, byte sign, String tel){
         byte[] str;
@@ -508,7 +509,7 @@ public class ResHelper {
      * @param type          设置类型
      * @param num           联系人数量
      * @param list          联系人项
-     * @return 返回值
+     * @return 命令
      */
     public byte[] setTelBook(byte[] phoneNum, byte type, byte num, List<Contact> list){
         byte[] buf = new byte[]{};
@@ -532,7 +533,7 @@ public class ResHelper {
      * @param controlTypeNum   控制类型数量 2019版本
      * @param controlType   控制类型 2019版本
      * @param controlSign   控制标识 2011、2013版本
-     * @return 返回值
+     * @return 命令
      */
     public byte[] vehicleControl(byte[] phoneNum,int controlTypeNum, byte[] controlType, byte controlSign){
         byte[] controlTypeNumber = byteArrHelper.int2twobytes(controlTypeNum);
@@ -549,7 +550,7 @@ public class ResHelper {
      * @param prop            设置属性
      * @param num             区域总数
      * @param list            区域项
-     * @return 返回值
+     * @return 命令
      */
     public byte[] setCircleArea(byte[] phoneNum, byte prop, byte num, List<CircleArea> list){
         byte[] buf = new byte[]{};
@@ -568,7 +569,7 @@ public class ResHelper {
      * @param phoneNum       卡号
      * @param areaNum        区域数
      * @param areaIds        区域id列表
-     * @return 返回值
+     * @return 命令
      */
     public byte[] delCircleArea(byte[] phoneNum,byte areaNum,byte[] areaIds){
         return warp(
@@ -584,7 +585,7 @@ public class ResHelper {
      * @param prop 属性
      * @param num 数量
      * @param list 列表
-     * @return 返回值
+     * @return 命令
      */
     public byte[] setRectangleArea(byte[] phoneNum, byte prop, byte num, List<RectangleArea> list){
         byte[] buf = new byte[]{};
@@ -603,7 +604,7 @@ public class ResHelper {
      * @param phoneNum 卡号
      * @param num 数量
      * @param areaIds 区域ID
-     * @return 返回值
+     * @return 命令
      */
     public byte[] delRectangleArea(byte[] phoneNum,byte num,byte[] areaIds){
         return warp(
@@ -617,7 +618,7 @@ public class ResHelper {
      * 0x8604 设置多边形区域
      * @param phoneNum 卡号
      * @param p 多边形区域
-     * @return 返回值
+     * @return 命令
      */
     public byte[] setPolygonArea(byte[] phoneNum,PolygonArea p){
         byte[] buf = byteArrHelper.union(p.getId(), p.getProp(),p.getBeginTime(),p.getEndTime(),p.getHighestSpeed(),new byte[]{p.getOverSpeedTime()}, p.getPointNum());
@@ -636,7 +637,7 @@ public class ResHelper {
      * @param phoneNum 卡号
      * @param num 数量
      * @param areaIds 区域ID
-     * @return 返回值
+     * @return 命令
      */
     public byte[] delPolygonArea(byte[] phoneNum,byte num,byte[] areaIds){
         return warp(
@@ -650,7 +651,7 @@ public class ResHelper {
      * 0x8606 设置路线
      * @param phoneNum 卡号
      * @param route 线路
-     * @return 返回值
+     * @return 命令
      */
     public byte[] setRoute(byte[] phoneNum,Route route){
         byte[] buf = byteArrHelper.union(route.getId(), route.getProp(),route.getBeginTime(),route.getEndTime(),route.getPointNum());
@@ -670,7 +671,7 @@ public class ResHelper {
      * @param phoneNum 卡号
      * @param num 数量
      * @param areaIds 区域ID
-     * @return 返回值
+     * @return 命令
      */
     public byte[] delRoute(byte[] phoneNum,byte num,byte[] areaIds){
         return warp(
@@ -687,7 +688,7 @@ public class ResHelper {
      * @param searchType 查询类型
      * @param searchNum 查询数量
      * @param searchIds 查询ID列表
-     * @return 返回值
+     * @return 命令
      */
     public byte[] searchAreaOrRoute(byte[] phoneNum,byte searchType,byte[] searchNum,byte[] searchIds){
         return warp(
@@ -702,7 +703,7 @@ public class ResHelper {
      * @param phoneNum       电话号码
      * @param comm           命令字
      * @param data           GB/T 19056 相关规定
-     * @return 返回值
+     * @return 命令
      */
     public byte[] getDriveHistory(byte[] phoneNum,byte comm,byte[] data){
         return warp(
@@ -717,7 +718,7 @@ public class ResHelper {
      * @param phoneNum 卡号
      * @param comm 命令
      * @param data 数据
-     * @return 返回值
+     * @return 命令
      */
     public byte[] sentDriveHistory(byte[] phoneNum,byte comm,byte[] data){
         return warp(
@@ -730,7 +731,7 @@ public class ResHelper {
     /**
      * 0x8702 驾驶员身份信息上报
      * @param phoneNum 卡号
-     * @return 返回值
+     * @return 命令
      */
     public byte[] driverInfoUpload(byte[] phoneNum){
         return warp(
@@ -745,7 +746,7 @@ public class ResHelper {
      * @param mediaId 多媒体ID
      * @param pkgNum 包数量
      * @param pkgIds 包ID
-     * @return 返回值
+     * @return 命令
      */
     public byte[] mediaUploadAnswer(byte[] phoneNum,byte[] mediaId,byte pkgNum,byte[] pkgIds){
         return warp(
@@ -759,7 +760,7 @@ public class ResHelper {
      * 0x8801 摄像头立即拍摄
      * @param phoneNum 卡号
      * @param info 信息
-     * @return 返回值
+     * @return 命令
      */
     public byte[] cameraTakePhotoRightNow(byte[] phoneNum, CameraInfo info){
         return warp(
@@ -779,7 +780,7 @@ public class ResHelper {
      * 0x8802 存储多媒体检索
      * @param phoneNum 卡号
      * @param s 搜索信息
-     * @return 返回值
+     * @return 命令
      */
     public byte[] searchStoredMedia(byte[] phoneNum,SearchStoredMediaData s){
         return warp(
@@ -793,7 +794,7 @@ public class ResHelper {
      * 0x8803 存储多媒体上传
      * @param phoneNum 卡号
      * @param s 存储多媒体数据
-     * @return 返回值
+     * @return 命令
      */
     public byte[] storedMediaDataUpload(byte[] phoneNum,StoredMediaDataUpload s){
         return warp(
@@ -814,7 +815,7 @@ public class ResHelper {
      * @param recordTime 记录事件
      * @param saveSign 保存标识
      * @param audioSamplingRate 采样率
-     * @return 返回值
+     * @return 命令
      */
     public byte[] recordStart(byte[] phoneNum,byte comm,byte[] recordTime,byte saveSign,byte audioSamplingRate){
         return warp(
@@ -829,7 +830,7 @@ public class ResHelper {
      * @param phoneNum 卡号
      * @param id 唯一标识
      * @param delSign 删除标识
-     * @return 返回值
+     * @return 命令
      */
     public byte[] oneStoredMediaSearchAndUpload(byte[] phoneNum,byte[] id,byte delSign){
         return warp(
@@ -844,9 +845,9 @@ public class ResHelper {
      * @param phoneNum 卡号
      * @param type 类型
      * @param data 数据
-     * @return 返回值
+     * @return 命令
      */
-    public byte[] sentData(byte[] phoneNum,byte type,byte[] data){
+    public byte[] sentData(byte[] phoneNum, byte type, byte[] data){
         return warp(
                 new byte[]{(byte) 0x89,0x00},
                 phoneNum,
@@ -855,11 +856,22 @@ public class ResHelper {
     }
 
     /**
+     * 0x8900 数据下行透传
+     * @param phoneNum 卡号
+     * @param type 类型 {@link SendDataType}
+     * @param data 数据
+     * @return 命令
+     */
+    public byte[] sentData(byte[] phoneNum, SendDataType type, byte[] data){
+        return sentData(phoneNum, type.getValue(), data);
+    }
+
+    /**
      * 0x8A00 平台RSA公钥
      * @param phoneNum 卡号
      * @param p1 rsa
      * @param p2 rsa
-     * @return 返回值
+     * @return 命令
      */
     public byte[] platRsa(byte[] phoneNum,byte[] p1,byte[] p2){
         return warp(

@@ -7,7 +7,13 @@
 
 ## 版本特性
 
-### 20210312 v1.3.2 v1.3.2-jdk1.8
+### DOING
+
+- :sparkles: 兼容交通标准808协议的2011、2013、2019版本、苏标2019版本、1078协议2016版本
+- :construction: ResHelper 增强便利性升级
+- :construction: 增加 ResHelper 测试用例 以及 [使用文档](./docs/ResHelper.md)
+
+### 20210409 v1.3.2 v1.3.2-jdk1.8
 
 - :hammer: 将消息包流水号 分配给各个连接处理
 - :bug: 修复内置缓存内存泄露的风险
