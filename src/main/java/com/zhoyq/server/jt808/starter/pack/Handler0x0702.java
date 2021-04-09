@@ -24,7 +24,6 @@ import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -47,15 +46,15 @@ public class Handler0x0702 implements PackHandler {
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0702 驾驶员身份信息采集上报 driver data collection report");
 
+        String phone = byteArrHelper.toHexString(phoneNum);
+
         DriverInfo driverInfo = analyzer.analyzeDriver(phoneNum, msgBody);
         // 如果等于空 则解析错误 直接返回失败应答
         if (driverInfo == null) {
+            log.warn("{} data analyze failed!", phone);
             return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
         }
-        tpe.execute(() -> {
-            String phone = byteArrHelper.toHexString(phoneNum);
-            dataService.driverInfo(phone, driverInfo);
-        });
+        tpe.execute(() -> dataService.driverInfo(phone, driverInfo));
 
         return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }

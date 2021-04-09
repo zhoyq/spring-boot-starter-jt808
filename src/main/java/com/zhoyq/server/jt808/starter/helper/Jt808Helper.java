@@ -39,24 +39,11 @@ import java.util.Map;
 public class Jt808Helper {
     private ByteArrHelper byteArrHelper;
     private CacheService cacheService;
+    private ResHelper resHelper;
 
     /* ===================================
        = 协议内一般工具
      * =================================== */
-
-    /**
-     * 平台流水号
-     */
-    private static int PLAT_STREAM_NUM = 1;
-
-    public synchronized int getPlatStreamNum(){
-        return PLAT_STREAM_NUM++;
-    }
-    public synchronized int getPkgPlatStreamNum(int j){
-        int buf = PLAT_STREAM_NUM;
-        PLAT_STREAM_NUM = PLAT_STREAM_NUM+j;
-        return buf;
-    }
 
     /**
      * 获取消息体长度
@@ -211,7 +198,7 @@ public class Jt808Helper {
         }
 
         // 平台流水号 直接获取对应包数量的流水号
-        int streamNum = getPkgPlatStreamNum(pkgCount);
+        int streamNum = resHelper.getPkgPlatStreamNum(phoneNum, pkgCount);
         // 存储下发数据
         String phone = byteArrHelper.toHexString(phoneNum);
         Map<Integer, byte[]> sentPackages = cacheService.getSentPackages(phone);
@@ -304,7 +291,7 @@ public class Jt808Helper {
         }
 
         // 平台流水号 直接获取对应包数量的流水号
-        int streamNum = getPkgPlatStreamNum(pkgCount);
+        int streamNum = resHelper.getPkgPlatStreamNum(phoneNum, pkgCount);
 
         // 存储下发数据
         String phone = byteArrHelper.toHexString(phoneNum);
@@ -340,6 +327,9 @@ public class Jt808Helper {
     // 通过验证号码长度 判断是否时 2019 版本 并且针对此版本获取分包数据
     public byte[] allPkg(String phone, int totalPkgNum) {
         Map<Integer,byte[]> map = cacheService.getPackages(phone);
+        if (map == null) {
+            return null;
+        }
         // 分包是从1开始的 去掉校验位
         byte[] buf = byteArrHelper.subByte(map.get(1), 0, map.get(1).length - 1);
         for(int i = 2;i <= totalPkgNum; i++){
@@ -351,7 +341,11 @@ public class Jt808Helper {
     }
 
     public boolean pkgAllReceived(String phone, int totalPkgNum) {
-        return cacheService.containsPackages(phone) && cacheService.getPackages(phone).size() == totalPkgNum;
+        Map<Integer, byte[]> packages = cacheService.getPackages(phone);
+        if (packages == null) {
+            return false;
+        }
+        return cacheService.containsPackages(phone) && packages.size() == totalPkgNum;
     }
 
 //    /**

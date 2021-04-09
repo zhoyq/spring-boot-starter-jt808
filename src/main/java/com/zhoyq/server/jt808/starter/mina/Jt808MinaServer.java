@@ -15,18 +15,21 @@
 
 package com.zhoyq.server.jt808.starter.mina;
 
+import com.zhoyq.server.jt808.starter.config.Const;
 import com.zhoyq.server.jt808.starter.config.Jt808Config;
 import com.zhoyq.server.jt808.starter.core.Jt808Server;
 import com.zhoyq.server.jt808.starter.helper.CustomThreadFactory;
 import com.zhoyq.server.jt808.starter.mina.coder.Jt808CodecFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.service.AbstractIoAcceptor;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.executor.ExecutorFilter;
+import org.apache.mina.transport.socket.DefaultSocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioDatagramAcceptor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -35,14 +38,14 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
- * @date 2019/12/17
+ * @date 2020/2/16
  */
 @Slf4j
-@Component("jt808_mina_udp")
+@Component("mina")
 @AllArgsConstructor
-public class Jt808MinaUdpServer implements Jt808Server {
+public class Jt808MinaServer implements Jt808Server {
 
-    private static NioDatagramAcceptor acceptor;
+    private static AbstractIoAcceptor acceptor;
 
     private Jt808Config jt808Config;
     private IoHandler handler;
@@ -53,7 +56,16 @@ public class Jt808MinaUdpServer implements Jt808Server {
         if (acceptor != null) {
             return acceptor.isActive();
         }
-        acceptor = new NioDatagramAcceptor();
+        String protocol = jt808Config.getProtocol();
+        boolean isTCP = Const.TCP.equals(protocol);
+
+        if (isTCP) {
+            // processCount 指的是 core process 数，一般是电脑的 CPU核数 + 1
+            acceptor = new NioSocketAcceptor(jt808Config.getProcessCount());
+        } else {
+            acceptor = new NioDatagramAcceptor();
+        }
+
         acceptor.getFilterChain().addLast("executor",
                 new ExecutorFilter(
                         jt808Config.getCorePoolSize(),
@@ -63,12 +75,19 @@ public class Jt808MinaUdpServer implements Jt808Server {
                         new CustomThreadFactory("jt808-mina-thread-pool")
                 )
         );
+
         // 数据校验 以及 粘包 分包处理 过滤器
         acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(jt808CodecFactory));
         acceptor.setHandler(handler);
         acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, jt808Config.getIdleTime() );
         // 设置缓冲区大小
         acceptor.getSessionConfig().setReadBufferSize( jt808Config.getReadBufferSize() );
+
+        if (isTCP) {
+            ((DefaultSocketSessionConfig)(acceptor.getSessionConfig())).setTcpNoDelay( jt808Config.getTcpNoDelay() );
+            ((DefaultSocketSessionConfig)(acceptor.getSessionConfig())).setKeepAlive( jt808Config.getKeepAlive() );
+        }
+
         try {
             acceptor.bind(new InetSocketAddress( jt808Config.getPort() ));
             return true;
@@ -81,6 +100,6 @@ public class Jt808MinaUdpServer implements Jt808Server {
     @Override
     public boolean stop() {
         acceptor.dispose(false);
-        return false;
+        return true;
     }
 }

@@ -290,10 +290,13 @@ public class Analyzer {
         // 版本信息
         int ver = 0;
 
-        if(phoneNum.length == 10){
+        if(phoneNum.length == Const.NUMBER_10){
             ver = Const.YEAR_2019;
         } else {
-            if(data[0] == Const.NUMBER_1 || data[0] == Const.NUMBER_2 ){
+            // 拔卡 没有信息 只有7字节消息
+            if(data[Const.NUMBER_0] == Const.NUMBER_2 && data.length == Const.NUMBER_7){
+                ver = Const.YEAR_2013;
+            } else if(data[Const.NUMBER_0] == Const.NUMBER_1 && data.length >= Const.NUMBER_8){
                 if( data[Const.NUMBER_7] == Const.NUMBER_0 ) {
                     // 这里需要通过解析消息长度判断版本
                     int len2011 = 0, len2013 = 0;
@@ -391,50 +394,53 @@ public class Analyzer {
 
         driverInfo.setDatetime(gTime);
 
-        switch (data[7]){
-            case 0x00:
-                // IC 卡读卡成功 读取驾驶员信息
-                try {
-                    int nameLength = data[8];
-                    String driverName = jt808Helper.toGBKString(byteArrHelper.subByte(data,9,
-                            nameLength + 9));
-                    String certificate = jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 9,
-                            nameLength + 29));
-                    int certificatePublishAgentNameLength = data[nameLength + 29];
-                    String certificatePublishAgentName =
-                            jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 30,
-                                    nameLength + 30 + certificatePublishAgentNameLength));
-                    String expiryTime = byteArrHelper.getBCDStrByArr(byteArrHelper.subByte(data,
-                            nameLength + 30 + certificatePublishAgentNameLength));
+        // 拔卡则不再继续解析
+        if(!driverInfo.getDriverAlarmInfo().isPullOutCard()){
+            switch (data[7]){
+                case 0x00:
+                    // IC 卡读卡成功 读取驾驶员信息
+                    try {
+                        int nameLength = data[8];
+                        String driverName = jt808Helper.toGBKString(byteArrHelper.subByte(data,9,
+                                nameLength + 9));
+                        String certificate = jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 9,
+                                nameLength + 29));
+                        int certificatePublishAgentNameLength = data[nameLength + 29];
+                        String certificatePublishAgentName =
+                                jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 30,
+                                        nameLength + 30 + certificatePublishAgentNameLength));
+                        String expiryTime = byteArrHelper.getBCDStrByArr(byteArrHelper.subByte(data,
+                                nameLength + 30 + certificatePublishAgentNameLength));
 
-                    driverInfo.setDriverName(driverName);
-                    driverInfo.setCertificateNumber(certificate);
-                    driverInfo.setCertificatePublishAgentName(certificatePublishAgentName);
-                    driverInfo.setCertificateLimitDate(expiryTime);
+                        driverInfo.setDriverName(driverName);
+                        driverInfo.setCertificateNumber(certificate);
+                        driverInfo.setCertificatePublishAgentName(certificatePublishAgentName);
+                        driverInfo.setCertificateLimitDate(expiryTime);
 
-                } catch (UnsupportedEncodingException e) {
-                    log.warn(e.getMessage());
+                    } catch (UnsupportedEncodingException e) {
+                        log.warn(e.getMessage());
+                        return null;
+                    }
+                    break;
+                case 0x01:
+                    // 读卡失败，原因为卡片密钥认证未通过
+                    driverInfo.getDriverAlarmInfo().setUnAuthentication(true);
+                    break;
+                case 0x02:
+                    // 读卡失败，原因为卡片已被锁定
+                    driverInfo.getDriverAlarmInfo().setLocked(true);
+                    break;
+                case 0x03:
+                    // 读卡失败，原因为卡片被拔出
+                    driverInfo.getDriverAlarmInfo().setPullOut(true);
+                    break;
+                case 0x04:
+                    // 读卡失败，原因为数据校验错误
+                    driverInfo.getDriverAlarmInfo().setCheckFailed(true);
+                    break;
+                default:
                     return null;
-                }
-                break;
-            case 0x01:
-                // 读卡失败，原因为卡片密钥认证未通过
-                driverInfo.getDriverAlarmInfo().setUnAuthentication(true);
-                break;
-            case 0x02:
-                // 读卡失败，原因为卡片已被锁定
-                driverInfo.getDriverAlarmInfo().setLocked(true);
-                break;
-            case 0x03:
-                // 读卡失败，原因为卡片被拔出
-                driverInfo.getDriverAlarmInfo().setPullOut(true);
-                break;
-            case 0x04:
-                // 读卡失败，原因为数据校验错误
-                driverInfo.getDriverAlarmInfo().setCheckFailed(true);
-                break;
-            default:
-                return null;
+            }
         }
 
         driverInfo.setSuccess(true);
@@ -450,67 +456,70 @@ public class Analyzer {
             // 驾驶员上班 卡插入
             driverInfo.getDriverAlarmInfo().setPullOutCard(false);
         }else if(data[0] == Const.NUMBER_2){
-            // 驾驶员下班 卡拔出
+            // 驾驶员下班 卡拔出 没有其他信息
             driverInfo.getDriverAlarmInfo().setPullOutCard(true);
         }else{
-            // 2013 第一个字节 不支持其他形式
+            // 2019 第一个字节 不支持其他形式
             return null;
         }
         String gTime = jt808Helper.getDataTime(byteArrHelper.subByte(data,1,7));
 
         driverInfo.setDatetime(gTime);
 
-        switch (data[7]){
-            case 0x00:
-                // IC 卡读卡成功 读取驾驶员信息
-                try {
-                    int nameLength = data[8];
-                    String driverName = jt808Helper.toGBKString(byteArrHelper.subByte(data,9,
-                            nameLength + 9));
-                    String certificate = jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 9,
-                            nameLength + 29));
-                    int certificatePublishAgentNameLength = data[nameLength + 29];
-                    String certificatePublishAgentName =
-                            jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 30,
-                                    nameLength + 30 + certificatePublishAgentNameLength));
-                    String expiryTime = byteArrHelper.getBCDStrByArr(byteArrHelper.subByte(data,
-                            nameLength + certificatePublishAgentNameLength + 30,
-                            nameLength + certificatePublishAgentNameLength + 34));
-                    String idCardNum = jt808Helper.toGBKString(byteArrHelper.subByte(
-                            data,
-                            nameLength + certificatePublishAgentNameLength + 34,
-                            nameLength + certificatePublishAgentNameLength + 54
-                    ));
+        // 拔卡则不再继续解析
+        if(!driverInfo.getDriverAlarmInfo().isPullOutCard()){
+            switch (data[7]){
+                case 0x00:
+                    // IC 卡读卡成功 读取驾驶员信息
+                    try {
+                        int nameLength = data[8];
+                        String driverName = jt808Helper.toGBKString(byteArrHelper.subByte(data,9,
+                                nameLength + 9));
+                        String certificate = jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 9,
+                                nameLength + 29));
+                        int certificatePublishAgentNameLength = data[nameLength + 29];
+                        String certificatePublishAgentName =
+                                jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 30,
+                                        nameLength + 30 + certificatePublishAgentNameLength));
+                        String expiryTime = byteArrHelper.getBCDStrByArr(byteArrHelper.subByte(data,
+                                nameLength + certificatePublishAgentNameLength + 30,
+                                nameLength + certificatePublishAgentNameLength + 34));
+                        String idCardNum = jt808Helper.toGBKString(byteArrHelper.subByte(
+                                data,
+                                nameLength + certificatePublishAgentNameLength + 34,
+                                nameLength + certificatePublishAgentNameLength + 54
+                        ));
 
-                    driverInfo.setDriverName(driverName);
-                    driverInfo.setCertificateNumber(certificate);
-                    driverInfo.setCertificatePublishAgentName(certificatePublishAgentName);
-                    driverInfo.setCertificateLimitDate(expiryTime);
-                    driverInfo.setIdCardNumber(idCardNum);
+                        driverInfo.setDriverName(driverName);
+                        driverInfo.setCertificateNumber(certificate);
+                        driverInfo.setCertificatePublishAgentName(certificatePublishAgentName);
+                        driverInfo.setCertificateLimitDate(expiryTime);
+                        driverInfo.setIdCardNumber(idCardNum);
 
-                } catch (UnsupportedEncodingException e) {
-                    log.warn(e.getMessage());
+                    } catch (UnsupportedEncodingException e) {
+                        log.warn(e.getMessage());
+                        return null;
+                    }
+                    break;
+                case 0x01:
+                    // 读卡失败，原因为卡片密钥认证未通过
+                    driverInfo.getDriverAlarmInfo().setUnAuthentication(true);
+                    break;
+                case 0x02:
+                    // 读卡失败，原因为卡片已被锁定
+                    driverInfo.getDriverAlarmInfo().setLocked(true);
+                    break;
+                case 0x03:
+                    // 读卡失败，原因为卡片被拔出
+                    driverInfo.getDriverAlarmInfo().setPullOut(true);
+                    break;
+                case 0x04:
+                    // 读卡失败，原因为数据校验错误
+                    driverInfo.getDriverAlarmInfo().setCheckFailed(true);
+                    break;
+                default:
                     return null;
-                }
-                break;
-            case 0x01:
-                // 读卡失败，原因为卡片密钥认证未通过
-                driverInfo.getDriverAlarmInfo().setUnAuthentication(true);
-                break;
-            case 0x02:
-                // 读卡失败，原因为卡片已被锁定
-                driverInfo.getDriverAlarmInfo().setLocked(true);
-                break;
-            case 0x03:
-                // 读卡失败，原因为卡片被拔出
-                driverInfo.getDriverAlarmInfo().setPullOut(true);
-                break;
-            case 0x04:
-                // 读卡失败，原因为数据校验错误
-                driverInfo.getDriverAlarmInfo().setCheckFailed(true);
-                break;
-            default:
-                return null;
+            }
         }
 
         driverInfo.setSuccess(true);

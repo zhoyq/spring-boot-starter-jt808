@@ -17,6 +17,9 @@ package com.zhoyq.server.jt808.starter.service.impl;
 
 import com.zhoyq.server.jt808.starter.service.CacheService;
 
+import java.lang.ref.SoftReference;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,21 +31,34 @@ public class HashMapCacheService implements CacheService {
 
     // ==== \/ package
 
-    private static Map<String, Map<Integer, byte[]>> packageMap = new ConcurrentHashMap<>();
+    private static SoftReference<Map<String, Map<Integer, byte[]>>> packageMapRef = new SoftReference<>(new HashMap<>());
 
     @Override
     public boolean containsPackages(String phone) {
-        return packageMap.containsKey(phone);
+        Map<String, Map<Integer, byte[]>> stringMapMap = packageMapRef.get();
+        if (stringMapMap != null) {
+            return stringMapMap.containsKey(phone);
+        }
+        return false;
     }
 
     @Override
     public void setPackages(String phone, Map<Integer, byte[]> packages) {
-        packageMap.put(phone, packages);
+        Map<String, Map<Integer, byte[]>> stringMapMap = packageMapRef.get();
+        if (stringMapMap != null) {
+            stringMapMap.put(phone, packages);
+        } else {
+            packageMapRef = new SoftReference<>(Collections.singletonMap(phone, packages));
+        }
     }
 
     @Override
     public Map<Integer, byte[]> getPackages(String phone) {
-        return packageMap.get(phone);
+        Map<String, Map<Integer, byte[]>> stringMapMap = packageMapRef.get();
+        if (stringMapMap != null) {
+            return stringMapMap.get(phone);
+        }
+        return null;
     }
 
 

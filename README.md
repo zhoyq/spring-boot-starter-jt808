@@ -7,6 +7,14 @@
 
 ## 版本特性
 
+### 20210409 v1.3.2 v1.3.2-jdk1.8
+
+- :hammer: 将消息包流水号 分配给各个连接处理
+- :bug: 修复内置缓存内存泄露的风险
+- :bug: 修复分包消息处理问题
+- :bug: ResHelper 下发消息 支持协议 2019
+- :construction: 精简部分重复代码
+
 ### 20201004 v1.3.1 v1.3.1-jdk1.8
 
 - :arrow_up: 更新 JDK 版本到 15
@@ -41,7 +49,7 @@
 
 ## 版本升级
 
-### 1.2.x 升级 1.3.1
+### 1.2.x 升级 1.3.2
 
 `DataService` 接口有变动，重新实现 `terminalLocation`、`mediaPackage` 两个方法即可。
 
@@ -53,7 +61,7 @@
 - 基于开发包进行二次开发请访问[直播录屏](https://www.bilibili.com/video/BV1cg4y167jW/)
 - 详细说明请访问我的[博客](https://www.zhoyq.com/2020/05/30/%E8%BD%A6%E8%81%94%E7%BD%91/%E3%80%90JT808%E3%80%91Spring%20Boot%20Stater%20Jt808%20%E7%AE%80%E5%8D%95%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/)
 - 最小化启动项目已经开源，[欢迎访问](https://github.com/zhoyq/jt808-server-starter)
-- 作者 JDK 使用的是 openJDK 14 版本，同时还提供 openJDK 1.8 编译版本，还没有在其他 JDK 版本进行测试。
+- 作者 JDK 使用的是 openJDK 15 版本，同时还提供 openJDK 1.8 编译版本，还没有在其他 JDK 版本进行测试。
 
 **下面是基于maven简短的开发使用步骤，详细还请访问[直播录屏](https://www.bilibili.com/video/BV1cg4y167jW/)**
 
@@ -63,7 +71,7 @@
 <dependency>
     <groupId>com.zhoyq</groupId>
     <artifactId>spring-boot-starter-jt808</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 ```
 
@@ -153,7 +161,7 @@ public class HeartbeatPackHandler implements PackHandler {
 
 ## FAQ
 
-1. 我下载了最小化程序并启动但是发送定位信息却没有反应？
+### 我下载了最小化程序并启动但是发送定位信息却没有反应？
 
 答：首先，程序本身实现了鉴权逻辑，在没有进行终端注册和鉴权的情况下只接受这两个消息，并且返回失败应答；
 其次，第一次进行终端注册的时候，会调用 `DataService.terminalRegister` 进行终端注册，此时返回的字符串就是鉴权码，
@@ -162,7 +170,7 @@ public class HeartbeatPackHandler implements PackHandler {
 最后，我在 `1.2.4` 版本之后加入了权限控制可选配置 `auth` 和 `authMagId` 选项，`auth` 代表是否检查权限，`authMsgId` 代表
 权限开启时，可以不需要权限就访问的消息ID。这样就可以自己控制需要的权限了。
 
-2. 我启动了程序，如何下发指令呢？
+### 我启动了程序，如何下发指令呢？
 
 ```java
 // ...
@@ -183,10 +191,17 @@ public class TestController {
 }
 ```
 
+### 程序更新规则是怎么样的？
+
+目前的规则就是按照版本滚动更新，旧版本（包含发布版本）不会提供升级补丁或者更新pr，作者升级会考虑兼容性，也会给出解决方案，
+所以还是手动升级到最新版本比较好。另外，新的PR可以提交到 `develop` 分支 ( 如果能提交到 [github](https://github.com/zhoyq/spring-boot-starter-jt808/tree/develop) 就更好了 )，其他分支（已经固定）暂时不接受 `PR` 提交。
+
 ## 致谢
 
 - 感谢 [B站网友 果子狸猫么么](https://space.bilibili.com/30198711) 反馈的功能性BUG
+- 感谢 [GITHUB网友 大黄蜂coder](https://github.com/bigbeef) 反馈的BUG
+- 感谢 [GITEE网友 杨顾](https://gitee.com/andy_yanggu) 反馈的修改意见和BUG
 
 ## 授权
 
-二次开发包使用 MIT 授权，大家随便用~
+二次开发包使用 MIT 授权

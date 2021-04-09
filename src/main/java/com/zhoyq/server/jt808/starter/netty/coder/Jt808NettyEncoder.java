@@ -15,12 +15,11 @@
 
 package com.zhoyq.server.jt808.starter.netty.coder;
 
-import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
+import com.zhoyq.server.jt808.starter.core.Coder;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -28,19 +27,14 @@ import java.util.List;
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2020/2/17
  */
-@Component
 @AllArgsConstructor
 public class Jt808NettyEncoder extends MessageToMessageEncoder<byte[]> {
 
-    private Jt808Helper jt808Helper;
+    private Coder coder;
 
     @Override
     protected void encode(ChannelHandlerContext ctx, byte[] msg, List<Object> out) throws Exception {
-        // 添加验证
-        byte[] buf = jt808Helper.addVerify(msg);
-        // 转义
-        buf = jt808Helper.trans(buf);
-
+        byte[] buf = coder.encode(msg);
         out.add(Unpooled.wrappedBuffer(buf));
     }
 }
