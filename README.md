@@ -7,12 +7,6 @@
 
 ## 版本特性
 
-### DOING
-
-- :sparkles: 兼容交通标准808协议的2011、2013、2019版本、苏标2019版本、1078协议2016版本
-- :construction: ResHelper 增强便利性升级
-- :construction: 增加 ResHelper 测试用例 以及 [使用文档](./docs/ResHelper.md)
-
 ### 20210409 v1.3.2 v1.3.2-jdk1.8
 
 - :hammer: 将消息包流水号 分配给各个连接处理
@@ -67,7 +61,7 @@
 - 基于开发包进行二次开发请访问[直播录屏](https://www.bilibili.com/video/BV1cg4y167jW/)
 - 详细说明请访问我的[博客](https://www.zhoyq.com/2020/05/30/%E8%BD%A6%E8%81%94%E7%BD%91/%E3%80%90JT808%E3%80%91Spring%20Boot%20Stater%20Jt808%20%E7%AE%80%E5%8D%95%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/)
 - 最小化启动项目已经开源，[欢迎访问](https://github.com/zhoyq/jt808-server-starter)
-- 作者 JDK 使用的是 openJDK 14 版本，同时还提供 openJDK 1.8 编译版本，还没有在其他 JDK 版本进行测试。
+- 作者 JDK 使用的是 openJDK 15 版本，同时还提供 openJDK 1.8 编译版本，还没有在其他 JDK 版本进行测试。
 
 **下面是基于maven简短的开发使用步骤，详细还请访问[直播录屏](https://www.bilibili.com/video/BV1cg4y167jW/)**
 
