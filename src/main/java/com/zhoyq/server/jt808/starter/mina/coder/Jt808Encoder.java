@@ -15,6 +15,7 @@
 
 package com.zhoyq.server.jt808.starter.mina.coder;
 
+import com.zhoyq.server.jt808.starter.core.Coder;
 import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,18 +35,13 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class Jt808Encoder implements ProtocolEncoder {
 
-    private Jt808Helper jt808Helper;
+    private Coder coder;
 
     @Override
     public void encode(IoSession session, Object message, ProtocolEncoderOutput out) {
         byte[] buf = (byte[])message;
-
-        // 添加验证
-        buf = jt808Helper.addVerify(buf);
-        // 转义
-        buf = jt808Helper.trans(buf);
-
-        out.write(IoBuffer.wrap(buf));
+        byte[] buffer = coder.encode(buf);
+        out.write(IoBuffer.wrap(buffer));
     }
 
     @Override

@@ -22,7 +22,6 @@ import com.zhoyq.server.jt808.starter.service.CacheService;
 import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
@@ -82,7 +81,7 @@ public class Jt808Starter implements ApplicationListener<ApplicationStartedEvent
             }
         }
 
-        String serverKey = "jt808_" + jt808Config.getUse() + "_" + jt808Config.getProtocol();
+        String serverKey = jt808Config.getUse();
 
         if (!applicationStartedEvent.getApplicationContext().containsBean(serverKey)) {
             log.error("no jt808 server instance for key {} has been found !", serverKey);
