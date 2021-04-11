@@ -40,32 +40,29 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0801 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
     private Analyzer analyzer;
-    private Jt808Helper jt808Helper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0801 多媒体数据上传 MediaInfoUpload");
 
         tpe.execute(() -> {
-            String phone = byteArrHelper.toHexString(phoneNum);
+            String phone = ByteArrHelper.toHexString(phoneNum);
             // 多媒体信息, 位置信息 , 多媒体数据包
             byte[] mediaInfoData, locationData, mediaData;
-            mediaInfoData = byteArrHelper.subByte(msgBody, 0, 8);
-            locationData = byteArrHelper.subByte(msgBody, 8, 36);
+            mediaInfoData = ByteArrHelper.subByte(msgBody, 0, 8);
+            locationData = ByteArrHelper.subByte(msgBody, 8, 36);
             if (phoneNum.length == 10) {
                 // 2019 版本存在
-                mediaData = byteArrHelper.subByte(msgBody, 36);
+                mediaData = ByteArrHelper.subByte(msgBody, 36);
             } else {
                 // 2013 版本存在 2011版本不存在
-                boolean isLocationData = jt808Helper.checkLocationData(locationData);
+                boolean isLocationData = Jt808Helper.checkLocationData(locationData);
                 if (isLocationData) {
-                    mediaData = byteArrHelper.subByte(msgBody, 36);
+                    mediaData = ByteArrHelper.subByte(msgBody, 36);
                 } else {
                     locationData = null;
-                    mediaData = byteArrHelper.subByte(msgBody, 8);
+                    mediaData = ByteArrHelper.subByte(msgBody, 8);
                 }
             }
 
@@ -82,6 +79,6 @@ public class Handler0x0801 implements PackHandler {
             // 存储多媒体数据包
             dataService.mediaPackage(phone, mediaData, mediaInfo.getMediaId());
         });
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

@@ -30,11 +30,9 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class NoSupportHandler implements PackHandler {
-    private ResHelper resHelper;
-
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.warn("不支持的终端命令！- no support terminal command id");
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 3);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 3);
     }
 }

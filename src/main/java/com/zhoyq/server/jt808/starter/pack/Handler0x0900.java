@@ -17,7 +17,7 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
-import com.zhoyq.server.jt808.starter.entity.DataTransportInfo;
+import com.zhoyq.server.jt808.starter.dto.DataTransportInfo;
 import com.zhoyq.server.jt808.starter.helper.Analyzer;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
+ * 兼容 苏标
  * 数据上行透传
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2018/7/31
@@ -38,18 +39,16 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0900 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
     private Analyzer analyzer;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0900 数据上行透传 DataTransport");
         tpe.execute(() -> {
-            String phone = byteArrHelper.toHexString(phoneNum);
-            DataTransportInfo dataTransportInfo = analyzer.analyzeDataTransport(msgBody);
+            String phone = ByteArrHelper.toHexString(phoneNum);
+            DataTransportInfo dataTransportInfo = DataTransportInfo.fromMsgBody(msgBody);
             dataService.dataTransport(phone, dataTransportInfo);
         });
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

@@ -9,6 +9,7 @@ import com.zhoyq.server.jt808.starter.service.CacheService;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.session.IoSession;
 import org.springframework.stereotype.Component;
 
@@ -19,28 +20,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Zhoyq &lt;feedback@zhoyq.com&gt;
  * @date 2020-10-27
  */
+@Slf4j
 @Component
 public class HandlerWrapper {
-    private Jt808Helper jt808Helper;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
-    private SessionManagement sessionManagement;
-    private CacheService cacheService;
-    private PackHandlerManagement packHandlerManagement;
-    private Jt808Config jt808Config;
+    SessionManagement sessionManagement;
+    CacheService cacheService;
+    PackHandlerManagement packHandlerManagement;
+    Jt808Config jt808Config;
 
     public HandlerWrapper (
-            Jt808Helper jt808Helper,
-            ByteArrHelper byteArrHelper,
-            ResHelper resHelper,
             SessionManagement sessionManagement,
             CacheService cacheService,
             PackHandlerManagement packHandlerManagement,
             Jt808Config jt808Config
     ) {
-        this.jt808Helper = jt808Helper;
-        this.byteArrHelper = byteArrHelper;
-        this.resHelper = resHelper;
         this.sessionManagement = sessionManagement;
         this.cacheService = cacheService;
         this.packHandlerManagement = packHandlerManagement;
@@ -65,7 +58,7 @@ public class HandlerWrapper {
         msgId = new byte[]{originData[offset++],originData[offset++]};
         msgBodyProp = new byte[]{originData[offset++],originData[offset++]};
         // 通过消息体属性中的版本标识位 判断是否是 2019版本协议 并增加相关解析
-        isVersion2019 =  jt808Helper.isVersion2019(msgBodyProp);
+        isVersion2019 =  Jt808Helper.isVersion2019(msgBodyProp);
         if (isVersion2019) {
             protocolVersion = new byte[]{originData[offset++]};
             phoneNum = new byte[]{
@@ -79,12 +72,12 @@ public class HandlerWrapper {
             };
         }
         streamNum = new byte[]{originData[offset++],originData[offset++]};
-        hasPackage = jt808Helper.hasPackage(msgBodyProp);
+        hasPackage = Jt808Helper.hasPackage(msgBodyProp);
         if( hasPackage ){
             pkgCount = new byte[]{originData[offset++],originData[offset++]};
             pkgNum = new byte[]{originData[offset++],originData[offset]};
         }
-        phone = byteArrHelper.toHexString(phoneNum);
+        phone = ByteArrHelper.toHexString(phoneNum);
     }
 
     public void handleSession(IoSession session) {
@@ -122,17 +115,13 @@ public class HandlerWrapper {
     }
 
     /**
-     * TODO 处理 rsa
-     * boolean useRsa = jt808Helper.checkRsa(msgBodyProp);
-     * if (useRsa) {
-     *     byte[] en = dataService.terminalRsa(phone);
-     * }
+     * 处理消息
      */
     public void handleMessage() {
         byte[] res = null;
         if( hasPackage ){
-            int totalPkgNum = byteArrHelper.twobyte2int(pkgCount);
-            int currentPkgNum = byteArrHelper.twobyte2int(pkgNum);
+            int totalPkgNum = ByteArrHelper.twobyte2int(pkgCount);
+            int currentPkgNum = ByteArrHelper.twobyte2int(pkgNum);
             // 序号必须小于等于总包数 条件达成之后进行分包处理 否则不处理分包且不处理数据
             if(totalPkgNum >= currentPkgNum){
                 if(!cacheService.containsPackages(phone)){
@@ -147,9 +136,9 @@ public class HandlerWrapper {
             // 分包结束时需要对分包数据进行解析处理并返回应答 通过总包数和序号对比 判断是不是最后一包
             if( totalPkgNum == currentPkgNum ){
                 // 如果是 这个电话的最后一包
-                if(jt808Helper.pkgAllReceived(phone, totalPkgNum)){
+                if(Jt808Helper.pkgAllReceived(phone, totalPkgNum)){
                     // 合并所有包 并解析
-                    byte[] allPkgData = jt808Helper.allPkg(phone, totalPkgNum);
+                    byte[] allPkgData = Jt808Helper.allPkg(phone, totalPkgNum);
                     if (allPkgData != null) {
                         res = handlePackage(allPkgData);
                     }
@@ -165,23 +154,23 @@ public class HandlerWrapper {
                         for(int i = 1;i<=totalPkgNum;i++){
                             if(originStreamNum == null){
                                 if (isVersion2019) {
-                                    originStreamNum = byteArrHelper.subByte(map.get(1), 15, 17);
+                                    originStreamNum = ByteArrHelper.subByte(map.get(1), 15, 17);
                                 } else {
-                                    originStreamNum = byteArrHelper.subByte(map.get(1), 10, 12);
+                                    originStreamNum = ByteArrHelper.subByte(map.get(1), 10, 12);
                                 }
                             }
                             if(!map.containsKey(i)){
                                 num++;
                                 if (isVersion2019) {
-                                    idList = byteArrHelper.union(idList, byteArrHelper.subByte(map.get(i), 19, 21));
+                                    idList = ByteArrHelper.union(idList, ByteArrHelper.subByte(map.get(i), 19, 21));
                                 } else {
-                                    idList = byteArrHelper.union(idList, byteArrHelper.subByte(map.get(i), 14, 16));
+                                    idList = ByteArrHelper.union(idList, ByteArrHelper.subByte(map.get(i), 14, 16));
                                 }
                             }
                         }
                     }
                     if(originStreamNum != null) {
-                        res = resHelper.getPkgReq(phoneNum, originStreamNum, num, idList);
+                        res = ResHelper.getPkgReq(phoneNum, originStreamNum, num, idList);
                     }
                 }
             }
@@ -189,7 +178,7 @@ public class HandlerWrapper {
             res =  handlePackage(originData);
         }
         if( res == null ){
-            res = resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+            res = ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
         }
         // 分包消息总长度
         int msgLen = jt808Config.getPackageLength();
@@ -197,9 +186,9 @@ public class HandlerWrapper {
         if( res.length > msgLen ){
             // 分包发送
             if (Const.USE_MINA.equals(jt808Config.getUse())) {
-                jt808Helper.sentByPkg(res, (IoSession) sessionManagement.get(phone));
+                Jt808Helper.sentByPkg(res, (IoSession) sessionManagement.get(phone));
             } else {
-                jt808Helper.sentByPkg(res, (ChannelHandlerContext) sessionManagement.get(phone));
+                Jt808Helper.sentByPkg(res, (ChannelHandlerContext) sessionManagement.get(phone));
             }
         }else{
             if (Const.USE_MINA.equals(jt808Config.getUse())) {
@@ -219,7 +208,7 @@ public class HandlerWrapper {
         final byte[] msgBodyProp = new byte[]{originData[offset++],originData[offset++]};
         // 通过消息体属性中的版本标识位 判断是否是 2019版本协议 并增加相关解析
         byte[] phoneNum;
-        if (jt808Helper.isVersion2019(msgBodyProp)) {
+        if (Jt808Helper.isVersion2019(msgBodyProp)) {
             // 忽略 协议版本解析
             offset++;
             phoneNum = new byte[]{
@@ -233,25 +222,37 @@ public class HandlerWrapper {
             };
         }
         final byte[] streamNum = new byte[]{originData[offset++],originData[offset++]};
-        int msgLen = jt808Config.getPackageLength();
-        if(originData.length > msgLen){
+        if (this.hasPackage) {
             // 超长的数据一定是分包合并后的数据 直接获取后边的数据即可 因为已经处理了尾部的校验位
 
             // 过滤掉消息包封装项
             // 感谢 https://github.com/bigbeef 提交的建议
 
             offset += 4;
-            msgBody = byteArrHelper.subByte(originData, offset);
-        }else{
+            msgBody = ByteArrHelper.subByte(originData, offset);
+        } else {
             int bodyLength = originData.length-1-offset;
             msgBody = new byte[bodyLength];
             for(int i=0;i<msgBody.length;i++){
                 msgBody[i] = originData[offset++];
             }
+            // 无分包需要 单独处理 RSA 加密
+            // 解密失败 直接返回 失败应答
+            boolean hasRsa = Jt808Helper.checkRsa(msgBodyProp);
+            if (hasRsa) {
+                try {
+                    msgBody = Jt808Helper.rsa(phone, msgBody);
+                } catch (Exception e) {
+                    log.warn(e.getMessage());
+                    log.warn("{} rsa 解密失败", phone);
+                    return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
+                }
+            }
+
         }
 
-        String phone = byteArrHelper.toHexString(phoneNum);
-        int msgIdInt = byteArrHelper.twobyte2int(msgId);
+        String phone = ByteArrHelper.toHexString(phoneNum);
+        int msgIdInt = ByteArrHelper.twobyte2int(msgId);
 
         // 检查鉴权记录 看是否链接后鉴权过 成功鉴权才能继续访问其他命令
         // 每次都判断终端鉴权 有些短连接如果每次鉴权 的话 很麻烦 所以推荐使用长链接Map
@@ -263,7 +264,7 @@ public class HandlerWrapper {
             if (!isAuth) {
                 String[] authMsgIds = jt808Config.getAuthMsgId().split(",");
                 for (String authMsgId: authMsgIds){
-                    if (authMsgId.length() == 4 && msgIdInt == byteArrHelper.twobyte2int(byteArrHelper.hexStr2bytes(authMsgId))) {
+                    if (authMsgId.length() == 4 && msgIdInt == ByteArrHelper.twobyte2int(ByteArrHelper.hexStr2bytes(authMsgId))) {
                         isAuth = true;
                         break;
                     }
@@ -275,7 +276,7 @@ public class HandlerWrapper {
         }
 
         if (!isAuth) {
-            return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
+            return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
         }
 
         PackHandler handler = packHandlerManagement.getPackHandler(msgIdInt);

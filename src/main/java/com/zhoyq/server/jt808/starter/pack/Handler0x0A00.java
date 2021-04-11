@@ -36,25 +36,23 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0A00 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle(byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0A00 终端RSA公钥 TerminalRSA");
         // 终端 RSA 公钥 { e, n }
-        byte[] e = byteArrHelper.subByte(msgBody,0,4);
-        byte[] n = byteArrHelper.subByte(msgBody,4);
+        byte[] e = ByteArrHelper.subByte(msgBody,0,4);
+        byte[] n = ByteArrHelper.subByte(msgBody,4);
         int maxLen = 128;
         if(n.length == maxLen){
             // 存储加密信息 以便收到数据后解密
             tpe.execute(()-> {
-                String phone = byteArrHelper.toHexString(phoneNum);
+                String phone = ByteArrHelper.toHexString(phoneNum);
                 dataService.terminalRsa(phone, e, n);
             });
-            return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+            return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
         }else{
-            return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
+            return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
         }
     }
 }

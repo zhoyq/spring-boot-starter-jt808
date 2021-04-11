@@ -39,20 +39,18 @@ public class Handler0x0003 implements PackHandler {
     private DataService dataService;
     private CacheService cacheService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0003 终端注销  TerminalLogout");
         tpe.execute(()->{
             // 获取终端手机号码 12 位电话号码
-            String phone  = byteArrHelper.toHexString(phoneNum);
+            String phone  = ByteArrHelper.toHexString(phoneNum);
             // 数据库直接删除终端与车辆的关联
             dataService.terminalCancel(phone);
             // 直接删除终端之前的鉴权数据
             cacheService.removeAuth(phone);
         });
-        return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

@@ -31,6 +31,4 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Import({Jt808Starter.class, Jt808Config.class, SimpleBeanConfig.class})
-public @interface EnableJt808Server {
-
-}
+public @interface EnableJt808Server { }

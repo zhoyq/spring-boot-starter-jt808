@@ -15,7 +15,6 @@
 
 package com.zhoyq.server.jt808.starter.config;
 
-import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.service.CacheService;
 import com.zhoyq.server.jt808.starter.service.DataService;
 import com.zhoyq.server.jt808.starter.service.impl.HashMapCacheService;
@@ -35,14 +34,13 @@ import org.springframework.context.annotation.Configuration;
 @AllArgsConstructor
 public class SimpleBeanConfig {
 
-    private ByteArrHelper byteArrHelper;
     private Jt808Config jt808Config;
 
     @Bean
     @ConditionalOnMissingBean(DataService.class)
     public DataService dataService() {
         log.info("use default data service Bean.");
-        return new SimpleDataServiceAdapter(byteArrHelper);
+        return new SimpleDataServiceAdapter();
     }
 
     @Bean

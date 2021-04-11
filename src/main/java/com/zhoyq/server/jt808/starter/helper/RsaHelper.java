@@ -37,14 +37,13 @@ import java.security.spec.X509EncodedKeySpec;
  * @date 2020/5/6
  */
 @Slf4j
-@Component
 public class RsaHelper {
     /**
      * 产生 公钥和密钥
      * @param keySize 密钥大小
      * @return 密钥对
      */
-    public KeyPair genRSAKeyPair(int keySize) throws NoSuchAlgorithmException {
+    public static KeyPair genRSAKeyPair(int keySize) throws NoSuchAlgorithmException {
         KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
         gen.initialize(keySize);
         return gen.generateKeyPair();
@@ -58,7 +57,7 @@ public class RsaHelper {
      * @throws InvalidKeySpecException 异常
      * @throws NoSuchAlgorithmException 异常
      */
-    public PublicKey publicKey(byte[] modulus, byte[] publicExponent)
+    public static PublicKey publicKey(byte[] modulus, byte[] publicExponent)
             throws InvalidKeySpecException, NoSuchAlgorithmException {
         BigInteger modulusBigInt = new BigInteger(modulus);
         BigInteger publicExponentBigInt = new BigInteger(publicExponent);
@@ -69,6 +68,7 @@ public class RsaHelper {
 
     /**
      * 公钥解密
+     * 注意: synchronized 是为了线程安全
      * @param data 数据
      * @param publicKey 公钥
      * @return 解密数据
@@ -78,7 +78,7 @@ public class RsaHelper {
      * @throws NoSuchAlgorithmException 异常
      * @throws NoSuchPaddingException 异常
      */
-    public synchronized byte[] rsaDecodeByPublicKey(byte[] data, PublicKey publicKey)
+    public static synchronized byte[] rsaDecodeByPublicKey(byte[] data, PublicKey publicKey)
             throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException,
             NoSuchPaddingException, NoSuchAlgorithmException {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -98,7 +98,7 @@ public class RsaHelper {
      * @throws NoSuchAlgorithmException 异常
      * @throws NoSuchPaddingException 异常
      */
-    public byte[] rsaEncodeByPrivateKey(byte[] data, PrivateKey privateKey)
+    public static byte[] rsaEncodeByPrivateKey(byte[] data, PrivateKey privateKey)
             throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException,
             NoSuchAlgorithmException, NoSuchPaddingException {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -116,7 +116,7 @@ public class RsaHelper {
      * @throws InvalidKeyException 异常
      * @throws SignatureException 异常
      */
-    public byte[] rsaSign(byte[] data, PrivateKey privateKey)
+    public static byte[] rsaSign(byte[] data, PrivateKey privateKey)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         Signature signature = Signature.getInstance("MD5withRSA");
@@ -135,7 +135,7 @@ public class RsaHelper {
      * @throws InvalidKeyException 异常
      * @throws SignatureException 异常
      */
-    public boolean rsaVerify(byte[] data, PublicKey publicKey, byte[] sign)
+    public static boolean rsaVerify(byte[] data, PublicKey publicKey, byte[] sign)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         Signature signature = Signature.getInstance("MD5withRSA");

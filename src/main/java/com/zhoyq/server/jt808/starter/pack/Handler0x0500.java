@@ -36,16 +36,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0500 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0500 车辆控制应答 VehicleControlAnswer" );
         // 车辆控制应答 对应车辆控制下发指令
-        String phone = byteArrHelper.toHexString(phoneNum);
-        int streamNumber = byteArrHelper.twobyte2int(byteArrHelper.subByte(msgBody,0,2));
+        String phone = ByteArrHelper.toHexString(phoneNum);
+        int streamNumber = ByteArrHelper.twobyte2int(ByteArrHelper.subByte(msgBody,0,2));
         tpe.execute(() -> dataService.terminalAnswer(phone, streamNumber, "8500", "0500", msgBody));
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
     }
 }

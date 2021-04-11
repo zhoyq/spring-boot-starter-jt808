@@ -36,16 +36,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0104 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0104 查询终端参数应答 SearchTerminalParameterAnswer");
-        int platformStreamNumber = byteArrHelper.twobyte2int(byteArrHelper.subByte( msgBody, 0, 2));
-        String phone = byteArrHelper.toHexString(phoneNum);
+        int platformStreamNumber = ByteArrHelper.twobyte2int(ByteArrHelper.subByte( msgBody, 0, 2));
+        String phone = ByteArrHelper.toHexString(phoneNum);
         // 保存下发指令对应应答里 需要时取消息体进行分析
         tpe.execute(() -> dataService.terminalAnswer(phone, platformStreamNumber, "8104", "0104", msgBody));
-        return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

@@ -36,17 +36,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0002 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0002 终端心跳命令 TerminalHeartBeat");
         tpe.execute(() -> {
-            String phone = byteArrHelper.toHexString(phoneNum);
+            String phone = ByteArrHelper.toHexString(phoneNum);
             // 保存终端心跳
             dataService.terminalHeartbeat(phone);
         });
-        return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

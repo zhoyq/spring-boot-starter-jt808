@@ -38,24 +38,22 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0702 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
     private Analyzer analyzer;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0702 驾驶员身份信息采集上报 driver data collection report");
 
-        String phone = byteArrHelper.toHexString(phoneNum);
+        String phone = ByteArrHelper.toHexString(phoneNum);
 
         DriverInfo driverInfo = analyzer.analyzeDriver(phoneNum, msgBody);
         // 如果等于空 则解析错误 直接返回失败应答
         if (driverInfo == null) {
             log.warn("{} data analyze failed!", phone);
-            return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
+            return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
         }
         tpe.execute(() -> dataService.driverInfo(phone, driverInfo));
 
-        return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

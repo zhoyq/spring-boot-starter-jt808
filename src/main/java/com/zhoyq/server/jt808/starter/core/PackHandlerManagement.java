@@ -16,6 +16,7 @@
 package com.zhoyq.server.jt808.starter.core;
 
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
+import com.zhoyq.server.jt808.starter.helper.RsaHelper;
 import com.zhoyq.server.jt808.starter.pack.NoSupportHandler;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,6 +41,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PackHandlerManagement implements ApplicationContextAware {
 
     /**
+     * 记录应用程序启动上下文 用于静态类获取bean
+     */
+    public static ApplicationContext APPLICATION_CONTEXT = null;
+
+    /**
      * 所有实现的包处理器
      */
     private static Map<Integer, PackHandler> packHandlerMap;
@@ -45,14 +53,18 @@ public class PackHandlerManagement implements ApplicationContextAware {
     /**
      * 不支持的协议消息
      */
-    private NoSupportHandler noSupportHandler;
-    private ByteArrHelper byteArrHelper;
+    NoSupportHandler noSupportHandler;
 
     /**
      * 唤醒时 初始化 packHandlerMap
      */
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        APPLICATION_CONTEXT = applicationContext;
+        // TODO 生成 平台 公钥
+//        KeyPair keyPair = RsaHelper.genRSAKeyPair(128);
+//        PublicKey aPublic = keyPair.getPublic();
+//        byte[] encoded = aPublic.getEncoded();
         // 仅一次性初始化完成
         if(packHandlerMap == null){
             packHandlerMap = new ConcurrentHashMap<>(30);
@@ -65,7 +77,7 @@ public class PackHandlerManagement implements ApplicationContextAware {
                     if(packConfig != null && !packHandlerMap.containsKey(packConfig.msgId())){
                         // 不存在定义才加入
                         log.trace("add pack handler {} for {}", handler.getClass().getName(),
-                                byteArrHelper.toHexString(byteArrHelper.int2twobytes(packConfig.msgId())));
+                                ByteArrHelper.toHexString(ByteArrHelper.int2twobytes(packConfig.msgId())));
                         packHandlerMap.put(packConfig.msgId() ,(PackHandler)handler);
                     }
                 }

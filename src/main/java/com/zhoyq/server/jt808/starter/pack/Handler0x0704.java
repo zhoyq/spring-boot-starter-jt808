@@ -39,8 +39,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0704 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
     private Analyzer analyzer;
 
     @Override
@@ -49,13 +47,13 @@ public class Handler0x0704 implements PackHandler {
 
         tpe.execute(() -> {
 
-            String phone = byteArrHelper.toHexString(phoneNum);
+            String phone = ByteArrHelper.toHexString(phoneNum);
 
             // 循环分析定位上报数据
             for (int pos = 3, len ; pos < msgBody.length; pos += len + Const.NUMBER_2) {
 
-                len = byteArrHelper.twobyte2int(byteArrHelper.subByte(msgBody,pos,pos + 2));
-                byte[] data = byteArrHelper.subByte(msgBody,pos + 2,pos + 2 + len);
+                len = ByteArrHelper.twobyte2int(ByteArrHelper.subByte(msgBody,pos,pos + 2));
+                byte[] data = ByteArrHelper.subByte(msgBody,pos + 2,pos + 2 + len);
 
                 LocationInfo locationInfo = analyzer.analyzeLocation(data);
 
@@ -64,6 +62,6 @@ public class Handler0x0704 implements PackHandler {
 
         });
 
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

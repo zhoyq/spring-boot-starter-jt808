@@ -16,5 +16,6 @@ buildNumber.properties
 .project
 *.iml
 target/
+javadoc/
 logs/
 initializePid

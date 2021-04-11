@@ -38,20 +38,18 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0705 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
     private Analyzer analyzer;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0705 can总线数据上传 CanDataUpload");
 
         tpe.execute(() -> {
-            String phone = byteArrHelper.toHexString(phoneNum);
+            String phone = ByteArrHelper.toHexString(phoneNum);
             CanDataInfo canDataInfo = analyzer.analyzeCan(msgBody);
             dataService.canData(phone, canDataInfo);
         });
 
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

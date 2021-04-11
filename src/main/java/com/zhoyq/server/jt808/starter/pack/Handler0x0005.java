@@ -41,20 +41,18 @@ public class Handler0x0005  implements PackHandler {
     private CacheService cacheService;
     private SessionManagement sessionManagement;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle(byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0005 终端补传分包请求 terminal request patch");
 
         tpe.execute(() -> {
-            String phone = byteArrHelper.toHexString(phoneNum);
+            String phone = ByteArrHelper.toHexString(phoneNum);
             Map<Integer, byte[]> sentPackages = cacheService.getSentPackages(phone);
             Object session = sessionManagement.get(phone);
-            byte[] idList = byteArrHelper.subByte(msgBody, 4);
+            byte[] idList = ByteArrHelper.subByte(msgBody, 4);
             for (int i = 0; i < idList.length; i += 2) {
-                int id = byteArrHelper.twobyte2int(new byte[]{idList[i], idList[i + 1]});
+                int id = ByteArrHelper.twobyte2int(new byte[]{idList[i], idList[i + 1]});
                 byte[] pack = sentPackages.get(id);
                 if (pack != null) {
                     if (session instanceof IoSession) {
@@ -67,6 +65,6 @@ public class Handler0x0005  implements PackHandler {
         });
 
 
-        return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

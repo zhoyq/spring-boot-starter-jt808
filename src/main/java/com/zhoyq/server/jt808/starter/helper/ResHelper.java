@@ -15,16 +15,9 @@
 
 package com.zhoyq.server.jt808.starter.helper;
 
-import com.zhoyq.server.jt808.starter.config.Const;
-import com.zhoyq.server.jt808.starter.constant.SendDataType;
-import com.zhoyq.server.jt808.starter.core.SessionManagement;
 import com.zhoyq.server.jt808.starter.dto.*;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.AttributeKey;
-import lombok.AllArgsConstructor;
+import com.zhoyq.server.jt808.starter.dto.DataTransportInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.mina.core.session.IoSession;
-import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
@@ -36,54 +29,7 @@ import java.util.List;
  * @date 2018-06-22
  */
 @Slf4j
-@Component
-@AllArgsConstructor
 public class ResHelper {
-
-    private ByteArrHelper byteArrHelper;
-    private SessionManagement sessionManagement;
-
-    /**
-     * 获取 平台 流水号
-     * @param phoneNum 卡号
-     */
-    private int getPlatStreamNum(byte[] phoneNum) {
-        return getPkgPlatStreamNum(phoneNum, 1);
-    }
-
-    /**
-     * 获取 平台 流水号
-     * @param phoneNum 卡号
-     * @param number 获取数量
-     */
-    int getPkgPlatStreamNum(byte[] phoneNum, int number) {
-        String phone = byteArrHelper.toHexString(phoneNum);
-        Object session = sessionManagement.get(phone);
-
-        if (session == null) {
-            return 0;
-        }
-
-        int ret = 0;
-
-        if (session instanceof IoSession) {
-            IoSession ioSession = (IoSession)session;
-            Object streamNumber = ioSession.getAttribute(Const.PLATFORM_STREAM_NUMBER);
-            if (streamNumber != null) {
-                ret = (int)streamNumber;
-            }
-            ioSession.setAttribute(Const.PLATFORM_STREAM_NUMBER, ret + number);
-        } else if (session instanceof ChannelHandlerContext ){
-            ChannelHandlerContext ctx = (ChannelHandlerContext)session;
-            Object streamNumber = ctx.channel().attr(AttributeKey.valueOf(Const.PLATFORM_STREAM_NUMBER)).get();
-            if (streamNumber != null) {
-                ret = (int)streamNumber;
-            }
-            ctx.channel().attr(AttributeKey.valueOf(Const.PLATFORM_STREAM_NUMBER)).set(ret + number);
-        }
-
-        return ret;
-    }
 
     /**
      * 包装命令
@@ -91,18 +37,18 @@ public class ResHelper {
      * @param phoneNum 电话
      * @return 命令
      */
-    private byte[] warp (byte[] msgId, byte[] phoneNum) {
-        int platStreamNum = getPlatStreamNum(phoneNum);
+    private static byte[] warp (byte[] msgId, byte[] phoneNum) {
+        int platStreamNum = PlatStreamHelper.getPlatStreamNum(phoneNum);
         if (phoneNum.length == 10) {
             // 2019
-            return byteArrHelper.union(
+            return ByteArrHelper.union(
                     msgId,
                     new byte[]{0x40, 0x00, 0x01},
                     phoneNum,
                     new byte[]{(byte) ((platStreamNum>>>8)&0xff),(byte) (platStreamNum&0xff)});
         } else if (phoneNum.length == 6) {
             // 2011 2013
-            return byteArrHelper.union(
+            return ByteArrHelper.union(
                     msgId,
                     new byte[]{0x00, 0x00},
                     phoneNum,
@@ -119,12 +65,12 @@ public class ResHelper {
      * @param msgBody 消息体
      * @return 命令
      */
-    private byte[] warp (byte[] msgId, byte[] phoneNum, byte[] msgBody) {
+    private static byte[] warp (byte[] msgId, byte[] phoneNum, byte[] msgBody) {
         int bodyLen = msgBody.length;
-        int platStreamNum = getPlatStreamNum(phoneNum);
+        int platStreamNum = PlatStreamHelper.getPlatStreamNum(phoneNum);
         if (phoneNum.length == 10) {
             // 2019
-            return byteArrHelper.union(
+            return ByteArrHelper.union(
                     msgId,
                     new byte[]{(byte)(((bodyLen>>>8) & 0x03) | 0x40),(byte) (bodyLen&0xff), 0x01},
                     phoneNum,
@@ -132,7 +78,7 @@ public class ResHelper {
                     msgBody);
         } else if (phoneNum.length == 6) {
             // 2011 2013
-            return byteArrHelper.union(
+            return ByteArrHelper.union(
                     msgId,
                     new byte[]{(byte)((bodyLen>>>8) & 0x03),(byte) (bodyLen&0xff)},
                     phoneNum,
@@ -151,11 +97,11 @@ public class ResHelper {
      * @param by                应答参数 0 成功/确认 1 失败 2 消息有误 3 不支持 4 报警处理确认
      * @return   -  返回应答
      */
-    public byte[] getPlatAnswer(byte[] phoneNum,byte[] terminalStreamNum,byte[] terminalMsgId,byte by) {
+    public static byte[] getPlatAnswer(byte[] phoneNum,byte[] terminalStreamNum,byte[] terminalMsgId,byte by) {
         return warp(
                 new byte[]{(byte) 0x80,0x01},
                 phoneNum,
-                byteArrHelper.union(terminalStreamNum, terminalMsgId, new byte[]{by}));
+                ByteArrHelper.union(terminalStreamNum, terminalMsgId, new byte[]{by}));
     }
 
     /**
@@ -166,11 +112,11 @@ public class ResHelper {
      * @param idList             重传包id列表
      * @return - 返回应答
      */
-    public byte[] getPkgReq(byte[] phoneNum,byte[] originStreamNum,byte num,byte[] idList){
+    public static byte[] getPkgReq(byte[] phoneNum,byte[] originStreamNum,byte num,byte[] idList){
         return warp(
                 new byte[]{(byte) 0x80,0x03},
                 phoneNum,
-                byteArrHelper.union(originStreamNum, new byte[]{num}, idList)
+                ByteArrHelper.union(originStreamNum, new byte[]{num}, idList)
         );
     }
 
@@ -180,10 +126,10 @@ public class ResHelper {
      * @param phoneNum 卡号
      * @return 命令
      */
-    public byte[] queryServerDateTime(byte[] phoneNum) {
+    public static byte[] queryServerDateTime(byte[] phoneNum) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
         String timeHex = sdf.format(new Date(System.currentTimeMillis()));
-        byte[] timeBytes = byteArrHelper.hexStr2bytes(timeHex);
+        byte[] timeBytes = ByteArrHelper.hexStr2bytes(timeHex);
         return warp(
                 new byte[]{(byte)0x80, 0x04},
                 phoneNum,
@@ -199,12 +145,12 @@ public class ResHelper {
      * @param auth 结果为0的时候的鉴权码
      * @return - 返回应答
      */
-    public byte[] getTerminalRegisterAnswer(byte[] phoneNum, byte[] terminalStreamNum, byte result, String auth) {
+    public static byte[] getTerminalRegisterAnswer(byte[] phoneNum, byte[] terminalStreamNum, byte result, String auth) {
         byte[] e;
         // 如果应答为0 则后缀鉴权码 否则不携带鉴权码
         if(result == 0){
             try {
-                e = byteArrHelper.union(new byte[]{result},auth.getBytes("GBK"));
+                e = ByteArrHelper.union(new byte[]{result},auth.getBytes("GBK"));
             } catch (UnsupportedEncodingException e1) {
                 log.warn(e1.getMessage());
                 // 出现异常返回错误结果
@@ -216,7 +162,7 @@ public class ResHelper {
         return warp(
                 new byte[]{(byte) 0x81,0x00},
                 phoneNum,
-                byteArrHelper.union(terminalStreamNum, e)
+                ByteArrHelper.union(terminalStreamNum, e)
         );
     }
 
@@ -227,17 +173,41 @@ public class ResHelper {
      * @param list 列表
      * @return 命令
      */
-    public byte[] setTerminalParameters(byte[] phoneNum, byte num, List<Parameter> list){
+    public static byte[] setTerminalParameters(byte[] phoneNum, byte num, List<TerminalParameter> list){
         byte[] buf = new byte[]{num};
-        for(Parameter p: list){
-            buf = byteArrHelper.union(buf, p.getParameterId());
-            buf = byteArrHelper.union(buf, new byte[]{p.getLength()});
-            buf = byteArrHelper.union(buf, p.getValue());
+        for(TerminalParameter p: list){
+            buf = ByteArrHelper.union(buf, p.toBytes());
         }
         return warp(
-                new byte[]{(byte) 0x81,0x00},
+                new byte[]{(byte) 0x81,0x03},
                 phoneNum,
                 buf
+        );
+    }
+
+    /**
+     * ## 0x8103 设置终端参数
+     *
+     * **实例代码**
+     *
+     * ```java
+     * // 查询终端心跳间隔
+     * TerminalParameters params = new TerminalParameters();
+     * params.setParameters(Collections.singletonList(TerminalParameterId.HeartbeatSplitTime));
+     * // or params.addParameter(TerminalParameterId.HeartbeatSplitTime);
+     * byte[] data = ResHelper.setTerminalParameters(phoneNum, params);
+     * session.write(phone, data);
+     * ```
+     *
+     * @param phoneNum SIM卡号
+     * @param parameters 参数列表
+     * @return 命令
+     */
+    public static byte[] setTerminalParameters(byte[] phoneNum, TerminalParameters parameters) {
+        return warp(
+                new byte[]{(byte) 0x81,0x03},
+                phoneNum,
+                parameters.toBytes()
         );
     }
 
@@ -246,7 +216,7 @@ public class ResHelper {
      * @param phoneNum       电话号码
      * @return - 命令
      */
-    public byte[] searchTerminalParameters(byte[] phoneNum){
+    public static byte[] searchTerminalParameters(byte[] phoneNum){
         return warp(
                 new byte[]{(byte) 0x81,0x04},
                 phoneNum
@@ -260,15 +230,15 @@ public class ResHelper {
      * @param value          参数
      * @return 命令
      */
-    public byte[] terminalControll(byte[] phoneNum,byte comm,byte[] value){
+    public static byte[] terminalControll(byte[] phoneNum,byte comm,byte[] value){
         byte[] answer;
         if(comm==1||comm==2){
-            answer = byteArrHelper.union(new byte[]{comm}, value);
+            answer = ByteArrHelper.union(new byte[]{comm}, value);
         }else{
             answer = new byte[]{comm};
         }
         return warp(
-                new byte[]{},
+                new byte[]{(byte) 0x81,0x05},
                 phoneNum,
                 answer
         );
@@ -281,11 +251,11 @@ public class ResHelper {
      * @param parameters    参数id列表
      * @return 命令
      */
-    public byte[] searchSpecifyTerminalParameters(byte[] phoneNum,byte num,byte[] parameters){
+    public static byte[] searchSpecifyTerminalParameters(byte[] phoneNum,byte num,byte[] parameters){
         return warp(
                 new byte[]{(byte) 0x81,0x06},
                 phoneNum,
-                byteArrHelper.union(new byte[]{num}, parameters)
+                ByteArrHelper.union(new byte[]{num}, parameters)
         );
     }
 
@@ -294,7 +264,7 @@ public class ResHelper {
      * @param phoneNum 电话号码
      * @return 命令
      */
-    public byte[] searchTerminalProps(byte[] phoneNum){
+    public static byte[] searchTerminalProps(byte[] phoneNum){
         return warp(
                 new byte[]{(byte) 0x81,0x07},
                 phoneNum
@@ -307,11 +277,11 @@ public class ResHelper {
      * @param tup 更新包
      * @return 命令
      */
-    public byte[] sentTerminalUpdatePkg(byte[] phoneNum ,TerminalUpdatePkg tup){
+    public static byte[] sentTerminalUpdatePkg(byte[] phoneNum ,TerminalUpdatePkg tup){
         return warp(
                 new byte[]{(byte) 0x81,0x08},
                 phoneNum,
-                byteArrHelper.union(
+                ByteArrHelper.union(
                         new byte[]{tup.getUpdateType()},
                         tup.getProducerId(),
                         new byte[]{tup.getVersionLength()},
@@ -326,7 +296,7 @@ public class ResHelper {
      * @param phoneNum 电话号码
      * @return 命令
      */
-    public byte[] searchLocationInfo(byte[] phoneNum){
+    public static byte[] searchLocationInfo(byte[] phoneNum){
         return warp(
                 new byte[]{(byte) 0x82,0x01},
                 phoneNum
@@ -340,11 +310,11 @@ public class ResHelper {
      * @param date 有效期 s
      * @return 命令
      */
-    public byte[] temporaryLocationTrace(byte[] phoneNum,byte[] space,byte[] date){
+    public static byte[] temporaryLocationTrace(byte[] phoneNum,byte[] space,byte[] date){
         return warp(
                 new byte[]{(byte) 0x82,0x02},
                 phoneNum,
-                byteArrHelper.union(space, date)
+                ByteArrHelper.union(space, date)
         );
     }
 
@@ -355,11 +325,11 @@ public class ResHelper {
      * @param alarmType 报警类型
      * @return 命令
      */
-    public byte[] makeSureAlarms(byte[] phoneNum,byte[] alarmStreamNum,byte[] alarmType){
+    public static byte[] makeSureAlarms(byte[] phoneNum,byte[] alarmStreamNum,byte[] alarmType){
         return warp(
                 new byte[]{(byte) 0x82,0x03},
                 phoneNum,
-                byteArrHelper.union(alarmStreamNum, alarmType)
+                ByteArrHelper.union(alarmStreamNum, alarmType)
         );
     }
 
@@ -372,7 +342,7 @@ public class ResHelper {
      * @param text 文本信息 最长1024字节 需自己控制长度
      * @return 命令
      */
-    public byte[] sentTextInfo(byte[] phoneNum, byte sign, byte type, String text){
+    public static byte[] sentTextInfo(byte[] phoneNum, byte sign, byte type, String text){
         byte[] str;
         try {
             str = text.getBytes("GBK");
@@ -383,7 +353,7 @@ public class ResHelper {
         return warp(
                 new byte[]{(byte) 0x83, 0x00},
                 phoneNum,
-                phoneNum.length == 10 ? byteArrHelper.union(new byte[]{sign, type}, str) : byteArrHelper.union(new byte[]{sign}, str)
+                phoneNum.length == 10 ? ByteArrHelper.union(new byte[]{sign, type}, str) : ByteArrHelper.union(new byte[]{sign}, str)
         );
     }
 
@@ -395,16 +365,16 @@ public class ResHelper {
      * @param list          事件项列表
      * @return 命令
      */
-    public byte[] setEvent(byte[] phoneNum, byte type, byte num, List<Event> list){
+    public static byte[] setEvent(byte[] phoneNum, byte type, byte num, List<Event> list){
         byte[] buf = new byte[]{};
         for(Event e:list){
-            byte[] buff = byteArrHelper.union(new byte[]{e.getId(),e.getLength()}, e.getContent());
-            buf = byteArrHelper.union(buf, buff);
+            byte[] buff = ByteArrHelper.union(new byte[]{e.getId(),e.getLength()}, e.getContent());
+            buf = ByteArrHelper.union(buf, buff);
         }
         return warp(
                 new byte[]{(byte) 0x83,0x01},
                 phoneNum,
-                byteArrHelper.union(new byte[]{type, num}, buf)
+                ByteArrHelper.union(new byte[]{type, num}, buf)
         );
     }
 
@@ -417,7 +387,7 @@ public class ResHelper {
      * @param list          候选答案列表
      * @return 命令
      */
-    public byte[] sentQuestion(byte[] phoneNum, byte sign, byte length, String question, List<CandidateAnswer> list){
+    public static byte[] sentQuestion(byte[] phoneNum, byte sign, byte length, String question, List<CandidateAnswer> list){
         byte[] ques;
         try {
             ques = question.getBytes("GBK");
@@ -427,13 +397,13 @@ public class ResHelper {
         }
         byte[] buf = new byte[]{};
         for(CandidateAnswer c:list){
-            byte[] buff = byteArrHelper.union(new byte[]{c.getId()},c.getLength(),c.getContent());
-            buf = byteArrHelper.union(buf, buff);
+            byte[] buff = ByteArrHelper.union(new byte[]{c.getId()},c.getLength(),c.getContent());
+            buf = ByteArrHelper.union(buf, buff);
         }
         return warp(
                 new byte[]{(byte) 0x83, 0x02},
                 phoneNum,
-                byteArrHelper.union(new byte[]{sign, length}, ques, buf)
+                ByteArrHelper.union(new byte[]{sign, length}, ques, buf)
         );
     }
 
@@ -445,16 +415,16 @@ public class ResHelper {
      * @param list           信息项列表
      * @return 命令
      */
-    public byte[] setInfoOrderMenu(byte[] phoneNum, byte type, byte num, List<InfoForOrder> list){
+    public static byte[] setInfoOrderMenu(byte[] phoneNum, byte type, byte num, List<InfoForOrder> list){
         byte[] buf = new byte[]{};
         for(InfoForOrder i:list){
-            byte[] buff = byteArrHelper.union(new byte[]{i.getType()}, i.getLength(), i.getName());
-            buf = byteArrHelper.union(buf, buff);
+            byte[] buff = ByteArrHelper.union(new byte[]{i.getType()}, i.getLength(), i.getName());
+            buf = ByteArrHelper.union(buf, buff);
         }
         return warp(
                 new byte[]{(byte) 0x83,0x03},
                 phoneNum,
-                byteArrHelper.union(new byte[]{type, num}, buf)
+                ByteArrHelper.union(new byte[]{type, num}, buf)
         );
     }
 
@@ -466,7 +436,7 @@ public class ResHelper {
      * @param content       信息内容
      * @return 命令
      */
-    public byte[] InfoService(byte[] phoneNum, byte type, byte[] length, String content){
+    public static byte[] InfoService(byte[] phoneNum, byte type, byte[] length, String content){
         byte[] str;
         try {
             str = content.getBytes("GBK");
@@ -477,7 +447,7 @@ public class ResHelper {
         return warp(
                 new byte[]{(byte) 0x83,0x04},
                 phoneNum,
-                byteArrHelper.union(new byte[]{type}, length, str)
+                ByteArrHelper.union(new byte[]{type}, length, str)
         );
     }
 
@@ -488,7 +458,7 @@ public class ResHelper {
      * @param tel             回拨电话
      * @return 命令
      */
-    public byte[] telephoneCallBack(byte[] phoneNum, byte sign, String tel){
+    public static byte[] telephoneCallBack(byte[] phoneNum, byte sign, String tel){
         byte[] str;
         try {
             str = tel.getBytes("GBK");
@@ -499,7 +469,7 @@ public class ResHelper {
         return warp(
                 new byte[]{(byte) 0x84,0x00},
                 phoneNum,
-                byteArrHelper.union(new byte[]{sign}, str)
+                ByteArrHelper.union(new byte[]{sign}, str)
         );
     }
 
@@ -511,18 +481,18 @@ public class ResHelper {
      * @param list          联系人项
      * @return 命令
      */
-    public byte[] setTelBook(byte[] phoneNum, byte type, byte num, List<Contact> list){
+    public static byte[] setTelBook(byte[] phoneNum, byte type, byte num, List<Contact> list){
         byte[] buf = new byte[]{};
         for(Contact c:list){
-            byte[] buf1 = byteArrHelper.union(new byte[]{c.getSign(),c.getPhoneNumLength()}, c.getPhoneNum());
-            byte[] buf2 = byteArrHelper.union(buf1, new byte[]{c.getNameLength()});
-            byte[] buf3 = byteArrHelper.union(buf2, c.getName());
-            buf = byteArrHelper.union(buf, buf3);
+            byte[] buf1 = ByteArrHelper.union(new byte[]{c.getSign(),c.getPhoneNumLength()}, c.getPhoneNum());
+            byte[] buf2 = ByteArrHelper.union(buf1, new byte[]{c.getNameLength()});
+            byte[] buf3 = ByteArrHelper.union(buf2, c.getName());
+            buf = ByteArrHelper.union(buf, buf3);
         }
         return warp(
                 new byte[]{(byte) 0x84,0x01},
                 phoneNum,
-                byteArrHelper.union(new byte[]{type, num}, buf)
+                ByteArrHelper.union(new byte[]{type, num}, buf)
         );
     }
 
@@ -535,12 +505,12 @@ public class ResHelper {
      * @param controlSign   控制标识 2011、2013版本
      * @return 命令
      */
-    public byte[] vehicleControl(byte[] phoneNum,int controlTypeNum, byte[] controlType, byte controlSign){
-        byte[] controlTypeNumber = byteArrHelper.int2twobytes(controlTypeNum);
+    public static byte[] vehicleControl(byte[] phoneNum,int controlTypeNum, byte[] controlType, byte controlSign){
+        byte[] controlTypeNumber = ByteArrHelper.int2twobytes(controlTypeNum);
         return warp(
                 new byte[]{(byte) 0x85,0x00},
                 phoneNum,
-                phoneNum.length == 10 ? byteArrHelper.union(controlTypeNumber, controlType) : new byte[]{controlSign}
+                phoneNum.length == 10 ? ByteArrHelper.union(controlTypeNumber, controlType) : new byte[]{controlSign}
         );
     }
 
@@ -552,15 +522,15 @@ public class ResHelper {
      * @param list            区域项
      * @return 命令
      */
-    public byte[] setCircleArea(byte[] phoneNum, byte prop, byte num, List<CircleArea> list){
+    public static byte[] setCircleArea(byte[] phoneNum, byte prop, byte num, List<CircleArea> list){
         byte[] buf = new byte[]{};
         for(CircleArea c:list){
-            buf = byteArrHelper.union(buf,c.getId(), c.getProp(),c.getLat(),c.getLon(),c.getRadius(),c.getBeginTime(),c.getEndTime(),c.getHighestSpeed(),new byte[]{c.getOverSpeedTime()});
+            buf = ByteArrHelper.union(buf,c.getId(), c.getProp(),c.getLat(),c.getLon(),c.getRadius(),c.getBeginTime(),c.getEndTime(),c.getHighestSpeed(),new byte[]{c.getOverSpeedTime()});
         }
         return warp(
                 new byte[]{(byte) 0x86,0x00},
                 phoneNum,
-                byteArrHelper.union(new byte[]{prop, num}, buf)
+                ByteArrHelper.union(new byte[]{prop, num}, buf)
         );
     }
 
@@ -571,11 +541,11 @@ public class ResHelper {
      * @param areaIds        区域id列表
      * @return 命令
      */
-    public byte[] delCircleArea(byte[] phoneNum,byte areaNum,byte[] areaIds){
+    public static byte[] delCircleArea(byte[] phoneNum,byte areaNum,byte[] areaIds){
         return warp(
                 new byte[]{(byte) 0x86,0x01},
                 phoneNum,
-                byteArrHelper.union(new byte[]{areaNum}, areaIds)
+                ByteArrHelper.union(new byte[]{areaNum}, areaIds)
         );
     }
 
@@ -587,15 +557,15 @@ public class ResHelper {
      * @param list 列表
      * @return 命令
      */
-    public byte[] setRectangleArea(byte[] phoneNum, byte prop, byte num, List<RectangleArea> list){
+    public static byte[] setRectangleArea(byte[] phoneNum, byte prop, byte num, List<RectangleArea> list){
         byte[] buf = new byte[]{};
         for(RectangleArea r:list){
-            buf = byteArrHelper.union( buf,r.getId(), r.getProp(),r.getLeftUpLat(),r.getLeftUpLon(),r.getRightDownLat(),r.getRightDownLon(),r.getBeginTime(),r.getEndTime(),r.getHighestSpeed(),new byte[]{r.getOverSpeedTime()});
+            buf = ByteArrHelper.union( buf,r.getId(), r.getProp(),r.getLeftUpLat(),r.getLeftUpLon(),r.getRightDownLat(),r.getRightDownLon(),r.getBeginTime(),r.getEndTime(),r.getHighestSpeed(),new byte[]{r.getOverSpeedTime()});
         }
         return warp(
                 new byte[]{(byte) 0x86,0x02},
                 phoneNum,
-                byteArrHelper.union(new byte[]{prop, num}, buf)
+                ByteArrHelper.union(new byte[]{prop, num}, buf)
         );
     }
 
@@ -606,11 +576,11 @@ public class ResHelper {
      * @param areaIds 区域ID
      * @return 命令
      */
-    public byte[] delRectangleArea(byte[] phoneNum,byte num,byte[] areaIds){
+    public static byte[] delRectangleArea(byte[] phoneNum,byte num,byte[] areaIds){
         return warp(
                 new byte[]{(byte) 0x86,0x03},
                 phoneNum,
-                byteArrHelper.union(new byte[]{num}, areaIds)
+                ByteArrHelper.union(new byte[]{num}, areaIds)
         );
     }
 
@@ -620,10 +590,10 @@ public class ResHelper {
      * @param p 多边形区域
      * @return 命令
      */
-    public byte[] setPolygonArea(byte[] phoneNum,PolygonArea p){
-        byte[] buf = byteArrHelper.union(p.getId(), p.getProp(),p.getBeginTime(),p.getEndTime(),p.getHighestSpeed(),new byte[]{p.getOverSpeedTime()}, p.getPointNum());
+    public static byte[] setPolygonArea(byte[] phoneNum,PolygonArea p){
+        byte[] buf = ByteArrHelper.union(p.getId(), p.getProp(),p.getBeginTime(),p.getEndTime(),p.getHighestSpeed(),new byte[]{p.getOverSpeedTime()}, p.getPointNum());
         for(Point po:p.getList()){
-            buf = byteArrHelper.union(buf,po.getLat(), po.getLon());
+            buf = ByteArrHelper.union(buf,po.getLat(), po.getLon());
         }
         return warp(
                 new byte[]{(byte) 0x86,0x04},
@@ -639,11 +609,11 @@ public class ResHelper {
      * @param areaIds 区域ID
      * @return 命令
      */
-    public byte[] delPolygonArea(byte[] phoneNum,byte num,byte[] areaIds){
+    public static byte[] delPolygonArea(byte[] phoneNum,byte num,byte[] areaIds){
         return warp(
                 new byte[]{(byte) 0x86,0x05},
                 phoneNum,
-                byteArrHelper.union(new byte[]{num}, areaIds)
+                ByteArrHelper.union(new byte[]{num}, areaIds)
         );
     }
 
@@ -653,10 +623,10 @@ public class ResHelper {
      * @param route 线路
      * @return 命令
      */
-    public byte[] setRoute(byte[] phoneNum,Route route){
-        byte[] buf = byteArrHelper.union(route.getId(), route.getProp(),route.getBeginTime(),route.getEndTime(),route.getPointNum());
+    public static byte[] setRoute(byte[] phoneNum,Route route){
+        byte[] buf = ByteArrHelper.union(route.getId(), route.getProp(),route.getBeginTime(),route.getEndTime(),route.getPointNum());
         for(TurnPoint tp : route.getList()){
-            buf = byteArrHelper.union(buf, tp.getId(),tp.getRouteId(),tp.getLat(),tp.getLon(), new byte[]{tp.getWidth(),
+            buf = ByteArrHelper.union(buf, tp.getId(),tp.getRouteId(),tp.getLat(),tp.getLon(), new byte[]{tp.getWidth(),
                     tp.getProp()},tp.getDriveOverValue(),tp.getDriveLowerValue(),tp.getHighestSpeed(), new byte[]{tp.getOverSpeedTime()});
         }
         return warp(
@@ -673,11 +643,11 @@ public class ResHelper {
      * @param areaIds 区域ID
      * @return 命令
      */
-    public byte[] delRoute(byte[] phoneNum,byte num,byte[] areaIds){
+    public static byte[] delRoute(byte[] phoneNum,byte num,byte[] areaIds){
         return warp(
                 new byte[]{(byte) 0x86,0x07},
                 phoneNum,
-                byteArrHelper.union(new byte[]{num}, areaIds)
+                ByteArrHelper.union(new byte[]{num}, areaIds)
         );
     }
 
@@ -690,11 +660,11 @@ public class ResHelper {
      * @param searchIds 查询ID列表
      * @return 命令
      */
-    public byte[] searchAreaOrRoute(byte[] phoneNum,byte searchType,byte[] searchNum,byte[] searchIds){
+    public static byte[] searchAreaOrRoute(byte[] phoneNum,byte searchType,byte[] searchNum,byte[] searchIds){
         return warp(
                 new byte[]{(byte) 0x86,0x08},
                 phoneNum,
-                byteArrHelper.union(new byte[]{searchType}, searchNum, searchIds)
+                ByteArrHelper.union(new byte[]{searchType}, searchNum, searchIds)
         );
     }
 
@@ -705,11 +675,11 @@ public class ResHelper {
      * @param data           GB/T 19056 相关规定
      * @return 命令
      */
-    public byte[] getDriveHistory(byte[] phoneNum,byte comm,byte[] data){
+    public static byte[] getDriveHistory(byte[] phoneNum,byte comm,byte[] data){
         return warp(
                 new byte[]{(byte) 0x87,0x00},
                 phoneNum,
-                byteArrHelper.union(new byte[]{comm}, data)
+                ByteArrHelper.union(new byte[]{comm}, data)
         );
     }
 
@@ -720,11 +690,11 @@ public class ResHelper {
      * @param data 数据
      * @return 命令
      */
-    public byte[] sentDriveHistory(byte[] phoneNum,byte comm,byte[] data){
+    public static byte[] sentDriveHistory(byte[] phoneNum,byte comm,byte[] data){
         return warp(
                 new byte[]{(byte) 0x87,0x01},
                 phoneNum,
-                byteArrHelper.union(new byte[]{comm}, data)
+                ByteArrHelper.union(new byte[]{comm}, data)
         );
     }
 
@@ -733,7 +703,7 @@ public class ResHelper {
      * @param phoneNum 卡号
      * @return 命令
      */
-    public byte[] driverInfoUpload(byte[] phoneNum){
+    public static byte[] driverInfoUpload(byte[] phoneNum){
         return warp(
                 new byte[]{(byte) 0x87,0x02},
                 phoneNum
@@ -748,11 +718,11 @@ public class ResHelper {
      * @param pkgIds 包ID
      * @return 命令
      */
-    public byte[] mediaUploadAnswer(byte[] phoneNum,byte[] mediaId,byte pkgNum,byte[] pkgIds){
+    public static byte[] mediaUploadAnswer(byte[] phoneNum,byte[] mediaId,byte pkgNum,byte[] pkgIds){
         return warp(
                 new byte[]{(byte) 0x88,0x00},
                 phoneNum,
-                byteArrHelper.union(mediaId, new byte[]{pkgNum}, pkgIds)
+                ByteArrHelper.union(mediaId, new byte[]{pkgNum}, pkgIds)
         );
     }
 
@@ -762,11 +732,11 @@ public class ResHelper {
      * @param info 信息
      * @return 命令
      */
-    public byte[] cameraTakePhotoRightNow(byte[] phoneNum, CameraInfo info){
+    public static byte[] cameraTakePhotoRightNow(byte[] phoneNum, CameraInfo info){
         return warp(
                 new byte[]{(byte) 0x88,0x01},
                 phoneNum,
-                byteArrHelper.union(
+                ByteArrHelper.union(
                         new byte[]{info.getId()},
                         info.getComm(),
                         info.getSpaceTime(),
@@ -782,11 +752,11 @@ public class ResHelper {
      * @param s 搜索信息
      * @return 命令
      */
-    public byte[] searchStoredMedia(byte[] phoneNum,SearchStoredMediaData s){
+    public static byte[] searchStoredMedia(byte[] phoneNum,SearchStoredMediaData s){
         return warp(
                 new byte[]{(byte) 0x88,0x02},
                 phoneNum,
-                byteArrHelper.union(new byte[]{s.getType(),s.getRouteId(),s.getEventCode()}, s.getBeginTime(), s.getEndTime())
+                ByteArrHelper.union(new byte[]{s.getType(),s.getRouteId(),s.getEventCode()}, s.getBeginTime(), s.getEndTime())
         );
     }
 
@@ -796,11 +766,11 @@ public class ResHelper {
      * @param s 存储多媒体数据
      * @return 命令
      */
-    public byte[] storedMediaDataUpload(byte[] phoneNum,StoredMediaDataUpload s){
+    public static byte[] storedMediaDataUpload(byte[] phoneNum,StoredMediaDataUpload s){
         return warp(
                 new byte[]{(byte) 0x88,0x03},
                 phoneNum,
-                byteArrHelper.union(
+                ByteArrHelper.union(
                         new byte[]{s.getType(),s.getRouteId(),s.getEventCode()},
                         s.getBeginTime(),
                         s.getEndTime(),
@@ -817,11 +787,11 @@ public class ResHelper {
      * @param audioSamplingRate 采样率
      * @return 命令
      */
-    public byte[] recordStart(byte[] phoneNum,byte comm,byte[] recordTime,byte saveSign,byte audioSamplingRate){
+    public static byte[] recordStart(byte[] phoneNum,byte comm,byte[] recordTime,byte saveSign,byte audioSamplingRate){
         return warp(
                 new byte[]{(byte) 0x88,0x04},
                 phoneNum,
-                byteArrHelper.union(new byte[]{comm}, recordTime, new byte[]{saveSign,audioSamplingRate})
+                ByteArrHelper.union(new byte[]{comm}, recordTime, new byte[]{saveSign,audioSamplingRate})
         );
     }
 
@@ -832,11 +802,11 @@ public class ResHelper {
      * @param delSign 删除标识
      * @return 命令
      */
-    public byte[] oneStoredMediaSearchAndUpload(byte[] phoneNum,byte[] id,byte delSign){
+    public static byte[] oneStoredMediaSearchAndUpload(byte[] phoneNum,byte[] id,byte delSign){
         return warp(
                 new byte[]{(byte) 0x88,0x05},
                 phoneNum,
-                byteArrHelper.union(id, new byte[]{delSign})
+                ByteArrHelper.union(id, new byte[]{delSign})
         );
     }
 
@@ -847,23 +817,39 @@ public class ResHelper {
      * @param data 数据
      * @return 命令
      */
-    public byte[] sentData(byte[] phoneNum, byte type, byte[] data){
+    public static byte[] sentData(byte[] phoneNum, byte type, byte[] data){
         return warp(
                 new byte[]{(byte) 0x89,0x00},
                 phoneNum,
-                byteArrHelper.union(new byte[]{type}, data)
+                ByteArrHelper.union(new byte[]{type}, data)
         );
     }
 
     /**
-     * 0x8900 数据下行透传
+     * ## 0x8900 数据下行透传
+     *
+     * **实例代码**
+     *
+     * ```java
+     * // 下发 苏标 查询驾驶辅助设备状态信息
+     * DataTransportInfo info = new DataTransportInfo();
+     * info.setType(DataTransportType.SU_STATUS);
+     * info.setSuData(Collections.singletonList(DataTransportDeviceId.DRIVING_ASSISTANCE));
+     * byte[] data = ResHelper.sentData(phoneNum, info);
+     * // session 如何获取请查看项目 readme
+     * session.write(sim, data);
+     * ```
+     *
      * @param phoneNum 卡号
-     * @param type 类型 {@link SendDataType}
-     * @param data 数据
+     * @param data 数据 {@link DataTransportInfo}
      * @return 命令
      */
-    public byte[] sentData(byte[] phoneNum, SendDataType type, byte[] data){
-        return sentData(phoneNum, type.getValue(), data);
+    public static byte[] sentData(byte[] phoneNum, DataTransportInfo data){
+        return warp(
+                new byte[]{(byte) 0x89,0x00},
+                phoneNum,
+                data.toBytes()
+        );
     }
 
     /**
@@ -873,11 +859,11 @@ public class ResHelper {
      * @param p2 rsa
      * @return 命令
      */
-    public byte[] platRsa(byte[] phoneNum,byte[] p1,byte[] p2){
+    public static byte[] platRsa(byte[] phoneNum,byte[] p1,byte[] p2){
         return warp(
                 new byte[]{(byte) 0x8A,0x00},
                 phoneNum,
-                byteArrHelper.union(p1, p2)
+                ByteArrHelper.union(p1, p2)
         );
     }
 }

@@ -37,14 +37,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0303 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0303 信息点播/取消 InfoOrderOrCancel");
         tpe.execute(()->{
-            String phone = byteArrHelper.toHexString(phoneNum);
+            String phone = ByteArrHelper.toHexString(phoneNum);
             // 点播类型
             byte type = msgBody[0];
             // 点播或者取消
@@ -57,6 +55,6 @@ public class Handler0x0303 implements PackHandler {
                 dataService.cancelOrderInfo( phone, type );
             }
         });
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
     }
 }

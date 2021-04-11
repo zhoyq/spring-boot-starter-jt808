@@ -30,12 +30,11 @@ import lombok.extern.slf4j.Slf4j;
 @Jt808Pack(msgId = 0x0004)
 @AllArgsConstructor
 public class Handler0x0004 implements PackHandler {
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0004 查询服务器时间请求 Query Server DateTime");
-        return resHelper.queryServerDateTime(phoneNum);
+        return ResHelper.queryServerDateTime(phoneNum);
     }
 }
 

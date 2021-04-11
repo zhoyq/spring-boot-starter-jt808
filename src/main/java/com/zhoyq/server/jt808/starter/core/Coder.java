@@ -15,9 +15,6 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class Coder {
 
-    private Jt808Helper jt808Helper;
-    private ByteArrHelper byteArrHelper;
-
     private static final byte MSG_BROKER = 0x7E;
     /**
      * 含标识位
@@ -64,7 +61,7 @@ public class Coder {
                 // 循环终结 但是 还是没找到最后的标识位
                 // 继续读取 重新解析
                 if (byteBuf != MSG_BROKER) {
-                    // FIXME 如果只有一个 标识位 会导致一直读取的问题 需要设置一个限定长度 读取超过这个长度 就直接丢弃
+                    // 如果只有一个 标识位 会导致一直读取的问题 需要设置一个限定长度 读取超过这个长度 就直接丢弃
                     // 目前设置成 10K 以后会加入配置
                     if (pos < MAX_READ_LEN) {
                         wrapper.reset();
@@ -81,21 +78,21 @@ public class Coder {
                 // 读取缓存
                 byte[] packageBuf = new byte[pos];
                 wrapper.get(packageBuf);
-                log.trace("origin data : {}", byteArrHelper.toHexString(packageBuf));
+                log.trace("origin data : {}", ByteArrHelper.toHexString(packageBuf));
                 // 转义 转义后的值 已经去掉了 标识位
-                packageBuf = jt808Helper.retrans(packageBuf);
-                log.trace("trans data : {}", byteArrHelper.toHexString(packageBuf));
+                packageBuf = Jt808Helper.retrans(packageBuf);
+                log.trace("trans data : {}", ByteArrHelper.toHexString(packageBuf));
                 // 校验失败 丢掉当前包 继续读取剩余的字节
-                boolean verify = jt808Helper.verify(packageBuf);
+                boolean verify = Jt808Helper.verify(packageBuf);
                 if (!verify) {
                     log.warn("verify failed {}", wrapper.getRemoteAddress());
                     return wrapper.remaining() > 0;
                 }
                 // 校验成功 检查 长度 并输出到下一步操作
-                byte[] body = byteArrHelper.subByte(packageBuf, 2, 4);
-                int sizeBuf = jt808Helper.getMsgBodyLength(body);
-                boolean version2019 = jt808Helper.isVersion2019(body);
-                boolean b = jt808Helper.hasPackage(body);
+                byte[] body = ByteArrHelper.subByte(packageBuf, 2, 4);
+                int sizeBuf = Jt808Helper.getMsgBodyLength(body);
+                boolean version2019 = Jt808Helper.isVersion2019(body);
+                boolean b = Jt808Helper.hasPackage(body);
                 int size;
                 if(b){
                     if (version2019) {
@@ -114,7 +111,7 @@ public class Coder {
                 // 检查长度
                 if(size == packageBuf.length) {
                     // 长度符合 输出
-                    log.info("handle data : {}", byteArrHelper.toHexString(packageBuf));
+                    log.info("handle data : {}", ByteArrHelper.toHexString(packageBuf));
                     // 带有校验位的完整消息
                     wrapper.write(packageBuf);
                     return wrapper.remaining() > 0;
@@ -138,6 +135,7 @@ public class Coder {
 
     public byte[] encode(byte[] buf) {
         // 添加验证 转义
-        return jt808Helper.trans(jt808Helper.addVerify(buf));
+        // 如果 需要下发 RSA 加密数据 则需要在这里处理
+        return Jt808Helper.trans(Jt808Helper.addVerify(buf));
     }
 }

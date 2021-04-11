@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    
     <groupId>com.zhoyq</groupId>
-    <version>1.3.3</version>
+    <version>1.4.0</version>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spring-boot-starter-jt808</artifactId>
     <packaging>jar</packaging>
@@ -158,6 +158,39 @@
                     <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>
+        </profile>
+        <profile>
+            <id>docs</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <doclet>ch.raffael.mddoclet.MarkdownDoclet</doclet>
+                            <docletArtifact>
+                                <groupId>ch.raffael.markdown-doclet</groupId>
+                                <artifactId>markdown-doclet</artifactId>
+                                <version>1.4</version>
+                            </docletArtifact>
+                            <useStandardDocletOptions>true</useStandardDocletOptions>
+                            <!--                            <javadocExecutable>D:\soft\jdk\zulu8.38.0.13-ca-jdk8.0.212-win_x64\bin\javadoc.exe</javadocExecutable>-->
+                            <tags>
+                                <tag>
+                                    <name>date</name>
+                                    <placement>a</placement>
+                                    <head>时间：</head>
+                                </tag>
+                            </tags>
+                            <failOnWarnings>false</failOnWarnings>
+                            <source>${java.version}</source>
+                            <charset>UTF-8</charset>
+                            <encoding>UTF-8</encoding>
+                            <docencoding>UTF-8</docencoding>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 

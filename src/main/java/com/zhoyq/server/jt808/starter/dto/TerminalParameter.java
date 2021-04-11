@@ -15,9 +15,13 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.val;
+
+import java.nio.charset.Charset;
 
 /**
  * 终端控制参数
@@ -27,18 +31,38 @@ import lombok.Setter;
 @Builder
 @Setter
 @Getter
-public class Parameter {
+public class TerminalParameter {
     /**
      * 参数ID
      */
-    private byte[] parameterId;
-    /**
-     * 参数值长度
-     */
-    private byte length;
+    private TerminalParameterId parameterId;
+
     /**
      * 参数值
      */
     private byte[] value;
+
+    public void setDwordValue(int value){
+        this.value = ByteArrHelper.int2fourbytes(value);
+    }
+
+    public void setStringValue(String value){
+        this.value = value.getBytes(Charset.forName("GBK"));
+    }
+
+    public void setWordValue(int value){
+        this.value = ByteArrHelper.int2twobytes(value);
+    }
+
+    public void setByteValue(byte value) {
+        this.value = new byte[]{value};
+    }
+
+    /**
+     * 转换消息到二进制
+     */
+    public byte[] toBytes() {
+        return ByteArrHelper.union(parameterId.getValue(), new byte[]{(byte)value.length}, value);
+    }
 }
 

@@ -32,12 +32,7 @@ import java.util.UUID;
  * @date 2020/2/18
  */
 @Slf4j
-@Component
-@AllArgsConstructor
 public class Analyzer {
-    private ByteArrHelper byteArrHelper;
-    private Jt808Helper jt808Helper;
-
     /**
      * 回传终端参数分析
      * @param processor 处理器
@@ -51,12 +46,12 @@ public class Analyzer {
         while(pos < data.length){
             byte length = data[pos + 4];
 
-            byte[] id = byteArrHelper.subByte(data, pos, pos + 4);
-            byte[] dataBuf = byteArrHelper.subByte(data, pos + 5, pos + length + 5);
+            byte[] id = ByteArrHelper.subByte(data, pos, pos + 4);
+            byte[] dataBuf = ByteArrHelper.subByte(data, pos + 5, pos + length + 5);
 
             pos += length + 5;
 
-            processor.process(byteArrHelper.toHexString(id), dataBuf);
+            processor.process(ByteArrHelper.toHexString(id), dataBuf);
         }
     }
 
@@ -68,7 +63,7 @@ public class Analyzer {
     public TerminalProperty analyzeTerminalProperty(byte[] data){
         TerminalProperty terminalProperty = TerminalProperty.builder().build();
         // 终端类型
-        byte[] terminalType = byteArrHelper.subByte(data, 0, 2);
+        byte[] terminalType = ByteArrHelper.subByte(data, 0, 2);
         terminalProperty.setSupportBus((terminalType[1] & Const.BIN_0X01) == Const.BIN_0X01);
         terminalProperty.setSupportDangerVehicle((terminalType[1] & Const.BIN_0X02) == Const.BIN_0X02);
         terminalProperty.setSupportFreightVehicle((terminalType[1] & Const.BIN_0X04) == Const.BIN_0X04);
@@ -76,37 +71,37 @@ public class Analyzer {
         terminalProperty.setSupportRecording((terminalType[1] & Const.BIN_0X40) == Const.BIN_0X40);
         terminalProperty.setSupportExtension((terminalType[1] & Const.BIN_0X80) == Const.BIN_0X80);
         // 制造商ID
-        byte[] manufacturer = byteArrHelper.subByte(data, 2, 7);
-        terminalProperty.setManufacturer(byteArrHelper.toHexString(manufacturer));
+        byte[] manufacturer = ByteArrHelper.subByte(data, 2, 7);
+        terminalProperty.setManufacturer(ByteArrHelper.toHexString(manufacturer));
         // 终端型号
-        byte[] terminalModel = byteArrHelper.subByte(data, 7, 27);
-        terminalProperty.setTerminalModel(byteArrHelper.toHexString(terminalModel));
+        byte[] terminalModel = ByteArrHelper.subByte(data, 7, 27);
+        terminalProperty.setTerminalModel(ByteArrHelper.toHexString(terminalModel));
         // 终端ID
-        byte[] terminalId = byteArrHelper.subByte(data, 27, 34);
+        byte[] terminalId = ByteArrHelper.subByte(data, 27, 34);
         try {
-            terminalProperty.setTerminalId(jt808Helper.toGBKString(terminalId));
+            terminalProperty.setTerminalId(Jt808Helper.toGBKString(terminalId));
         } catch (UnsupportedEncodingException e) {
             log.warn(e.getMessage());
         }
         // 终端SIM卡ICCID
-        byte[] terminalIccid = byteArrHelper.subByte(data, 34, 44);
-        terminalProperty.setIccid(byteArrHelper.getBCDStrByArr(terminalIccid));
+        byte[] terminalIccid = ByteArrHelper.subByte(data, 34, 44);
+        terminalProperty.setIccid(ByteArrHelper.getBCDStrByArr(terminalIccid));
         // 终端硬件版本号长度
         int terminalHardwareVersionLength = data[44];
         // 终端已经按版本号
-        byte[] terminalHardwareVersion = byteArrHelper.subByte(data, 45, 45 + terminalHardwareVersionLength);
+        byte[] terminalHardwareVersion = ByteArrHelper.subByte(data, 45, 45 + terminalHardwareVersionLength);
         try {
-            terminalProperty.setTerminalHardVersion(jt808Helper.toGBKString(terminalHardwareVersion));
+            terminalProperty.setTerminalHardVersion(Jt808Helper.toGBKString(terminalHardwareVersion));
         } catch (UnsupportedEncodingException e) {
             log.warn(e.getMessage());
         }
         // 终端软件版本号长度
         int terminalSoftwareVersionLength = data[45 + terminalHardwareVersionLength];
         // 终端固件版本号
-        byte[] terminalSoftwareVersion = byteArrHelper.subByte(data, 46 + terminalHardwareVersionLength,
+        byte[] terminalSoftwareVersion = ByteArrHelper.subByte(data, 46 + terminalHardwareVersionLength,
                 46 + terminalHardwareVersionLength + terminalSoftwareVersionLength);
         try {
-            terminalProperty.setTerminalSoftVersion(jt808Helper.toGBKString(terminalSoftwareVersion));
+            terminalProperty.setTerminalSoftVersion(Jt808Helper.toGBKString(terminalSoftwareVersion));
         } catch (UnsupportedEncodingException e) {
             log.warn(e.getMessage());
         }
@@ -217,7 +212,7 @@ public class Analyzer {
             byte length = attache[pos + 1];
 
             int id = attache[pos];
-            byte[] dataBuf = byteArrHelper.subByte(attache, pos + 2, pos + length + 2);
+            byte[] dataBuf = ByteArrHelper.subByte(attache, pos + 2, pos + length + 2);
 
             pos += length + 2;
 
@@ -232,32 +227,32 @@ public class Analyzer {
      */
     public LocationInfo analyzeLocation(byte[] msgBody) {
         // 报警标识
-        byte[] alarms = byteArrHelper.subByte(msgBody, 0, 4);
+        byte[] alarms = ByteArrHelper.subByte(msgBody, 0, 4);
         // 状态
-        byte[] status = byteArrHelper.subByte(msgBody, 4, 8);
+        byte[] status = ByteArrHelper.subByte(msgBody, 4, 8);
         // 纬度[以度为单位的值乘以 10 的 6 次方，精确到百万分之一度]
-        byte[] latitude = byteArrHelper.subByte(msgBody, 8, 12);
+        byte[] latitude = ByteArrHelper.subByte(msgBody, 8, 12);
         // 经度[以度为单位的值乘以 10 的 6 次方，精确到百万分之一度]
-        byte[] longitude = byteArrHelper.subByte(msgBody, 12, 16);
+        byte[] longitude = ByteArrHelper.subByte(msgBody, 12, 16);
         // 高程 [单位 m]
-        byte[] height = byteArrHelper.subByte(msgBody, 16, 18);
+        byte[] height = ByteArrHelper.subByte(msgBody, 16, 18);
         // 速度 [单位 0.1 km/h]
-        byte[] speed = byteArrHelper.subByte(msgBody, 18, 20);
+        byte[] speed = ByteArrHelper.subByte(msgBody, 18, 20);
         // 方向 [0~359 正北为0 顺时针]
-        byte[] direction = byteArrHelper.subByte(msgBody, 20, 22);
+        byte[] direction = ByteArrHelper.subByte(msgBody, 20, 22);
         // 时间 [yy-mm-dd-hh-mm-ss]
-        byte[] datetime = byteArrHelper.subByte(msgBody, 22, 28);
+        byte[] datetime = ByteArrHelper.subByte(msgBody, 22, 28);
         // 附加
-        byte[] attache = byteArrHelper.subByte(msgBody, 28);
+        byte[] attache = ByteArrHelper.subByte(msgBody, 28);
 
         AlarmInfo alarmInfo = this.analyzeAlarm(alarms);
         StatusInfo statusInfo = this.analyzeStatus(status);
-        double longitudeDouble = (double)byteArrHelper.fourbyte2int(longitude) / (double)1000000;
-        double latitudeDouble = (double)byteArrHelper.fourbyte2int(latitude) / (double)1000000;
-        int heightInt = byteArrHelper.twobyte2int(height);
-        double speedDouble = (double) (byteArrHelper.twobyte2int(speed)) / (double) 10;
-        int directionInt = byteArrHelper.twobyte2int(direction);
-        String datetimeString = jt808Helper.getDataTime(datetime);
+        double longitudeDouble = (double)ByteArrHelper.fourbyte2int(longitude) / (double)1000000;
+        double latitudeDouble = (double)ByteArrHelper.fourbyte2int(latitude) / (double)1000000;
+        int heightInt = ByteArrHelper.twobyte2int(height);
+        double speedDouble = (double) (ByteArrHelper.twobyte2int(speed)) / (double) 10;
+        int directionInt = ByteArrHelper.twobyte2int(direction);
+        String datetimeString = Jt808Helper.getDataTime(datetime);
         List<LocationAttachInfo> attachInfoList = new ArrayList<>();
         this.analyzeAttache((id, data) -> {
             LocationAttachInfo attachInfo = LocationAttachInfo.builder().build();
@@ -350,23 +345,23 @@ public class Analyzer {
         // 姓名长度
         int nameLength = data[0];
         // 驾驶员姓名
-        byte[] name = byteArrHelper.subByte(data,1,nameLength + 1);
+        byte[] name = ByteArrHelper.subByte(data,1,nameLength + 1);
         // 身份证编码
-        byte[] idCard = byteArrHelper.subByte(data,nameLength + 1,nameLength + 21);
+        byte[] idCard = ByteArrHelper.subByte(data,nameLength + 1,nameLength + 21);
         // 从业资格证编码
-        byte[] certificate = byteArrHelper.subByte(data,nameLength + 21,nameLength + 61);
+        byte[] certificate = ByteArrHelper.subByte(data,nameLength + 21,nameLength + 61);
         // 从业资格证发证机构名称长度 最后全是 所以不需要
 //        int certificatePublishAgentNameLength = data[nameLength + 61];
         // 从业资格证发证机构名称
-        byte[] certificatePublishAgentName = byteArrHelper.subByte(data,nameLength + 62);
+        byte[] certificatePublishAgentName = ByteArrHelper.subByte(data,nameLength + 62);
 
         DriverInfo driverInfo = DriverInfo.builder().build();
 
         try {
-            driverInfo.setDriverName(jt808Helper.toGBKString(name));
-            driverInfo.setIdCardNumber(jt808Helper.toGBKString(idCard));
-            driverInfo.setCertificateNumber(jt808Helper.toGBKString(certificate));
-            driverInfo.setCertificatePublishAgentName(jt808Helper.toGBKString(certificatePublishAgentName));
+            driverInfo.setDriverName(Jt808Helper.toGBKString(name));
+            driverInfo.setIdCardNumber(Jt808Helper.toGBKString(idCard));
+            driverInfo.setCertificateNumber(Jt808Helper.toGBKString(certificate));
+            driverInfo.setCertificatePublishAgentName(Jt808Helper.toGBKString(certificatePublishAgentName));
         } catch (UnsupportedEncodingException e) {
              log.warn(e.getMessage());
         }
@@ -390,7 +385,7 @@ public class Analyzer {
             // 2013 第一个字节 不支持其他形式
             return null;
         }
-        String gTime = jt808Helper.getDataTime(byteArrHelper.subByte(data,1,7));
+        String gTime = Jt808Helper.getDataTime(ByteArrHelper.subByte(data,1,7));
 
         driverInfo.setDatetime(gTime);
 
@@ -401,15 +396,15 @@ public class Analyzer {
                     // IC 卡读卡成功 读取驾驶员信息
                     try {
                         int nameLength = data[8];
-                        String driverName = jt808Helper.toGBKString(byteArrHelper.subByte(data,9,
+                        String driverName = Jt808Helper.toGBKString(ByteArrHelper.subByte(data,9,
                                 nameLength + 9));
-                        String certificate = jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 9,
+                        String certificate = Jt808Helper.toGBKString(ByteArrHelper.subByte(data,nameLength + 9,
                                 nameLength + 29));
                         int certificatePublishAgentNameLength = data[nameLength + 29];
                         String certificatePublishAgentName =
-                                jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 30,
+                                Jt808Helper.toGBKString(ByteArrHelper.subByte(data,nameLength + 30,
                                         nameLength + 30 + certificatePublishAgentNameLength));
-                        String expiryTime = byteArrHelper.getBCDStrByArr(byteArrHelper.subByte(data,
+                        String expiryTime = ByteArrHelper.getBCDStrByArr(ByteArrHelper.subByte(data,
                                 nameLength + 30 + certificatePublishAgentNameLength));
 
                         driverInfo.setDriverName(driverName);
@@ -462,7 +457,7 @@ public class Analyzer {
             // 2019 第一个字节 不支持其他形式
             return null;
         }
-        String gTime = jt808Helper.getDataTime(byteArrHelper.subByte(data,1,7));
+        String gTime = Jt808Helper.getDataTime(ByteArrHelper.subByte(data,1,7));
 
         driverInfo.setDatetime(gTime);
 
@@ -473,18 +468,18 @@ public class Analyzer {
                     // IC 卡读卡成功 读取驾驶员信息
                     try {
                         int nameLength = data[8];
-                        String driverName = jt808Helper.toGBKString(byteArrHelper.subByte(data,9,
+                        String driverName = Jt808Helper.toGBKString(ByteArrHelper.subByte(data,9,
                                 nameLength + 9));
-                        String certificate = jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 9,
+                        String certificate = Jt808Helper.toGBKString(ByteArrHelper.subByte(data,nameLength + 9,
                                 nameLength + 29));
                         int certificatePublishAgentNameLength = data[nameLength + 29];
                         String certificatePublishAgentName =
-                                jt808Helper.toGBKString(byteArrHelper.subByte(data,nameLength + 30,
+                                Jt808Helper.toGBKString(ByteArrHelper.subByte(data,nameLength + 30,
                                         nameLength + 30 + certificatePublishAgentNameLength));
-                        String expiryTime = byteArrHelper.getBCDStrByArr(byteArrHelper.subByte(data,
+                        String expiryTime = ByteArrHelper.getBCDStrByArr(ByteArrHelper.subByte(data,
                                 nameLength + certificatePublishAgentNameLength + 30,
                                 nameLength + certificatePublishAgentNameLength + 34));
-                        String idCardNum = jt808Helper.toGBKString(byteArrHelper.subByte(
+                        String idCardNum = Jt808Helper.toGBKString(ByteArrHelper.subByte(
                                 data,
                                 nameLength + certificatePublishAgentNameLength + 34,
                                 nameLength + certificatePublishAgentNameLength + 54
@@ -537,14 +532,14 @@ public class Analyzer {
 
         canDataInfo.setTimestamp(System.currentTimeMillis());
 
-        String time = byteArrHelper.getBCDStr(new byte[]{data[2]}) + "-" +
-                      byteArrHelper.getBCDStr(new byte[]{data[3]}) + "-" +
-                      byteArrHelper.getBCDStr(new byte[]{data[4]}) + "-" +
-                      byteArrHelper.getBCDStr(new byte[]{data[5]}) +
-                      byteArrHelper.getBCDStr(new byte[]{data[6]});
+        String time = ByteArrHelper.getBCDStr(new byte[]{data[2]}) + "-" +
+                      ByteArrHelper.getBCDStr(new byte[]{data[3]}) + "-" +
+                      ByteArrHelper.getBCDStr(new byte[]{data[4]}) + "-" +
+                      ByteArrHelper.getBCDStr(new byte[]{data[5]}) +
+                      ByteArrHelper.getBCDStr(new byte[]{data[6]});
 
         canDataInfo.setReceiveTime(time);
-        canDataInfo.setData(byteArrHelper.subByte(data, 7));
+        canDataInfo.setData(ByteArrHelper.subByte(data, 7));
         return canDataInfo;
     }
 
@@ -554,11 +549,11 @@ public class Analyzer {
      */
     public void analyzeCanItem(CanDataItemProcessor processor, byte[] data) {
         for(int pos = 0, len = 12;pos < data.length; pos += len){
-            byte[] head = byteArrHelper.subByte(data, pos,pos + 4);
-            byte[] tail = byteArrHelper.subByte(data, pos + 4,pos + len);
+            byte[] head = ByteArrHelper.subByte(data, pos,pos + 4);
+            byte[] tail = ByteArrHelper.subByte(data, pos + 4,pos + len);
             CanDataItem item = CanDataItem.builder().build();
 
-            int headInt = byteArrHelper.fourbyte2int(head);
+            int headInt = ByteArrHelper.fourbyte2int(head);
 
             item.setCanTunnel(headInt & 0x80000000 >> 31);
             item.setFrameType(headInt & 0x40000000 >> 30);
@@ -577,23 +572,11 @@ public class Analyzer {
      */
     public MediaInfo analyzeMediaInfo(byte[] data) {
         MediaInfo mediaInfo = MediaInfo.builder().build();
-        mediaInfo.setMediaId(byteArrHelper.fourbyte2int(byteArrHelper.subByte(data,0,4)));
+        mediaInfo.setMediaId(ByteArrHelper.fourbyte2int(ByteArrHelper.subByte(data,0,4)));
         mediaInfo.setMediaType(data[4]);
         mediaInfo.setMediaFormat(data[5]);
         mediaInfo.setEventNumber(data[6]);
         mediaInfo.setTunnelId(data[7]);
         return mediaInfo;
-    }
-
-    /**
-     * 数据透传分析
-     * @param data 消息体
-     * @return 分析结果
-     */
-    public DataTransportInfo analyzeDataTransport(byte[] data) {
-        DataTransportInfo dataTransportInfo = DataTransportInfo.builder().build();
-        dataTransportInfo.setType(data[0]);
-        dataTransportInfo.setData(byteArrHelper.subByte(data, 1));
-        return dataTransportInfo;
     }
 }

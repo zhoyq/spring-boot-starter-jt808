@@ -15,6 +15,7 @@
 
 package com.zhoyq.server.jt808.starter.service;
 
+import com.zhoyq.server.jt808.starter.dto.DataTransportInfo;
 import com.zhoyq.server.jt808.starter.dto.SimAuthDto;
 import com.zhoyq.server.jt808.starter.entity.*;
 

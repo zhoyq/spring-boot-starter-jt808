@@ -16,25 +16,23 @@
 package com.zhoyq.server.jt808.starter.helper;
 
 import com.zhoyq.server.jt808.starter.config.Const;
-import org.springframework.stereotype.Component;
 
 /**
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2019/1/20
  */
-@Component
 public class ByteArrHelper {
 
     /**
      * 将字节数组翻译成16进制字符串
      *
-     * @param buf
-     * @return
+     * @param buf 字节数据
+     * @return 十六进制字符串
      */
-    public String toHexString(byte[] buf) {
+    public static String toHexString(byte[] buf) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < buf.length; i++) {
-            String str = Integer.toHexString(buf[i]);
+        for (byte b : buf) {
+            String str = Integer.toHexString(b);
             if (str.length() > 2) {
                 str = str.substring(str.length() - 2);
             } else if (str.length() < 2) {
@@ -48,10 +46,10 @@ public class ByteArrHelper {
     /**
      * 将字节数组翻译成BCD码字符串
      * 字节数组长度为1
-     * @param subByte
-     * @return
+     * @param subByte 字节数据
+     * @return BCD编码字符串
      */
-    public String getBCDStr(byte[] subByte) {
+    public static String getBCDStr(byte[] subByte) {
         byte b = subByte[0];
         byte b1 = (byte) (b & 0x0f);
         byte b2 = (byte) ((b >>> 4) & 0x0f);
@@ -66,24 +64,24 @@ public class ByteArrHelper {
     /**
      * 将字节数组翻译成BCD码字符串
      *
-     * @param subByte
-     * @return
+     * @param subByte 字节数据
+     * @return BCD编码数据
      */
-    public String getBCDStrByArr(byte[] subByte) {
-        String buf = "";
-        for(int i=0;i<subByte.length;i++){
-            buf += getBCDStr(new byte[]{subByte[i]});
+    public static String getBCDStrByArr(byte[] subByte) {
+        StringBuilder buf = new StringBuilder();
+        for (byte b : subByte) {
+            buf.append(getBCDStr(new byte[]{b}));
         }
-        return buf;
+        return buf.toString();
     }
 
     /**
      * 将字节转换成16进制字符串
      *
-     * @param buf
-     * @return
+     * @param buf 字节码
+     * @return 十六进制字符
      */
-    public String toHexString(byte buf) {
+    public static String toHexString(byte buf) {
         String str = Integer.toHexString(buf);
         if (str.length() > 2) {
             str = str.substring(str.length() - 2);
@@ -94,41 +92,23 @@ public class ByteArrHelper {
     }
 
     /**
-     * 拼接两个字节数组
-     *
-     * @param b1
-     * @param b2
-     * @return
-     */
-    public byte[] union(byte[] b1, byte[] b2) {
-        byte[] buf = new byte[b1.length + b2.length];
-        for (int i = 0; i < b1.length; i++) {
-            buf[i] = b1[i];
-        }
-        for (int i = 0; i < b2.length; i++) {
-            buf[b1.length + i] = b2[i];
-        }
-        return buf;
-    }
-
-    /**
      * 拼接多个字节数组
      *
-     * @param b
-     * @return
+     * @param b 数组列表
+     * @return 拼接后的数组
      */
-    public byte[] union(byte[] ... b) {
+    public static byte[] union(byte[] ... b) {
         byte[] buf;
         int len = 0;
-        for(int i=0;i<b.length;i++){
-            len += b[i].length;
+        for (byte[] bytes : b) {
+            len += bytes.length;
         }
         buf = new byte[len];
         int pos = 0;
-        for(int i=0;i<b.length;i++){
-            for(int j=0;j<b[i].length;j++){
-                buf[pos] = b[i][j];
-                pos ++;
+        for (byte[] bytes : b) {
+            for (byte aByte : bytes) {
+                buf[pos] = aByte;
+                pos++;
             }
         }
         return buf;
@@ -137,11 +117,11 @@ public class ByteArrHelper {
     /**
      * 截取指定位置到末尾的字节数组 start是数组脚标 从0开始
      *
-     * @param data
-     * @param start
-     * @return
+     * @param data 原始数组
+     * @param start 截取起点
+     * @return 截取后的数组
      */
-    public byte[] subByte(byte[] data, int start) {
+    public static byte[] subByte(byte[] data, int start) {
         byte[] buf = new byte[data.length - start];
         for (int n = 0, i = start; i < data.length; i++, n++) {
             buf[n] = data[i];
@@ -152,12 +132,12 @@ public class ByteArrHelper {
     /**
      * 截取指定位置的字节数组 start end是数组脚标 从0开始 算start 不算end
      *
-     * @param data
-     * @param start
-     * @param end
-     * @return
+     * @param data 原始数组
+     * @param start 截取起点
+     * @param end 截取终点
+     * @return 截取后的数组
      */
-    public byte[] subByte(byte[] data, int start, int end) {
+    public static byte[] subByte(byte[] data, int start, int end) {
         byte[] buf = new byte[end - start];
         for (int n = 0, i = start; i < end; i++, n++) {
             buf[n] = data[i];
@@ -168,10 +148,10 @@ public class ByteArrHelper {
     /**
      * 四字节数组转int
      *
-     * @param b
-     * @return
+     * @param b 需要转换的字节数据
+     * @return 转换后的整型变量
      */
-    public int fourbyte2int(byte[] b) {
+    public static int fourbyte2int(byte[] b) {
         return ((((b[0] << 24) & 0xff000000) ^ ((b[1] << 16) & 0x00ff0000))
                 ^ ((b[2] << 8) & 0x0000ff00)) ^ (b[3] & 0x000000ff);
     }
@@ -179,20 +159,20 @@ public class ByteArrHelper {
     /**
      * 二字节数组转int
      *
-     * @param b
-     * @return
+     * @param b 需要转换的字节数据
+     * @return 转换后的整型变量
      */
-    public int twobyte2int(byte[] b) {
+    public static int twobyte2int(byte[] b) {
         return ((b[0] << 8) & 0xff00) ^ (b[1] & 0x00ff);
     }
 
     /**
      * int 转 二字节数组
      *
-     * @param n
-     * @return
+     * @param n 需要转换的整型数据
+     * @return 转换后的字节变量
      */
-    public byte[] int2twobytes(int n) {
+    public static byte[] int2twobytes(int n) {
         byte[] buf = new byte[2];
         buf[0] = (byte) ((n >>> 8) & 0x000000ff);
         buf[1] = (byte) (n & 0x000000ff);
@@ -202,10 +182,10 @@ public class ByteArrHelper {
     /**
      * int 转 四字节数组
      *
-     * @param n
-     * @return
+     * @param n 需要转换的整型数据
+     * @return 转换后的字节变量
      */
-    public byte[] int2fourbytes(int n) {
+    public static byte[] int2fourbytes(int n) {
         byte[] buf = new byte[4];
         buf[0] = (byte) ((n >>> 24) & 0x000000ff);
         buf[1] = (byte) ((n >>> 16) & 0x000000ff);
@@ -214,7 +194,12 @@ public class ByteArrHelper {
         return buf;
     }
 
-    public byte[] hexStr2bytes(String hex){
+    /**
+     * 十六进制字符串转字节码
+     * @param hex 需要转换的十六进制字符串
+     * @return 转换后的字节码
+     */
+    public static byte[] hexStr2bytes(String hex){
         if(hex.length()%2 != 0) {
             hex = "0" + hex;
         }
@@ -232,7 +217,12 @@ public class ByteArrHelper {
         return res;
     }
 
-    public byte[] long2eightbytes(long values) {
+    /**
+     * 长整型转字节码
+     * @param values 需要转换的长整型数据
+     * @return 转换后的字节码
+     */
+    public static byte[] long2eightbytes(long values) {
         byte[] buffer = new byte[8];
         for (int i = 0; i < 8; i++) {
             int offset = 64 - (i + 1) * 8;
@@ -241,7 +231,12 @@ public class ByteArrHelper {
         return buffer;
     }
 
-    public long eightbytes2long(byte[] buffer) {
+    /**
+     * 字节码转长整型
+     * @param buffer 需要转换的字节数据
+     * @return 转换后的长整型
+     */
+    public static long eightbytes2long(byte[] buffer) {
         long  values = 0;
         for (int i = 0; i < 8; i++) {
             values <<= 8;

@@ -38,21 +38,19 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0200 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
     private Analyzer analyzer;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0200 终端位置信息汇报 LocationInfoReport");
 
         tpe.execute(() -> {
-            String phone = byteArrHelper.toHexString(phoneNum);
+            String phone = ByteArrHelper.toHexString(phoneNum);
             LocationInfo locationInfo = analyzer.analyzeLocation(msgBody);
 
             dataService.terminalLocation(phone, locationInfo, null);
         });
 
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

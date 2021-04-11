@@ -38,21 +38,19 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0201 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
     private Analyzer analyzer;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0201 位置信息查询应答 SearchLocationInfoAnswer");
         tpe.execute(() -> {
-            String phone = byteArrHelper.toHexString(phoneNum);
-            LocationInfo locationInfo = analyzer.analyzeLocation(byteArrHelper.subByte(msgBody, 2));
+            String phone = ByteArrHelper.toHexString(phoneNum);
+            LocationInfo locationInfo = analyzer.analyzeLocation(ByteArrHelper.subByte(msgBody, 2));
 
             // 作为应答 应该也需要调用应答接口才对
             // 暂时调用定位解析定位数据
             dataService.terminalLocation(phone, locationInfo, null);
         });
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

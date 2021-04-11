@@ -36,17 +36,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0608 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle(byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0608 查询区域或者线路数据应答 search area or route data answer");
-        String phone = byteArrHelper.toHexString(phoneNum);
+        String phone = ByteArrHelper.toHexString(phoneNum);
         // 消息体中没有终端对应平台下发指令的流水号 所以指定流水号为 -1
         int platformStreamNumber = -1;
         // 保存命令到相应的下发指令
         tpe.execute(() -> dataService.terminalAnswer(phone, platformStreamNumber, "8608", "0608", msgBody));
-        return resHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

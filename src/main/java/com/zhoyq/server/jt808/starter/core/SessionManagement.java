@@ -29,18 +29,18 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class SessionManagement {
 
-    private static Map<String, Object> sessionMap = new ConcurrentHashMap<>();
+    private final static Map<String, Object> SESSION_MAP = new ConcurrentHashMap<>();
 
     public boolean contains(String phone) {
-        return sessionMap.containsKey(phone);
+        return SESSION_MAP.containsKey(phone);
     }
 
     public Object get(String phone) {
-        return sessionMap.get(phone);
+        return SESSION_MAP.get(phone);
     }
 
     public void set(String phone, Object session) {
-        sessionMap.put(phone, session);
+        SESSION_MAP.put(phone, session);
     }
 
     public boolean write(String sim, byte[] data){

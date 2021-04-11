@@ -37,17 +37,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0805 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0805 摄像头立即拍摄命令应答  CameraTakePhotoRightNowAnswer");
         tpe.execute(() -> {
-            int platformStreamNumber = byteArrHelper.twobyte2int(byteArrHelper.subByte( msgBody, 0, 2));
-            String phone = byteArrHelper.toHexString(phoneNum);
+            int platformStreamNumber = ByteArrHelper.twobyte2int(ByteArrHelper.subByte( msgBody, 0, 2));
+            String phone = ByteArrHelper.toHexString(phoneNum);
             dataService.terminalAnswer(phone, platformStreamNumber, "8805", "0805", msgBody);
         });
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

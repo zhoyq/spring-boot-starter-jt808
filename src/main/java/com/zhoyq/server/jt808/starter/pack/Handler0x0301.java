@@ -36,8 +36,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0301 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
@@ -45,10 +43,10 @@ public class Handler0x0301 implements PackHandler {
         tpe.execute(()->{
             // 事件上报ID
             byte eventReportAnswerId = msgBody[0];
-            String phone = byteArrHelper.toHexString(phoneNum);
+            String phone = ByteArrHelper.toHexString(phoneNum);
             // 司机上报预置事件 存储数据库
             dataService.eventReport(phone, eventReportAnswerId);
         });
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
     }
 }

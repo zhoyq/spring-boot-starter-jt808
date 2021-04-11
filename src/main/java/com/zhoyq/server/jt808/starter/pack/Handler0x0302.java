@@ -36,16 +36,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0302 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0302 提问应答 QuestionAnswer");
         // 提问下发是有问答环节的 所以可以直接使用 saveSendCommand 直接查询并保存应答结果
-        String phone = byteArrHelper.toHexString(phoneNum);
-        int answerStreamNumber = byteArrHelper.twobyte2int(byteArrHelper.subByte(msgBody,0,2));
+        String phone = ByteArrHelper.toHexString(phoneNum);
+        int answerStreamNumber = ByteArrHelper.twobyte2int(ByteArrHelper.subByte(msgBody,0,2));
         tpe.execute(() -> dataService.terminalAnswer(phone, answerStreamNumber, "8302", "0302", msgBody));
-        return resHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte)0x00);
     }
 }

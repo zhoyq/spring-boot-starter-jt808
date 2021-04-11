@@ -7,6 +7,33 @@
 
 ## 版本特性
 
+### 20210409 v1.4.0 v1.4.0-jdk1.8
+
+完成
+
+- ByteArrHelper 改为静态类 不再使用 spring 托管（非兼容性更新）
+- RsaHelper 改为静态类 不再使用 spring 托管（非兼容性更新）
+- 增加 PlatStreamHelper 获取平台流水号
+- ResHelper 改为静态类 不再使用 spring 托管（非兼容性更新）
+- Jt808Helper 改为静态类 不再使用 spring 托管（非兼容性更新）
+- 解析支持 RSA 加密
+- 删除 DtoHelper 类
+
+正在
+
+- 增加 苏标 2017 2019 版本解析
+- ResHelper 便利性升级
+- 删除 Analyze 类 使用 dto 内 使用对象内方法代替
+- 将 entity 包内的数据 转换到 dto 包内
+
+即将
+
+- ResHelper 增加测试类
+- ResHelper 文档
+- 增加 1078 2019 版本解析
+- 分发支持 RSA 加密
+
+
 ### 20210409 v1.3.2 v1.3.2-jdk1.8
 
 - :hammer: 将消息包流水号 分配给各个连接处理
@@ -48,6 +75,11 @@
 - :sparkles: 分包处理（上传信息分包会合并解析）
 
 ## 版本升级
+
+### 1.3.x 升级 1.4.0
+
+- 由于 ResHelper、ByteArrHelper、Jt808Helper、RsaHelper 改为静态类 原始托管单例需要 自行修改使用静态方法调用
+- DataTransportInfo对象 修改兼容苏标体系 但是不会影响 DataService.dataTransport 实现
 
 ### 1.2.x 升级 1.3.2
 

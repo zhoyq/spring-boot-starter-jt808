@@ -42,9 +42,6 @@ public class Handler0x0102 implements PackHandler {
     private CacheService cacheService;
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private ByteArrHelper byteArrHelper;
-    private Jt808Helper jt808Helper;
-    private ResHelper resHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
@@ -56,7 +53,7 @@ public class Handler0x0102 implements PackHandler {
             version = 20132011;
         }
 
-        String phone = byteArrHelper.toHexString(phoneNum);
+        String phone = ByteArrHelper.toHexString(phoneNum);
 
         // 获取鉴权码
         String authId;
@@ -64,14 +61,14 @@ public class Handler0x0102 implements PackHandler {
         if (version == 2019) {
             int len = msgBody[0];
             try {
-                authId = jt808Helper.toGBKString(byteArrHelper.subByte(msgBody, 1, 1 + len));
+                authId = Jt808Helper.toGBKString(ByteArrHelper.subByte(msgBody, 1, 1 + len));
             } catch (UnsupportedEncodingException e) {
                 log.warn(e.getMessage());
                 authId = null;
             }
         } else {
             try {
-                authId = jt808Helper.toGBKString(msgBody);
+                authId = Jt808Helper.toGBKString(msgBody);
             } catch (UnsupportedEncodingException e) {
                 log.warn(e.getMessage());
                 authId = null;
@@ -87,13 +84,13 @@ public class Handler0x0102 implements PackHandler {
             // 成功后保存鉴权信息
             if(version == 2019){
                 tpe.execute(() -> {
-                    byte[] imei = byteArrHelper.subByte(msgBody, msgBody[0] + 1, msgBody[0] + 16);
-                    byte[] softVersion = byteArrHelper.subByte(msgBody, msgBody[0] + 16, msgBody[0] + 36);
+                    byte[] imei = ByteArrHelper.subByte(msgBody, msgBody[0] + 1, msgBody[0] + 16);
+                    byte[] softVersion = ByteArrHelper.subByte(msgBody, msgBody[0] + 16, msgBody[0] + 36);
                     dataService.terminalAuth(
                             phone,
                             oriAuthId,
-                            jt808Helper.toAsciiString(imei),
-                            jt808Helper.toAsciiString(softVersion)
+                            Jt808Helper.toAsciiString(imei),
+                            Jt808Helper.toAsciiString(softVersion)
                     );
                 });
             } else {
@@ -110,6 +107,6 @@ public class Handler0x0102 implements PackHandler {
             // 鉴权失败
             result = 1;
         }
-        return resHelper.getPlatAnswer(phoneNum,streamNum, msgId, result);
+        return ResHelper.getPlatAnswer(phoneNum,streamNum, msgId, result);
     }
 }
