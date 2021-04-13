@@ -48,8 +48,10 @@ public class SessionManagement {
             Object session = this.get(sim);
             if (session instanceof IoSession){
                 ((IoSession) session).write(data);
-            } else {
+                return true;
+            } else if(session instanceof ChannelHandlerContext){
                 ((ChannelHandlerContext) session).writeAndFlush(data);
+                return true;
             }
         }
         return false;
