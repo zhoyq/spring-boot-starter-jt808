@@ -7,6 +7,10 @@
 
 ## 版本特性
 
+### v1.3.2-fix1 v1.3.2-jdk1.8-fix1
+
+- 解决 SessionManagement write 方法一直返回 false 的问题
+
 ### 20210409 v1.3.2 v1.3.2-jdk1.8
 
 - :hammer: 将消息包流水号 分配给各个连接处理
