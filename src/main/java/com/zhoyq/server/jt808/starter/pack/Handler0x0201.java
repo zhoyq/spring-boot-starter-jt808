@@ -17,8 +17,7 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
-import com.zhoyq.server.jt808.starter.entity.LocationInfo;
-import com.zhoyq.server.jt808.starter.helper.Analyzer;
+import com.zhoyq.server.jt808.starter.dto.LocationInfo;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
@@ -38,14 +37,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0201 implements PackHandler {
     private DataService dataService;
     private ThreadPoolExecutor tpe;
-    private Analyzer analyzer;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0201 位置信息查询应答 SearchLocationInfoAnswer");
         tpe.execute(() -> {
             String phone = ByteArrHelper.toHexString(phoneNum);
-            LocationInfo locationInfo = analyzer.analyzeLocation(ByteArrHelper.subByte(msgBody, 2));
+            LocationInfo locationInfo = LocationInfo.fromBytes(ByteArrHelper.subByte(msgBody, 2));
 
             // 作为应答 应该也需要调用应答接口才对
             // 暂时调用定位解析定位数据

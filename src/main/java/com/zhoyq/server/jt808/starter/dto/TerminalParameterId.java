@@ -462,5 +462,16 @@ public enum TerminalParameterId {
     TerminalParameterId(byte[] value) {
         this.value = value;
     }
+
+    public static TerminalParameterId VALUE_OF(byte[] parameterId) {
+        TerminalParameterId[] values = TerminalParameterId.values();
+        for (TerminalParameterId id: values) {
+            byte[] value = id.getValue();
+            if (parameterId[0] == value[0] && parameterId[1] == value[1]) {
+                return id;
+            }
+        }
+        return null;
+    }
 }
 

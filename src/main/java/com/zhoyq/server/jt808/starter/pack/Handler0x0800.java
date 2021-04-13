@@ -17,8 +17,7 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
-import com.zhoyq.server.jt808.starter.entity.MediaInfo;
-import com.zhoyq.server.jt808.starter.helper.Analyzer;
+import com.zhoyq.server.jt808.starter.dto.MediaInfo;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
@@ -36,9 +35,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0800)
 @AllArgsConstructor
 public class Handler0x0800 implements PackHandler {
-    private DataService dataService;
-    private ThreadPoolExecutor tpe;
-    private Analyzer analyzer;
+    DataService dataService;
+    ThreadPoolExecutor tpe;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
@@ -46,7 +44,7 @@ public class Handler0x0800 implements PackHandler {
         // 保存多媒体信息到数据库 但没有实体文件
         tpe.execute(() -> {
             String phone = ByteArrHelper.toHexString(phoneNum);
-            MediaInfo mediaInfo = analyzer.analyzeMediaInfo(msgBody);
+            MediaInfo mediaInfo = MediaInfo.fromBytes(msgBody);
             dataService.mediaInfo(phone, mediaInfo);
         });
 

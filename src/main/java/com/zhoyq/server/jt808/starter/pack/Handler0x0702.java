@@ -15,11 +15,12 @@
 
 package com.zhoyq.server.jt808.starter.pack;
 
+import com.zhoyq.server.jt808.starter.config.Const;
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
-import com.zhoyq.server.jt808.starter.entity.DriverInfo;
-import com.zhoyq.server.jt808.starter.helper.Analyzer;
+import com.zhoyq.server.jt808.starter.dto.DriverInfo;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
+import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.AllArgsConstructor;
@@ -36,19 +37,23 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0702)
 @AllArgsConstructor
 public class Handler0x0702 implements PackHandler {
-    private DataService dataService;
-    private ThreadPoolExecutor tpe;
-    private Analyzer analyzer;
+    DataService dataService;
+    ThreadPoolExecutor tpe;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0702 驾驶员身份信息采集上报 driver data collection report");
 
         String phone = ByteArrHelper.toHexString(phoneNum);
-
-        DriverInfo driverInfo = analyzer.analyzeDriver(phoneNum, msgBody);
-        // 如果等于空 则解析错误 直接返回失败应答
-        if (driverInfo == null) {
+        int version = Jt808Helper.judgeVersion(phoneNum, msgBody);
+        DriverInfo driverInfo;
+        if (version == Const.YEAR_2011) {
+            driverInfo = DriverInfo.fromBytes2011(msgBody);
+        } else if (version == Const.YEAR_2013) {
+            driverInfo = DriverInfo.fromBytes2013(msgBody);
+        } else if (version == Const.YEAR_2019) {
+            driverInfo = DriverInfo.fromBytes2019(msgBody);
+        } else {
             log.warn("{} data analyze failed!", phone);
             return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
         }

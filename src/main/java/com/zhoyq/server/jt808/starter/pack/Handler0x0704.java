@@ -18,8 +18,7 @@ package com.zhoyq.server.jt808.starter.pack;
 import com.zhoyq.server.jt808.starter.config.Const;
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
-import com.zhoyq.server.jt808.starter.entity.LocationInfo;
-import com.zhoyq.server.jt808.starter.helper.Analyzer;
+import com.zhoyq.server.jt808.starter.dto.LocationInfo;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
@@ -37,25 +36,21 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0704)
 @AllArgsConstructor
 public class Handler0x0704 implements PackHandler {
-    private DataService dataService;
-    private ThreadPoolExecutor tpe;
-    private Analyzer analyzer;
+    DataService dataService;
+    ThreadPoolExecutor tpe;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0704 定位数据批量上传  LocationDataUploadBatch");
 
         tpe.execute(() -> {
-
             String phone = ByteArrHelper.toHexString(phoneNum);
-
             // 循环分析定位上报数据
             for (int pos = 3, len ; pos < msgBody.length; pos += len + Const.NUMBER_2) {
-
                 len = ByteArrHelper.twobyte2int(ByteArrHelper.subByte(msgBody,pos,pos + 2));
                 byte[] data = ByteArrHelper.subByte(msgBody,pos + 2,pos + 2 + len);
 
-                LocationInfo locationInfo = analyzer.analyzeLocation(data);
+                LocationInfo locationInfo = LocationInfo.fromBytes(data);
 
                 dataService.terminalLocation(phone, locationInfo, null);
             }

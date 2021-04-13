@@ -36,13 +36,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0003)
 @AllArgsConstructor
 public class Handler0x0003 implements PackHandler {
-    private DataService dataService;
-    private CacheService cacheService;
-    private ThreadPoolExecutor tpe;
+    DataService dataService;
+    CacheService cacheService;
+    ThreadPoolExecutor tpe;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
-        log.info("0003 终端注销  TerminalLogout");
+        log.info("0003 终端注销 TerminalLogout");
         tpe.execute(()->{
             // 获取终端手机号码 12 位电话号码
             String phone  = ByteArrHelper.toHexString(phoneNum);

@@ -17,6 +17,7 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
+import com.zhoyq.server.jt808.starter.dto.TerminalParameters;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
@@ -34,8 +35,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0104)
 @AllArgsConstructor
 public class Handler0x0104 implements PackHandler {
-    private DataService dataService;
-    private ThreadPoolExecutor tpe;
+    DataService dataService;
+    ThreadPoolExecutor tpe;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
@@ -43,7 +44,11 @@ public class Handler0x0104 implements PackHandler {
         int platformStreamNumber = ByteArrHelper.twobyte2int(ByteArrHelper.subByte( msgBody, 0, 2));
         String phone = ByteArrHelper.toHexString(phoneNum);
         // 保存下发指令对应应答里 需要时取消息体进行分析
-        tpe.execute(() -> dataService.terminalAnswer(phone, platformStreamNumber, "8104", "0104", msgBody));
+        tpe.execute(() -> {
+            dataService.terminalAnswer(phone, platformStreamNumber, "8104",
+                    "0104", msgBody);
+            dataService.terminalParameters(phone, TerminalParameters.fromBytes(msgBody));
+        });
         return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

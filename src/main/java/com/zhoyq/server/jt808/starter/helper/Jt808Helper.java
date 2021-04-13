@@ -997,4 +997,54 @@ public class Jt808Helper {
         }
         return msgBody;
     }
+
+    public static int judgeVersion(byte[] phoneNum, byte[] data) {
+        // 版本信息
+        int ver = 0;
+
+        if(phoneNum.length == Const.NUMBER_10){
+            ver = Const.YEAR_2019;
+        } else {
+            // 拔卡 没有信息 只有7字节消息
+            if(data[Const.NUMBER_0] == Const.NUMBER_2 && data.length == Const.NUMBER_7){
+                ver = Const.YEAR_2013;
+            } else if(data[Const.NUMBER_0] == Const.NUMBER_1 && data.length >= Const.NUMBER_8){
+                if( data[Const.NUMBER_7] == Const.NUMBER_0 ) {
+                    // 这里需要通过解析消息长度判断版本
+                    int len2011 = 0, len2013 = 0;
+                    try{
+                        len2011 = 62 + data[0] + data[data[0] + 61];
+                    }catch(IndexOutOfBoundsException e){
+                        log.warn(e.getMessage());
+                    }
+                    try{
+                        len2013 = 34 + data[8] + data[data[8] + 29];
+                    }catch(IndexOutOfBoundsException e){
+                        log.warn(e.getMessage());
+                    }
+
+                    if(data.length == len2011){
+                        ver = Const.YEAR_2011;
+                    }
+                    if(data.length == len2013){
+                        ver = Const.YEAR_2013;
+                    }
+                }else if(data[Const.NUMBER_7] == Const.NUMBER_1
+                        || data[Const.NUMBER_7] == Const.NUMBER_2
+                        || data[Const.NUMBER_7] == Const.NUMBER_3
+                        || data[Const.NUMBER_7] == Const.NUMBER_4){
+                    if(data.length == Const.NUMBER_8){
+                        ver = Const.YEAR_2013;
+                    }else{
+                        ver = Const.YEAR_2011;
+                    }
+                } else {
+                    ver = Const.YEAR_2011;
+                }
+            } else {
+                ver = Const.YEAR_2011;
+            }
+        }
+        return ver;
+    }
 }

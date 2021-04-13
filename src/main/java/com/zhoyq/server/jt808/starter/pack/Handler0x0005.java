@@ -38,9 +38,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0005)
 @AllArgsConstructor
 public class Handler0x0005  implements PackHandler {
-    private CacheService cacheService;
-    private SessionManagement sessionManagement;
-    private ThreadPoolExecutor tpe;
+    CacheService cacheService;
+    SessionManagement sessionManagement;
+    ThreadPoolExecutor tpe;
 
     @Override
     public byte[] handle(byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
@@ -48,22 +48,17 @@ public class Handler0x0005  implements PackHandler {
 
         tpe.execute(() -> {
             String phone = ByteArrHelper.toHexString(phoneNum);
+            // 获取上一次分发德包信息
             Map<Integer, byte[]> sentPackages = cacheService.getSentPackages(phone);
-            Object session = sessionManagement.get(phone);
             byte[] idList = ByteArrHelper.subByte(msgBody, 4);
             for (int i = 0; i < idList.length; i += 2) {
                 int id = ByteArrHelper.twobyte2int(new byte[]{idList[i], idList[i + 1]});
                 byte[] pack = sentPackages.get(id);
                 if (pack != null) {
-                    if (session instanceof IoSession) {
-                        ((IoSession) session).write(pack);
-                    } else {
-                        ((ChannelHandlerContext) session).writeAndFlush(pack);
-                    }
+                    sessionManagement.write(phone, pack);
                 }
             }
         });
-
 
         return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }

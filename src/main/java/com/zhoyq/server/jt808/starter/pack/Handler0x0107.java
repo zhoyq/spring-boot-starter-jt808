@@ -17,6 +17,7 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
+import com.zhoyq.server.jt808.starter.dto.TerminalProperty;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
@@ -34,8 +35,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0107)
 @AllArgsConstructor
 public class Handler0x0107 implements PackHandler {
-    private DataService dataService;
-    private ThreadPoolExecutor tpe;
+    DataService dataService;
+    ThreadPoolExecutor tpe;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
@@ -44,7 +45,10 @@ public class Handler0x0107 implements PackHandler {
         // 消息体中没有终端对应平台下发指令的流水号 所以指定流水号为 -1
         int platformStreamNumber = -1;
         // 保存命令到相应的下发指令
-        tpe.execute(() -> dataService.terminalAnswer(phone, platformStreamNumber, "8107", "0107", msgBody));
+        tpe.execute(() -> {
+            dataService.terminalAnswer(phone, platformStreamNumber, "8107", "0107", msgBody);
+            dataService.terminalProperty(phone, TerminalProperty.fromBytes(msgBody));
+        });
         return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

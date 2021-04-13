@@ -39,6 +39,13 @@ public class TerminalParameters {
     }
 
     /**
+     * 获取终端参数个数
+     */
+    public int getCount() {
+        return this.parameters == null ? 0 : this.parameters.size();
+    }
+
+    /**
      * 转换消息到二进制
      */
     public byte[] toBytes() {
@@ -47,5 +54,22 @@ public class TerminalParameters {
             data = ByteArrHelper.union(data, parameter.toBytes());
         }
         return data;
+    }
+
+    public static TerminalParameters fromBytes(byte[] data) {
+        if (data == null) {
+            return null;
+        }
+        TerminalParameters terminalParameters = new TerminalParameters();
+        int pos = 0;
+        while(pos < data.length){
+            int length = data[pos + 2];
+            int totalLength = length + 3;
+            byte[] buf = ByteArrHelper.subByte(data, pos, pos + totalLength);
+            pos += totalLength;
+
+            terminalParameters.addParameter(TerminalParameter.fromBytes(buf));
+        }
+        return terminalParameters;
     }
 }

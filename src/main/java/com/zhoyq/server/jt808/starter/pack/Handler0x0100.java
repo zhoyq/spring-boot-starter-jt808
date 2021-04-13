@@ -40,9 +40,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0100)
 @AllArgsConstructor
 public class Handler0x0100 implements PackHandler {
-    private DataService dataService;
-    private CacheService cacheService;
-    private ThreadPoolExecutor tpe;
+    DataService dataService;
+    CacheService cacheService;
+    ThreadPoolExecutor tpe;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {

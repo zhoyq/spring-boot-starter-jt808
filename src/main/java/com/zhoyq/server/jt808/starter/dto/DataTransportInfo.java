@@ -105,7 +105,7 @@ public class DataTransportInfo {
      * @param msgBody 消息体数据
      * @return 对象数据
      */
-    public static DataTransportInfo fromMsgBody(byte[] msgBody) {
+    public static DataTransportInfo fromBytes(byte[] msgBody) {
         DataTransportInfo info = new DataTransportInfo();
         info.setType(DataTransportType.VALUE_OF(msgBody[0]));
         info.setData(ByteArrHelper.subByte(msgBody, 1));

@@ -1,20 +1,18 @@
 /*
- *  Copyright (c) 2020. 衷于栖 All rights reserved.
- *
- *  版权所有 衷于栖 并保留所有权利 2020。
+ *  Copyright (c) 2021. 刘路 All rights reserved
+ *  版权所有 刘路 并保留所有权利 2021.
  *  ============================================================================
  *  这不是一个自由软件！您只能在不用于商业目的的前提下对程序代码进行修改和
  *  使用。不允许对程序代码以任何形式任何目的的再发布。如果项目发布携带作者
  *  认可的特殊 LICENSE 则按照 LICENSE 执行，废除上面内容。请保留原作者信息。
  *  ============================================================================
- *  作者：衷于栖（feedback@zhoyq.com）
- *  博客：https://www.zhoyq.com
- *  创建时间：2020
- *
+ *  刘路（feedback@zhoyq.com）于 2021. 创建
+ *  http://zhoyq.com
  */
 
-package com.zhoyq.server.jt808.starter.entity;
+package com.zhoyq.server.jt808.starter.dto;
 
+import com.zhoyq.server.jt808.starter.config.Const;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +22,6 @@ import lombok.Setter;
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2020/2/18
  */
-@Builder
 @Setter
 @Getter
 public class StatusInfo {
@@ -137,4 +134,32 @@ public class StatusInfo {
      * 0 车辆处于停止状态 1 车辆处于行驶状态
      */
     private boolean vehicleStatus;
+
+    public static StatusInfo fromBytes(byte[] status) {
+        StatusInfo statusInfo = new StatusInfo();
+        statusInfo.setAcc((status[3] & Const.BIN_0X01) == Const.BIN_0X01);
+        statusInfo.setPositioning((status[3] & Const.BIN_0X02) == Const.BIN_0X02);
+        statusInfo.setSouth((status[3] & Const.BIN_0X04) == Const.BIN_0X04);
+        statusInfo.setWest((status[3] & Const.BIN_0X08) == Const.BIN_0X08);
+        statusInfo.setSuspended((status[3] & Const.BIN_0X10) == Const.BIN_0X10);
+        statusInfo.setEncryption((status[3] & Const.BIN_0X20) == Const.BIN_0X20);
+        statusInfo.setBrakeSystemWarning((status[3] & Const.BIN_0X40) == Const.BIN_0X40);
+        statusInfo.setLaneDepartureWarning((status[3] & Const.BIN_0X80) == Const.BIN_0X80);
+        statusInfo.setCargo(status[2] & 0x03);
+        statusInfo.setOilBreak((status[2] & Const.BIN_0X04) == Const.BIN_0X04);
+        statusInfo.setCircuitBreak((status[2] & Const.BIN_0X08) == Const.BIN_0X08);
+        statusInfo.setLocking((status[2] & Const.BIN_0X10) == Const.BIN_0X10);
+        statusInfo.setOpening1((status[2] & Const.BIN_0X20) == Const.BIN_0X20);
+        statusInfo.setOpening2((status[2] & Const.BIN_0X40) == Const.BIN_0X40);
+        statusInfo.setOpening3((status[2] & Const.BIN_0X80) == Const.BIN_0X80);
+        statusInfo.setOpening4((status[1] & Const.BIN_0X01) == Const.BIN_0X01);
+        statusInfo.setOpening5((status[1] & Const.BIN_0X02) == Const.BIN_0X02);
+        statusInfo.setGps((status[1] & Const.BIN_0X04) == Const.BIN_0X04);
+        statusInfo.setBeidou((status[1] & Const.BIN_0X08) == Const.BIN_0X08);
+        statusInfo.setGlonass((status[1] & Const.BIN_0X10) == Const.BIN_0X10);
+        statusInfo.setGalileo((status[1] & Const.BIN_0X20) == Const.BIN_0X20);
+        statusInfo.setVehicleStatus((status[1] & Const.BIN_0X40) == Const.BIN_0X40);
+        // 23 - 31 保留
+        return statusInfo;
+    }
 }

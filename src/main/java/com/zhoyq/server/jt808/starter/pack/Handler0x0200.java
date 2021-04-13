@@ -17,8 +17,7 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
-import com.zhoyq.server.jt808.starter.entity.LocationInfo;
-import com.zhoyq.server.jt808.starter.helper.Analyzer;
+import com.zhoyq.server.jt808.starter.dto.LocationInfo;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
@@ -36,9 +35,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0200)
 @AllArgsConstructor
 public class Handler0x0200 implements PackHandler {
-    private DataService dataService;
-    private ThreadPoolExecutor tpe;
-    private Analyzer analyzer;
+    DataService dataService;
+    ThreadPoolExecutor tpe;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
@@ -46,7 +44,7 @@ public class Handler0x0200 implements PackHandler {
 
         tpe.execute(() -> {
             String phone = ByteArrHelper.toHexString(phoneNum);
-            LocationInfo locationInfo = analyzer.analyzeLocation(msgBody);
+            LocationInfo locationInfo = LocationInfo.fromBytes(msgBody);
 
             dataService.terminalLocation(phone, locationInfo, null);
         });

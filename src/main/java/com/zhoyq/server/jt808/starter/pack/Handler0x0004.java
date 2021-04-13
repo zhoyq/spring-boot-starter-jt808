@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 2019 新增 查询服务器时间请求
+ * 直接返回时间 不进行其他处理 如果需要额外处理需要实现本消息处理器
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2020/5/5
  */
@@ -30,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @Jt808Pack(msgId = 0x0004)
 @AllArgsConstructor
 public class Handler0x0004 implements PackHandler {
-
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0004 查询服务器时间请求 Query Server DateTime");

@@ -9,6 +9,10 @@
 
 ### 20210409 v1.4.0 v1.4.0-jdk1.8
 
+继承之前解决的问题
+
+- 解决 SessionManagement.write 返回 false 的问题
+
 完成
 
 - ByteArrHelper 改为静态类 不再使用 spring 托管（非兼容性更新）
@@ -16,22 +20,23 @@
 - 增加 PlatStreamHelper 获取平台流水号
 - ResHelper 改为静态类 不再使用 spring 托管（非兼容性更新）
 - Jt808Helper 改为静态类 不再使用 spring 托管（非兼容性更新）
-- 解析支持 RSA 加密
+- 解析支持 RSA 加密（消息长度还有些问题，默认关闭）
+- 分发支持 RSA 加密（消息长度还有些问题，默认关闭）
 - 删除 DtoHelper 类
+- 将 entity 包内的数据 转换到 dto 包内
+- 删除 Analyze 类 , 以及相关分析类，使用 dto 内 使用对象内方法代替 。丰富 DataService 方法并标明相关消息ID 
 
 正在
 
 - 增加 苏标 2017 2019 版本解析
 - ResHelper 便利性升级
-- 删除 Analyze 类 使用 dto 内 使用对象内方法代替
-- 将 entity 包内的数据 转换到 dto 包内
 
 即将
 
 - ResHelper 增加测试类
 - ResHelper 文档
 - 增加 1078 2016 版本解析
-- 分发支持 RSA 加密
+
 
 ### 20210409 v1.3.2 v1.3.2-jdk1.8
 

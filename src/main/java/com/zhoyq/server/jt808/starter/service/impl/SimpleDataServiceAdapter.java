@@ -15,9 +15,7 @@
 
 package com.zhoyq.server.jt808.starter.service.impl;
 
-import com.zhoyq.server.jt808.starter.dto.DataTransportInfo;
-import com.zhoyq.server.jt808.starter.dto.SimAuthDto;
-import com.zhoyq.server.jt808.starter.entity.*;
+import com.zhoyq.server.jt808.starter.dto.*;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +51,16 @@ public class SimpleDataServiceAdapter implements DataService {
     public void terminalAnswer(String phone, int platformStreamNumber, String platformCommandId,
                                String msgId, byte[] msgBody) {
         log.info("{}, answer {}", phone, msgId);
+    }
+
+    @Override
+    public void terminalParameters(String phone, TerminalParameters parameters) {
+        log.info("{}, terminalParameters", phone);
+    }
+
+    @Override
+    public void terminalProperty(String phone, TerminalProperty property) {
+        log.info("{}, terminalProperty", phone);
     }
 
     /**

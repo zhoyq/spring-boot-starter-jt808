@@ -17,9 +17,8 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
-import com.zhoyq.server.jt808.starter.entity.LocationInfo;
-import com.zhoyq.server.jt808.starter.entity.MediaInfo;
-import com.zhoyq.server.jt808.starter.helper.Analyzer;
+import com.zhoyq.server.jt808.starter.dto.LocationInfo;
+import com.zhoyq.server.jt808.starter.dto.MediaInfo;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
@@ -38,9 +37,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0801)
 @AllArgsConstructor
 public class Handler0x0801 implements PackHandler {
-    private DataService dataService;
-    private ThreadPoolExecutor tpe;
-    private Analyzer analyzer;
+    DataService dataService;
+    ThreadPoolExecutor tpe;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
@@ -67,12 +65,12 @@ public class Handler0x0801 implements PackHandler {
             }
 
             // 存储多媒体信息
-            MediaInfo mediaInfo = analyzer.analyzeMediaInfo(mediaInfoData);
+            MediaInfo mediaInfo = MediaInfo.fromBytes(mediaInfoData);
             dataService.mediaInfo(phone, mediaInfo);
 
             if(locationData != null){
                 // 存储定位数据
-                LocationInfo locationInfo = analyzer.analyzeLocation(locationData);
+                LocationInfo locationInfo = LocationInfo.fromBytes(locationData);
                 dataService.terminalLocation(phone, locationInfo, mediaInfo.getMediaId());
             }
 

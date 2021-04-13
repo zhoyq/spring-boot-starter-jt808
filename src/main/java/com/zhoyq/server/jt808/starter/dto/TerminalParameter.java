@@ -28,7 +28,6 @@ import java.nio.charset.Charset;
  * @author zhoyq
  * @date 2018-06-27
  */
-@Builder
 @Setter
 @Getter
 public class TerminalParameter {
@@ -67,6 +66,18 @@ public class TerminalParameter {
      */
     public byte[] toBytes() {
         return ByteArrHelper.union(parameterId.getValue(), new byte[]{(byte)value.length}, value);
+    }
+
+    /**
+     * 获取终端参数对象
+     * @param data 获取对象二进制数据
+     * @return 终端参数对象
+     */
+    public static TerminalParameter fromBytes(byte[] data) {
+        TerminalParameter terminalParameter = new TerminalParameter();
+        terminalParameter.setParameterId(TerminalParameterId.VALUE_OF(new byte[]{data[0], data[1]}));
+        terminalParameter.setValue(ByteArrHelper.subByte(data, 3));
+        return terminalParameter;
     }
 }
 

@@ -18,7 +18,6 @@ package com.zhoyq.server.jt808.starter.pack;
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
 import com.zhoyq.server.jt808.starter.dto.DataTransportInfo;
-import com.zhoyq.server.jt808.starter.helper.Analyzer;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
@@ -37,16 +36,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0900)
 @AllArgsConstructor
 public class Handler0x0900 implements PackHandler {
-    private DataService dataService;
-    private ThreadPoolExecutor tpe;
-    private Analyzer analyzer;
+    DataService dataService;
+    ThreadPoolExecutor tpe;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("0900 数据上行透传 DataTransport");
         tpe.execute(() -> {
             String phone = ByteArrHelper.toHexString(phoneNum);
-            DataTransportInfo dataTransportInfo = DataTransportInfo.fromMsgBody(msgBody);
+            DataTransportInfo dataTransportInfo = DataTransportInfo.fromBytes(msgBody);
             dataService.dataTransport(phone, dataTransportInfo);
         });
         return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
