@@ -7,7 +7,7 @@
 
 ## 版本特性
 
-### v1.3.2-fix1 v1.3.2-jdk1.8-fix1
+### v1.3.2-fix1
 
 - 解决 SessionManagement write 方法一直返回 false 的问题
 
