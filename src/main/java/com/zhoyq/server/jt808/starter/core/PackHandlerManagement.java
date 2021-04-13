@@ -27,7 +27,11 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,6 +49,11 @@ public class PackHandlerManagement implements ApplicationContextAware {
      */
     public static ApplicationContext APPLICATION_CONTEXT = null;
 
+    // RSA 中的 N E D
+    public static byte[] RSA_N = null;
+    public static byte[] RSA_E = null;
+    public static byte[] RSA_D = null;
+
     /**
      * 所有实现的包处理器
      */
@@ -61,10 +70,20 @@ public class PackHandlerManagement implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         APPLICATION_CONTEXT = applicationContext;
-        // TODO 生成 平台 公钥
-//        KeyPair keyPair = RsaHelper.genRSAKeyPair(128);
-//        PublicKey aPublic = keyPair.getPublic();
-//        byte[] encoded = aPublic.getEncoded();
+        // 生成 平台 公钥 私钥
+        // 公钥用于发放 私钥用于解密
+        try {
+            KeyPair keyPair = RsaHelper.genRSAKeyPair(1023);
+            RSAPrivateKey aPrivate = (RSAPrivateKey)keyPair.getPrivate();
+            RSAPublicKey aPublic = (RSAPublicKey)keyPair.getPublic();
+
+            RSA_N = aPrivate.getModulus().toByteArray();
+            RSA_E = aPublic.getPublicExponent().toByteArray();
+            RSA_D = aPrivate.getPrivateExponent().toByteArray();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            System.exit(0);
+        }
         // 仅一次性初始化完成
         if(packHandlerMap == null){
             packHandlerMap = new ConcurrentHashMap<>(30);

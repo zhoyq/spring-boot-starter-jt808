@@ -26,10 +26,7 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.spec.*;
 
 /**
  * RSA 加密解密帮助类
@@ -67,8 +64,55 @@ public class RsaHelper {
     }
 
     /**
-     * 公钥解密
-     * 注意: synchronized 是为了线程安全
+     * 通过 n 和 e 获取公钥
+     * @param modulusBigInt n
+     * @param publicExponentBigInt e
+     * @return 公钥
+     * @throws InvalidKeySpecException 异常
+     * @throws NoSuchAlgorithmException 异常
+     */
+    public static PublicKey publicKey(BigInteger modulusBigInt, BigInteger publicExponentBigInt)
+            throws InvalidKeySpecException, NoSuchAlgorithmException {
+        RSAPublicKeySpec keySpec = new RSAPublicKeySpec(modulusBigInt, publicExponentBigInt);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(keySpec);
+    }
+
+    /**
+     * 通过n和d获取私钥
+     * @param modulus n
+     * @param privateExponent d
+     * @return 私钥
+     * @throws InvalidKeySpecException 异常
+     * @throws NoSuchAlgorithmException 异常
+     */
+    public static PrivateKey privateKey(byte[] modulus, byte[] privateExponent)
+            throws InvalidKeySpecException, NoSuchAlgorithmException {
+        BigInteger modulusBigInt = new BigInteger(modulus);
+        BigInteger publicExponentBigInt = new BigInteger(privateExponent);
+        RSAPrivateKeySpec keySpec = new RSAPrivateKeySpec(modulusBigInt, publicExponentBigInt);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePrivate(keySpec);
+    }
+
+    /**
+     * 通过 n 和 d 获取私钥
+     * @param modulusBigInt n
+     * @param publicExponentBigInt d
+     * @return 私钥
+     * @throws InvalidKeySpecException 异常
+     * @throws NoSuchAlgorithmException 异常
+     */
+    public static PrivateKey privateKey(BigInteger modulusBigInt, BigInteger publicExponentBigInt)
+            throws InvalidKeySpecException, NoSuchAlgorithmException {
+        RSAPrivateKeySpec keySpec = new RSAPrivateKeySpec(modulusBigInt, publicExponentBigInt);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePrivate(keySpec);
+    }
+
+    /**
+     * TODO 处理超长数据加密
+     * 公钥加密
      * @param data 数据
      * @param publicKey 公钥
      * @return 解密数据
@@ -78,7 +122,7 @@ public class RsaHelper {
      * @throws NoSuchAlgorithmException 异常
      * @throws NoSuchPaddingException 异常
      */
-    public static synchronized byte[] rsaDecodeByPublicKey(byte[] data, PublicKey publicKey)
+    public static byte[] rsaEncodeByPublicKey(byte[] data, PublicKey publicKey)
             throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException,
             NoSuchPaddingException, NoSuchAlgorithmException {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -88,7 +132,8 @@ public class RsaHelper {
     }
 
     /**
-     * 私钥加密
+     * TODO 处理超长数据解密
+     * 私钥解密
      * @param data 数据
      * @param privateKey 私钥
      * @return 加密数据
@@ -98,7 +143,7 @@ public class RsaHelper {
      * @throws NoSuchAlgorithmException 异常
      * @throws NoSuchPaddingException 异常
      */
-    public static byte[] rsaEncodeByPrivateKey(byte[] data, PrivateKey privateKey)
+    public static synchronized byte[] rsaDecodeByPrivateKey(byte[] data, PrivateKey privateKey)
             throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException,
             NoSuchAlgorithmException, NoSuchPaddingException {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -118,7 +163,6 @@ public class RsaHelper {
      */
     public static byte[] rsaSign(byte[] data, PrivateKey privateKey)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         Signature signature = Signature.getInstance("MD5withRSA");
         signature.initSign(privateKey);
         signature.update(data);
@@ -137,7 +181,6 @@ public class RsaHelper {
      */
     public static boolean rsaVerify(byte[] data, PublicKey publicKey, byte[] sign)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         Signature signature = Signature.getInstance("MD5withRSA");
         signature.initVerify(publicKey);
         signature.update(data);

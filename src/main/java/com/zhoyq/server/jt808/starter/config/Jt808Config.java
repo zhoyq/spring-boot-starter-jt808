@@ -68,6 +68,8 @@ public class Jt808Config {
 
     private Boolean tcpNoDelay = true;
     private Boolean keepAlive = true;
+
+    private Boolean useRsa = false;
     /**
      * rsa 超长数据处理单元 默认最长117
      */

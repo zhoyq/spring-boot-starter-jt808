@@ -17,6 +17,7 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
+import com.zhoyq.server.jt808.starter.core.PackHandlerManagement;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
@@ -27,6 +28,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 终端RSA公钥
+ * 需要返回平台公钥
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2018/7/31
  */
@@ -50,8 +52,10 @@ public class Handler0x0A00 implements PackHandler {
                 String phone = ByteArrHelper.toHexString(phoneNum);
                 dataService.terminalRsa(phone, e, n);
             });
-            return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+            // 返回平台公钥命令
+            return ResHelper.platRsa(phoneNum, PackHandlerManagement.RSA_N, PackHandlerManagement.RSA_E);
         }else{
+            // 返回失败应答
             return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x01);
         }
     }

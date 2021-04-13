@@ -26,6 +26,7 @@ import org.apache.mina.core.session.IoSession;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
@@ -383,7 +384,7 @@ public class Jt808Helper {
 
             if (hasRsa) {
                 try {
-                    pkgBody = rsa(phone, pkgBody);
+                    pkgBody = rsa(pkgBody);
                 } catch (Exception e) {
                     log.warn(e.getMessage());
                     log.warn("{} rsa 解密失败", phone);
@@ -988,24 +989,12 @@ public class Jt808Helper {
         return (msgBodyProp[0] & 0x04) == 0x04;
     }
 
-    public static byte[] rsa(String phone, byte[] msgBody) throws Exception {
-        if (PackHandlerManagement.APPLICATION_CONTEXT == null) {
-            log.warn("application has not been init yet!");
-            return null;
+    // 平台私钥进行解密
+    public static byte[] rsa(byte[] msgBody) throws Exception {
+        if(PackHandlerManagement.RSA_N != null && PackHandlerManagement.RSA_D != null){
+            PrivateKey privateKey = RsaHelper.privateKey(PackHandlerManagement.RSA_N, PackHandlerManagement.RSA_D);
+            return RsaHelper.rsaDecodeByPrivateKey(msgBody, privateKey);
         }
-
-        DataService dataService;
-        try{
-            dataService = PackHandlerManagement.APPLICATION_CONTEXT.getBean(DataService.class);
-        }catch (Exception e){
-            log.warn("can not find cache service bean!");
-            return null;
-        }
-
-        byte[] bytes = dataService.terminalRsa(phone);
-        byte[] e = ByteArrHelper.subByte(bytes, 0, 4);
-        byte[] n = ByteArrHelper.subByte(bytes, 4);
-        PublicKey publicKey = RsaHelper.publicKey(n, e);
-        return RsaHelper.rsaDecodeByPublicKey(msgBody, publicKey);
+        return msgBody;
     }
 }

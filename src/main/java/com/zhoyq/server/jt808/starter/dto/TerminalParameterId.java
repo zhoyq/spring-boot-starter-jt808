@@ -172,9 +172,266 @@ public enum TerminalParameterId {
      * 紧急报警时 汇报 距离间隔 单位m 大于0
      */
     EmergencyAlarmSplitDistance(new byte[]{0x00, 0x2F}),
+    /**
+     * 拐点补传角度 小于 180
+     */
+    TurningPointAngle(new byte[]{0x00, 0x30}),
+    /**
+     * 电子围栏半径（非法位移阈值） 单位 m
+     */
+    ElectronicFenceRadius(new byte[]{0x00, 0x31}),
+    /**
+     * 违规行驶时段 精确到分 （小时 分钟 到 小时 分钟）
+     */
+    IllegalDrivingTime(new byte[]{0x00, 0x32}),
 
-    // TODO
+    // 0x0033 - 0x003F 保留
 
+    /**
+     * 监控平台电话号码
+     */
+    MonitoringPlatformPhone(new byte[]{0x00, 0x40}),
+    /**
+     * 复位电话号码
+     */
+    ResetPhone(new byte[]{0x00, 0x41}),
+    /**
+     * 恢复出厂设置电话号码
+     */
+    FactoryDataResetPhone(new byte[]{0x00, 0x42}),
+    /**
+     * 监控平台 SMS 电话号码
+     */
+    MonitoringPlatformSMSPhone(new byte[]{0x00, 0x43}),
+    /**
+     * 接收终端 SMS 文本报警号码
+     */
+    ReceivingTerminalSMSAlarmPhone(new byte[]{0x00, 0x44}),
+    /**
+     * 终端电话接听策略
+     * 0 自动接听 1 ACC ON 时 自动接听 OFF 时 手动接听
+     */
+    TerminalPhoneStrategy(new byte[]{0x00, 0x45}),
+    /**
+     * 每次最长通话时间 单位s 0 不允许通话 0xFFFFFFFF 为 不限制
+     */
+    EvetyTimeLongestTime(new byte[]{0x00, 0x46}),
+    /**
+     * 当月最长通话时间 单位s 0 不允许通话 0xFFFFFFFF 为 不限制
+     */
+    MonthLongestTime(new byte[]{0x00, 0x47}),
+    /**
+     * 监听电话号码
+     */
+    MonitorPhone(new byte[]{0x00, 0x48}),
+    /**
+     * 监管平台特权短信号码
+     */
+    RegulatoryPlatformPrivilegePhone(new byte[]{0x00, 0x49}),
+
+    // 0x004A - 0x004F 保留
+
+    /**
+     * 报警屏蔽字 与位置信息汇报消息中的报警标志相对应 1 为报警屏蔽
+     */
+    PoliceBlockedWords(new byte[]{0x00, 0x50}),
+    /**
+     * 报警发送文本SMS开关 与位置信息汇报消息中的报警标志相对应 1 为报警时发送文本
+     */
+    AlarmTextSwitch(new byte[]{0x00, 0x51}),
+    /**
+     * 报警拍摄开关 与位置信息汇报消息中的报警标志相对应 1 为报警时拍摄
+     */
+    PoliceShotSwitch(new byte[]{0x00, 0x52}),
+    /**
+     * 报警拍摄存储 与位置信息汇报消息中的报警标志相对应 1 为报警时拍摄存储 0 为报警时拍摄上传
+     */
+    PoliceShotStorageSwitch(new byte[]{0x00, 0x53}),
+    /**
+     * 关键标志 与位置信息汇报消息中的报警标志相对应 1 为关键报警
+     */
+    AlarmKeySymbolSwitch(new byte[]{0x00, 0x54}),
+    /**
+     * 最高速度 单位 km/h
+     */
+    HighestSpeed(new byte[]{0x00, 0x55}),
+    /**
+     * 超速持续时间 单位 s
+     */
+    OverSpeedTime(new byte[]{0x00, 0x56}),
+    /**
+     * 连续驾驶时间门限 单位 s
+     */
+    ContinuousDrivingTimeThreshold(new byte[]{0x00, 0x57}),
+    /**
+     * 当天累计驾驶时间门限 单位 s
+     */
+    DailyDrivingTimeThreshold(new byte[]{0x00, 0x58}),
+    /**
+     * 最小休息时间 单位 s
+     */
+    MinRestTime(new byte[]{0x00, 0x59}),
+    /**
+     * 最长停车时间 单位 s
+     */
+    LongestStopTime(new byte[]{0x00, 0x5A}),
+    /**
+     * 超速预警差值 单位 1/10 km/h
+     */
+    OverSpeedWarning(new byte[]{0x00, 0x5B}),
+    /**
+     * 疲劳驾驶预警插值 单位 s 大于 0
+     */
+    FatigueDrivingWarning(new byte[]{0x00, 0x5C}),
+    /**
+     * 碰撞报警参数设置
+     * b7 - b0 碰撞时间 单位 ms
+     * b15 - b8 碰撞加速度 单位 0.1g 范围 [0, 79] 默认 10
+     */
+    CollisionAlarmParameters(new byte[]{0x00, 0x5D}),
+    /**
+     * 侧翻报警参数设置 侧翻角度 单位 度 默认 30度
+     */
+    CartwheelAlarmParameters(new byte[]{0x00, 0x5E}),
+
+    // 0x005F - 0x0063 保留
+
+    /**
+     * 定时拍照控制
+     */
+    TimePhotographedControl(new byte[]{0x00, 0x64}),
+    /**
+     * 定距拍照控制
+     */
+    DistancePhotographedControl(new byte[]{0x00, 0x65}),
+
+    // 0x0066 - 0x006F 保留
+
+    /**
+     * 图像/视频 质量 范围 [1, 10] 1 标识最优质量
+     */
+    ImageOrVideoQuality(new byte[]{0x00, 0x70}),
+    /**
+     * 亮度 范围 [0, 255]
+     */
+    ImageOrVideoBrightness(new byte[]{0x00, 0x71}),
+    /**
+     * 对比度 范围 [0, 127]
+     */
+    ImageOrVideoContrast(new byte[]{0x00, 0x72}),
+    /**
+     * 饱和度 范围 [0, 127]
+     */
+    ImageOrVideoSaturation(new byte[]{0x00, 0x73}),
+    /**
+     * 色度 范围 [0, 255]
+     */
+    ImageOrVideoChroma(new byte[]{0x00, 0x74}),
+
+    // 0x0075 - 0x007F 保留
+
+    /**
+     * 车辆里程表读数 单位 1 / 10 km
+     */
+    VehicleOdometerReading(new byte[]{0x00, (byte)0x80}),
+    /**
+     * 车辆所在省域ID
+     */
+    VehicleProvinceDomainId(new byte[]{0x00, (byte)0x81}),
+    /**
+     * 车辆所在市域ID
+     */
+    VehicleCityDomainId(new byte[]{0x00, (byte)0x82}),
+    /**
+     * 公安交通管理部门颁发的机动车牌号
+     */
+    LicenseNumber(new byte[]{0x00, (byte)0x83}),
+    /**
+     * 车牌颜色 0 未上牌
+     */
+    LicenseColor(new byte[]{0x00, (byte)0x84}),
+
+    /**
+     * GNSS 定位模式
+     * bit0 禁用/启用 GPS 定位
+     * bit1 禁用/启用 北斗 定位
+     * bit2 禁用/启用 GLONASS 定位
+     * bit3 禁用/启用 Galileo 定位
+     */
+    GnssPositioningMode(new byte[]{0x00, (byte)0x90}),
+    /**
+     * GNSS 波特率
+     * 0x00 4800
+     * 0x01 9600
+     * 0x02 19200
+     * 0x03 38400
+     * 0x04 57600
+     * 0x05 115200
+     */
+    GnssBaudRate(new byte[]{0x00, (byte)0x91}),
+    /**
+     * GNSS 模块详细定位数据输出频率
+     * 0x00 500ms
+     * 0x01 1000ms 默认
+     * 0x02 2000ms
+     * 0x03 3000ms
+     * 0x04 4000ms
+     */
+    GnssOutputFrequency(new byte[]{0x00, (byte)0x92}),
+    /**
+     * GNSS 模块详细定位数据采集频率 单位 s
+     */
+    GnssSamplingFrequency(new byte[]{0x00, (byte)0x93}),
+    /**
+     * GNSS 模块详细定位数据上传方式
+     * 0x00 本地存储 不上传 默认
+     * 0x01 按时间间隔上传
+     * 0x02 按距离间隔上传
+     * 0x0B 按累计时间上传 达到传输时间后自动停止上传
+     * 0x0C 按累计距离上传 达到距离后自动停止上传
+     * 0x0D 按累计条数上传 达到上传条数后自动停止上传
+     */
+    GnssDataUploadMode(new byte[]{0x00, (byte)0x94}),
+    /**
+     * GNSS 模块详细定位数据上传设置
+     * 0x01 单位s
+     * 0x02 单位m
+     * 0x0B 单位s
+     * 0x0C 单位m
+     * 0x0D 单位条
+     */
+    GnssDataUploadSetting(new byte[]{0x00, (byte)0x95}),
+
+    /**
+     * CAN 总线通道1 采集时间间隔 单位 ms 0表示不采集
+     */
+    CanBusOneAcquisitionTimeInterval(new byte[]{0x01, 0x00}),
+    /**
+     * CAN 总线通道1 上传时间间隔 单位 s 0表示不上传
+     */
+    CanBusOneUploadTimeInterval(new byte[]{0x01, 0x01}),
+    /**
+     * CAN 总线通道2 采集时间间隔 单位 ms 0表示不采集
+     */
+    CanBusTwoAcquisitionTimeInterval(new byte[]{0x01, 0x02}),
+    /**
+     * CAN 总线通道2 上传时间间隔 单位 s 0表示不上传
+     */
+    CanBusTwoUploadTimeInterval(new byte[]{0x01, 0x03}),
+
+    /**
+     * CAN 总线ID单独采集设置
+     * bit63 - 32 此ID采集时间间隔 ms 0表示不采集
+     * bit31 CAN 通道号 0 CAN1 1 CAN2
+     * bit30 帧类型 0 标准帧 1 扩展帧
+     * bit29 数据采集方式 0 原始数据 1 采集区间的计算值
+     * bit28 - 0 CAN 总线ID
+     */
+    CanIdAcquisitionSetting(new byte[]{0x01, 0x10}),
+
+    // 0x0111 - 0x01FF 用于其他CAN总线ID单独采集设置
+
+    // 0xF000 - 0xFFFF 厂商自定义
     // 苏标
 
     /**
@@ -186,13 +443,16 @@ public enum TerminalParameterId {
      */
     DriverMotionMonitor(new byte[]{(byte)0xf3, 0x65}),
     /**
-     *
+     * 轮胎状态监测功能参数
      */
     TireStatusMonitor(new byte[]{(byte)0xf3, 0x66}),
     /**
-     *
+     * 变道决策辅助功能参数
      */
     ChangeRoadAssistance(new byte[]{(byte)0xf3, 0x67}),
+    /**
+     * 激烈驾驶检测功能参数
+     */
     IntenseDrivingMonitor(new byte[]{(byte)0xf3, 0x70}),
 
     ;

@@ -17,34 +17,22 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
-import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
-import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.ThreadPoolExecutor;
-
 /**
- * 终端升级结果通知
- * TODO 苏标对结果 进行了扩充 暂时不影响解析
+ * TODO 苏标 0x1212
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2018/7/31
  */
 @Slf4j
-@Jt808Pack(msgId = 0x0108)
+@Jt808Pack(msgId = 0x1212)
 @AllArgsConstructor
-public class Handler0x0108 implements PackHandler {
-    private DataService dataService;
-    private ThreadPoolExecutor tpe;
-
+public class Handler0x1212 implements PackHandler {
     @Override
-    public byte[] handle(  byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
-        log.info("0108 终端升级结果通知 TerminalUpdateResultReport");
-        String phone = ByteArrHelper.toHexString(phoneNum);
-        // 保存命令到相应的下发指令
-        tpe.execute(() -> dataService.terminalAnswer(phone, -1,
-                "8108", "0108", msgBody));
-        return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
+    public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
+        log.info("1212 文件上传完成消息 FileUploadOver");
+        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

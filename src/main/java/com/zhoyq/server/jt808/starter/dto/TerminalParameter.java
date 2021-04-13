@@ -58,6 +58,10 @@ public class TerminalParameter {
         this.value = new byte[]{value};
     }
 
+    public void setIllegalDrivingTime(int fromHour, int fromMinute, int toHour, int toMinute) {
+        this.value = new byte[]{(byte) fromHour, (byte) fromMinute, (byte) toHour, (byte) toMinute};
+    }
+
     /**
      * 转换消息到二进制
      */

@@ -17,11 +17,34 @@ package com.zhoyq.server.jt808.starter.helper;
 
 import com.zhoyq.server.jt808.starter.config.Const;
 
+import java.math.BigInteger;
+
 /**
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2019/1/20
  */
 public class ByteArrHelper {
+
+    // 求取最大公约数
+    /*
+    1.求任意方程ax+by=n的一个整数解
+    用扩展欧几里得算法求解ax+by=gcd（a，b）后，利用它可以进一步解任意方程ax+by=n得到一个整数解，其步骤如下：
+    （1）判断方程ax+by=n是否存在整数解，有解的条件是gcd（a，b）可以整除n
+    （2）用扩展欧几里得算法求ax+by=gcd（a，b）的一个解（x0，y0）
+    （3） 在ax0+by0=gcd（a，b）两边同时乘以n/gcd（a，b），得：
+    ax0n/gcd（a，b）+by0n/gcd（a，b）=n
+    （4）对照ax+by=n，得到它的一个解（x，y）是：
+    x=x0n/gcd（a，b）
+    y=y0n/gcd（a，b）
+     */
+    public static BigInteger findGcd(BigInteger n, BigInteger n1) {
+        while (!n1.equals(BigInteger.ZERO)) {
+            BigInteger rem = n.mod(n1);
+            n = n1;
+            n1 = rem;
+        }
+        return n;
+    }
 
     /**
      * 将字节数组翻译成16进制字符串

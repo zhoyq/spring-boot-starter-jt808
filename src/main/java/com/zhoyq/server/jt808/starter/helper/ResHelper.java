@@ -15,11 +15,15 @@
 
 package com.zhoyq.server.jt808.starter.helper;
 
+import com.zhoyq.server.jt808.starter.config.Jt808Config;
+import com.zhoyq.server.jt808.starter.core.PackHandlerManagement;
 import com.zhoyq.server.jt808.starter.dto.*;
 import com.zhoyq.server.jt808.starter.dto.DataTransportInfo;
+import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.UnsupportedEncodingException;
+import java.security.PublicKey;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +37,7 @@ public class ResHelper {
 
     /**
      * 包装命令
+     * 没有消息题 不用加密 直接返回即可
      * @param msgId 消息ID
      * @param phoneNum 电话
      * @return 命令
@@ -60,12 +65,41 @@ public class ResHelper {
 
     /**
      * 包装命令
+     * 有消息题 如果有需求 需要加密之后 在进行返回
      * @param msgId 消息ID
      * @param phoneNum 电话
      * @param msgBody 消息体
      * @return 命令
      */
     private static byte[] warp (byte[] msgId, byte[] phoneNum, byte[] msgBody) {
+        if (PackHandlerManagement.APPLICATION_CONTEXT == null) {
+            log.warn("application has not been init yet!");
+            return null;
+        }
+
+        // 有些命令需要处理 不进行加密 0x8A00
+        if (!(msgId[0] == (byte)0x8A && msgId[1] == 0x00)) {
+            try {
+                Jt808Config jt808Config = PackHandlerManagement.APPLICATION_CONTEXT.getBean(Jt808Config.class);
+                DataService dataService = PackHandlerManagement.APPLICATION_CONTEXT.getBean(DataService.class);
+                String phone = ByteArrHelper.toHexString(phoneNum);
+
+                // 如果 需要下发  RSA 加密数据 则需要在这里处理
+                if (jt808Config.getUseRsa()) {
+                    byte[] bytes = dataService.terminalRsa(phone);
+                    if (bytes != null && bytes.length == 132) {
+                        byte[] terminalE = ByteArrHelper.subByte(bytes, 0, 4);
+                        byte[] terminalN = ByteArrHelper.subByte(bytes, 4);
+                        PublicKey publicKey = RsaHelper.publicKey(terminalN, terminalE);
+                        msgBody = RsaHelper.rsaEncodeByPublicKey(msgBody, publicKey);
+                    }
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                return null;
+            }
+        }
+
         int bodyLen = msgBody.length;
         int platStreamNum = PlatStreamHelper.getPlatStreamNum(phoneNum);
         if (phoneNum.length == 10) {
@@ -191,13 +225,33 @@ public class ResHelper {
      * **实例代码**
      *
      * ```java
-     * // 查询终端心跳间隔
+     * // 设置终端心跳间隔
      * TerminalParameters params = new TerminalParameters();
-     * params.setParameters(Collections.singletonList(TerminalParameterId.HeartbeatSplitTime));
-     * // or params.addParameter(TerminalParameterId.HeartbeatSplitTime);
+     * TerminalParameter param = new TerminalParameter();
+     * param.setParameterId(TerminalParameterId.HeartbeatSplitTime);
+     * param.setDwordValue(30);
+     * params.setParameters(Collections.singletonList(param));
+     * // or params.addParameter(param);
      * byte[] data = ResHelper.setTerminalParameters(phoneNum, params);
      * session.write(phone, data);
+     *
+     * // 设置主服务器无线通信拨号用户名
+     * // ...
+     * param.setParameterId(TerminalParameterId.MainServerUserName);
+     * param.setStringValue("admin");
+     * // ...
+     *
+     * // 设置违规行驶时段
+     * // ...
+     * param.setParameterId(TerminalParameterId.IllegalDrivingTime);
+     * param.setIllegalDrivingTime(22, 50, 10, 30); // 22:50 - 次日10:30
+     * // ...
+     *
+     * // TODO TerminalParameter 类便利方法
      * ```
+     *
+     *
+     * {@link TerminalParameter}
      *
      * @param phoneNum SIM卡号
      * @param parameters 参数列表
@@ -864,6 +918,28 @@ public class ResHelper {
                 new byte[]{(byte) 0x8A,0x00},
                 phoneNum,
                 ByteArrHelper.union(p1, p2)
+        );
+    }
+
+    /**
+     * 苏标 0x9208 报警附件上传指令
+     */
+    public static byte[] alarmAttachUpload(byte[] phoneNum, AlarmAttachUpload alarmAttachUpload){
+        return warp(
+                new byte[]{(byte) 0x92,0x08},
+                phoneNum,
+                alarmAttachUpload.toBytes()
+        );
+    }
+
+    /**
+     * 苏标 0x9212 文件上传完成应答
+     */
+    public static byte[] alarmAttachUpload(byte[] phoneNum, FileUploadOver fileUploadOver){
+        return warp(
+                new byte[]{(byte) 0x92,0x08},
+                phoneNum,
+                fileUploadOver.toBytes()
         );
     }
 }

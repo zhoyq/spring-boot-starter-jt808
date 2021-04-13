@@ -135,7 +135,6 @@ public class Coder {
 
     public byte[] encode(byte[] buf) {
         // 添加验证 转义
-        // 如果 需要下发 RSA 加密数据 则需要在这里处理
         return Jt808Helper.trans(Jt808Helper.addVerify(buf));
     }
 }

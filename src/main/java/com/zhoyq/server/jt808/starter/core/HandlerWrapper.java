@@ -241,7 +241,7 @@ public class HandlerWrapper {
             boolean hasRsa = Jt808Helper.checkRsa(msgBodyProp);
             if (hasRsa) {
                 try {
-                    msgBody = Jt808Helper.rsa(phone, msgBody);
+                    msgBody = Jt808Helper.rsa(msgBody);
                 } catch (Exception e) {
                     log.warn(e.getMessage());
                     log.warn("{} rsa 解密失败", phone);
