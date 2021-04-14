@@ -16,17 +16,39 @@
 package com.zhoyq.server.jt808.starter.dto;
 
 import lombok.Getter;
-import lombok.Setter;
 
 /**
- * 事件
+ * 终端升级结果
  * @author zhoyq
  * @date 2018-06-27
  */
-@Setter
 @Getter
-public class Event {
-    private byte id;
-    private byte length;
-    private byte[] content;
+public enum TerminalUpdateResult {
+
+    /**
+     * 成功
+     */
+    SUCCESS(0),
+    /**
+     * 失败
+     */
+    FAILED(1),
+    /**
+     * 取消
+     */
+    CANCEL(2);
+
+    private byte value;
+    TerminalUpdateResult(int value) {
+        this.value = (byte)value;
+    }
+
+    public static TerminalUpdateResult VALUE_OF(byte b) {
+        for (TerminalUpdateResult value : TerminalUpdateResult.values()) {
+            if (value.getValue() == b) {
+                return value;
+            }
+        }
+        return null;
+    }
 }

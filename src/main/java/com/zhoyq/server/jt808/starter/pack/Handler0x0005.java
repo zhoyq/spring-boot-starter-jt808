@@ -48,7 +48,7 @@ public class Handler0x0005  implements PackHandler {
 
         tpe.execute(() -> {
             String phone = ByteArrHelper.toHexString(phoneNum);
-            // 获取上一次分发德包信息
+            // 获取上一次分发的包信息
             Map<Integer, byte[]> sentPackages = cacheService.getSentPackages(phone);
             byte[] idList = ByteArrHelper.subByte(msgBody, 4);
             for (int i = 0; i < idList.length; i += 2) {

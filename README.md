@@ -26,10 +26,10 @@
 - 将 entity 包内的数据 转换到 dto 包内
 - 删除 Analyze 类 , 以及相关分析类，使用 dto 内 使用对象内方法代替 。丰富 DataService 方法并标明相关消息ID 
 
+
 正在
 
 - 增加 苏标 2017 2019 版本解析
-- ResHelper 便利性升级
 
 即将
 
@@ -37,6 +37,9 @@
 - ResHelper 文档
 - 增加 1078 2016 版本解析
 
+长期
+
+- 后续会根据需要 升级 DataService 和 ResHelper 类 的便利性
 
 ### 20210409 v1.3.2 v1.3.2-jdk1.8
 
@@ -83,7 +86,9 @@
 ### 1.3.x 升级 1.4.0
 
 - 由于 ResHelper、ByteArrHelper、Jt808Helper、RsaHelper 改为静态类 原始托管单例需要 自行修改使用静态方法调用
-- DataTransportInfo对象 修改兼容苏标体系 但是不会影响 DataService.dataTransport 实现
+- 原始包名 entity 修改成 dto 与 原始 dto 包 合并， 如果引用了这个包内的成员需要修改
+- dto 包内的对象修改， 不会影响 DataService 中的方法实现 但是如果使用了原始类 中间属性可能会有影响，如果解析时使用了 dto 中的对象 需要修改
+- DataService 类升级 提供新方法 terminalParameters terminalProperty terminalUpdateResult 等便利性 方法，需要自行实现为实现的方法
 
 ### 1.2.x 升级 1.3.2
 

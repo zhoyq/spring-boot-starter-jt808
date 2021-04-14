@@ -17,6 +17,8 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
+import com.zhoyq.server.jt808.starter.dto.TerminalUpdatePkgType;
+import com.zhoyq.server.jt808.starter.dto.TerminalUpdateResult;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
@@ -43,8 +45,10 @@ public class Handler0x0108 implements PackHandler {
         log.info("0108 终端升级结果通知 TerminalUpdateResultReport");
         String phone = ByteArrHelper.toHexString(phoneNum);
         // 保存命令到相应的下发指令
-        tpe.execute(() -> dataService.terminalAnswer(phone, -1,
-                "8108", "0108", msgBody));
+        tpe.execute(() -> {
+            dataService.terminalAnswer(phone, -1, "8108", "0108", msgBody);
+            dataService.terminalUpdateResult(phone, TerminalUpdatePkgType.VALUE_OF(msgBody[0]), TerminalUpdateResult.VALUE_OF(msgBody[1]));
+        });
         return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
 }

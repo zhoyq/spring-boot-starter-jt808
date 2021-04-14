@@ -16,17 +16,39 @@
 package com.zhoyq.server.jt808.starter.dto;
 
 import lombok.Getter;
-import lombok.Setter;
 
 /**
- * 事件
+ * 终端升级包类型
  * @author zhoyq
  * @date 2018-06-27
  */
-@Setter
 @Getter
-public class Event {
-    private byte id;
-    private byte length;
-    private byte[] content;
+public enum TerminalUpdatePkgType {
+
+    /**
+     * 终端
+     */
+    TERMINAL(0),
+    /**
+     * 道路运输证IC卡读卡器
+     */
+    IC_READER(12),
+    /**
+     * 卫星定位模块
+     */
+    GPS_POSITIONING(52);
+
+    private byte value;
+    TerminalUpdatePkgType(int value) {
+        this.value = (byte)value;
+    }
+
+    public static TerminalUpdatePkgType VALUE_OF(byte b) {
+        for (TerminalUpdatePkgType value : TerminalUpdatePkgType.values()) {
+            if (value.getValue() == b) {
+                return value;
+            }
+        }
+        return null;
+    }
 }

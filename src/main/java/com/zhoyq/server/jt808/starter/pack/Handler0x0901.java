@@ -34,9 +34,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x0901)
 @AllArgsConstructor
 public class Handler0x0901 implements PackHandler {
-    private DataService dataService;
-    private ThreadPoolExecutor tpe;
-    private GzipHelper gzipHelper;
+    DataService dataService;
+    ThreadPoolExecutor tpe;
+    GzipHelper gzipHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {

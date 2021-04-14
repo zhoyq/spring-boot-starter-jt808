@@ -15,7 +15,6 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +22,6 @@ import lombok.Setter;
  * @author zhoyq
  * @date 2018-06-27
  */
-@Builder
 @Setter
 @Getter
 public class SearchStoredMediaData {

@@ -97,7 +97,7 @@ public class DriverInfo {
     }
     public static DriverInfo fromBytes2013(byte[] data) {
         DriverInfo driverInfo = new DriverInfo();
-        driverInfo.setDriverAlarmInfo(DriverAlarmInfo.builder().build());
+        driverInfo.setDriverAlarmInfo(new DriverAlarmInfo());
 
         if(data[0] == Const.NUMBER_1){
             // 驾驶员上班 卡插入
@@ -168,7 +168,7 @@ public class DriverInfo {
     }
     public static DriverInfo fromBytes2019(byte[] data) {
         DriverInfo driverInfo = new DriverInfo();
-        driverInfo.setDriverAlarmInfo(DriverAlarmInfo.builder().build());
+        driverInfo.setDriverAlarmInfo(new DriverAlarmInfo());
 
         if(data[0] == Const.NUMBER_1){
             // 驾驶员上班 卡插入

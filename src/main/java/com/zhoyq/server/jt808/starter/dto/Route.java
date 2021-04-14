@@ -15,7 +15,6 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,7 +25,6 @@ import java.util.List;
  * @author zhoyq
  * @date 2018-06-27
  */
-@Builder
 @Setter
 @Getter
 public class Route {

@@ -15,23 +15,53 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
-import lombok.Builder;
+import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
+import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.nio.charset.Charset;
 
 /**
  * 终端升级包
  * @author zhoyq
  * @date 2018-06-27
  */
-@Builder
 @Setter
 @Getter
 public class TerminalUpdatePkg {
-    private byte updateType;
-    private byte[] producerId;
-    private byte versionLength;
-    private byte[] version;
-    private byte[] dataLength;
+
+    /**
+     * 升级类型
+     */
+    private TerminalUpdatePkgType updateType;
+    /**
+     * 制造商ID
+     */
+    private String producerId;
+    /**
+     * 终端固件版本号
+     */
+    private String version;
+    /**
+     * 升级数据包
+     */
     private byte[] data;
+
+    public byte[] toBytes() {
+        byte[] producerId = ByteArrHelper.hexStr2bytes(this.getProducerId());
+        // 不足五字节 补足
+        while (producerId.length < 5) {
+            producerId = ByteArrHelper.union(new byte[]{0x00}, producerId);
+        }
+        byte[] version = this.version.getBytes(Charset.forName("GBK"));
+        return ByteArrHelper.union(
+                new byte[]{this.updateType.getValue()},
+                // 超过 五字节 截断
+                ByteArrHelper.subByte(producerId, producerId.length - 5),
+                new byte[]{(byte)version.length},
+                version,
+                ByteArrHelper.int2fourbytes(data.length),
+                this.data);
+    }
 }

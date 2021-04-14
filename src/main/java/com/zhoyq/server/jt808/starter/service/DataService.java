@@ -36,21 +36,21 @@ public interface DataService {
     /**
      * 终端心跳
      * 相关消息ID：0x0002
-     * @param sim 终端对应 12 位电话号码
+     * @param sim 卡号
      */
     void terminalHeartbeat(String sim);
 
     /**
      * 终端注销
      * 相关消息ID：0x0003
-     * @param sim 终端对应 12 位电话号码
+     * @param sim 卡号
      */
     void terminalCancel(String sim);
 
     /**
      * 终端注册
      * 相关消息ID：0x0100
-     * @param sim 终端对应 12 位电话号码
+     * @param sim 卡号
      * @param province 省域ID
      * @param city 市县域ID
      * @param manufacturer 制造商ID
@@ -76,8 +76,8 @@ public interface DataService {
     /**
      * 终端应答消息
      * 应答类消息都会传入此方法进行处理
-     * 相关消息ID：0x0104 0x0107
-     * @param sim 终端对应 12 位电话号码
+     * 相关消息ID：0x0001 0x0104 0x0107 0x0108 0x0302 0x0500 0x0608 0x0700 0x0802 0x0805
+     * @param sim 卡号
      * @param platformStreamNumber 应答对应平台流水号
      * @param platformCommandId 应答对应平台消息ID
      * @param msgId 消息ID
@@ -102,9 +102,19 @@ public interface DataService {
     void terminalProperty(String sim, TerminalProperty property);
 
     /**
+     * 终端升级结果通知
+     * 注意: 本方法会和 terminalAnswer 同时运行，terminalAnswer 主要负责记录，此方法更方便解析
+     * 相关消息ID：0x0108
+     * @param sim 卡号
+     * @param type 升级类型
+     * @param result 升级结果
+     */
+    void terminalUpdateResult(String sim, TerminalUpdatePkgType type, TerminalUpdateResult result);
+
+    /**
      * 保存驾驶员信息
      * 相关消息ID：0x0702
-     * @param sim 终端对应 12 位电话号码
+     * @param sim 卡号
      * @param driverInfo 驾驶员信息
      */
     void driverInfo(String sim, DriverInfo driverInfo);
@@ -112,119 +122,109 @@ public interface DataService {
     /**
      * 保存定位信息、报警信息（包含持续和瞬间）、附加信息
      * 相关消息ID：0x0200（仅定位） 0x0201（仅定位） 0x0704（仅定位） 0x0801（定位和多媒体）
-     * @param sim 终端对应 12 位电话号码
+     * @param sim 卡号
      * @param locationInfo 定位信息 + 报警信息 + 附加信息 | 计算后的平台信息（可以放到计划任务延迟计算）
      * @param mediaId 连接多媒体数据的ID
      */
     void terminalLocation(String sim, LocationInfo locationInfo, Integer mediaId);
 
     /**
-     * 保存CAN总线数据
-     * 相关消息ID：0x0705
-     * @param sim 终端对应 12 位电话号码
-     * @param canDataInfo CAN 总线数据
-     */
-    void canData(String sim, CanDataInfo canDataInfo);
-
-    /**
-     * 保存多媒体信息
-     * 相关消息ID：0x0800
-     * @param sim 终端对应 12 位电话号码
-     * @param mediaInfo 多媒体信息
-     */
-    void mediaInfo(String sim, MediaInfo mediaInfo);
-
-    /**
-     * 保存透传数据
-     * 相关消息ID：0x0900
-     * @param sim 终端对应 12 位电话号码
-     * @param dataTransportInfo 上行透传数据
-     */
-    void dataTransport(String sim, DataTransportInfo dataTransportInfo);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /**
-     * 获取终端RSA
-     * @param sim 卡号
-     * @return RSA en
-     */
-    byte[] terminalRsa(String sim);
-
-
-
-    /**
      * 事件上报
-     * @param sim 终端对应 12 位电话号码
-     * @param eventReportAnswerId 应答
+     * 相关消息ID：0x0301
+     * @param sim 卡号
+     * @param eventReportAnswerId 事件ID
      */
     void eventReport(String sim, byte eventReportAnswerId);
 
     /**
-     * @param sim 终端对应 12 位电话号码
+     * 提问应答
+     * 注意: 本方法会和 terminalAnswer 同时运行，terminalAnswer 主要负责记录，此方法更方便解析
+     * 相关消息ID：0x0302
+     * @param sim 卡号
+     * @param answerStreamNumber 应答流水号
+     * @param answerId 答案ID
+     */
+    void questionAnswer(String sim, int answerStreamNumber, byte answerId);
+
+    /**
+     * 消息点播
+     * 相关消息ID：0x0303
+     * @param sim 卡号
      * @param type 订阅消息类型
      */
     void orderInfo(String sim, byte type);
 
     /**
-     * @param sim 终端对应 12 位电话号码
+     * 消息取消点播
+     * 相关消息ID：0x0303
+     * @param sim 卡号
      * @param type 取消订阅消息类型
      */
     void cancelOrderInfo(String sim, byte type);
 
     /**
      * 电子运单
-     * @param sim 终端对应 12 位电话号码
+     * 相关消息ID：0x0701
+     * @param sim 卡号
      * @param data 电子运单数据包内容
      */
     void eBill(String sim, byte[] data);
 
+    /**
+     * 保存CAN总线数据
+     * 相关消息ID：0x0705
+     * @param sim 卡号
+     * @param canDataInfo CAN 总线数据
+     */
+    void canData(String sim, CanDataInfo canDataInfo);
 
-
-
+    /**
+     * 保存多媒体信息
+     * 相关消息ID：0x0800 0x0801
+     * @param sim 卡号
+     * @param mediaInfo 多媒体信息
+     */
+    void mediaInfo(String sim, MediaInfo mediaInfo);
 
     /**
      * 存储多媒体实体信息
-     * @param sim 终端对应 12 位电话号码
+     * 相关消息ID：0x0801
+     * @param sim 卡号
      * @param mediaData 数据包
      * @param mediaId 连接多媒体数据的ID
      */
     void mediaPackage(String sim, byte[] mediaData, Integer mediaId);
 
-
+    /**
+     * 保存透传数据
+     * 相关消息ID：0x0900
+     * @param sim 卡号
+     * @param dataTransportInfo 上行透传数据
+     */
+    void dataTransport(String sim, DataTransportInfo dataTransportInfo);
 
     /**
-     * 保存压缩上报数据
-     * @param sim 终端对应 12 位电话号码
+     * 保存压缩上报数据 已经解压缩
+     * 相关消息ID：0x0901
+     * @param sim 卡号
      * @param data 上报数据
      */
     void compressData(String sim, byte[] data);
 
+    // ==========
 
+    /**
+     * 获取终端RSA
+     * 无具体相关消息ID
+     * @param sim 卡号
+     * @return RSA bit0 - bit3 e, bit4 - bit 132 n
+     */
+    byte[] terminalRsa(String sim);
 
     /**
      * 查询数据库存储的所有卡号与鉴权码之间的关系
+     * 无具体相关消息ID
      * @return 关系
      */
     List<SimAuthDto> simAuth();
-
-
-
 }

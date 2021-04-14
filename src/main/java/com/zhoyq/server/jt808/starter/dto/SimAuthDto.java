@@ -15,7 +15,6 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +22,6 @@ import lombok.Setter;
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2020/5/7
  */
-@Builder
 @Setter
 @Getter
 public class SimAuthDto {

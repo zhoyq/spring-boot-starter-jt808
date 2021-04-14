@@ -63,6 +63,11 @@ public class SimpleDataServiceAdapter implements DataService {
         log.info("{}, terminalProperty", phone);
     }
 
+    @Override
+    public void terminalUpdateResult(String phone, TerminalUpdatePkgType type, TerminalUpdateResult result) {
+        log.info("{}, terminalUpdateResult", phone);
+    }
+
     /**
      * 心跳不存储
      */
@@ -103,6 +108,11 @@ public class SimpleDataServiceAdapter implements DataService {
     @Override
     public void eventReport(String phone, byte eventReportAnswerId) {
         log.info("{}, report", phone);
+    }
+
+    @Override
+    public void questionAnswer(String sim, int answerStreamNumber, byte answerId) {
+
     }
 
     @Override

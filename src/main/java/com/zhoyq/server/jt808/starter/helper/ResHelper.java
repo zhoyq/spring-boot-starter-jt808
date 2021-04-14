@@ -161,8 +161,19 @@ public class ResHelper {
      * @return 命令
      */
     public static byte[] queryServerDateTime(byte[] phoneNum) {
+        return queryServerDateTime(phoneNum, new Date(System.currentTimeMillis()));
+    }
+
+    /**
+     * v2019 新增
+     * 0x8004 查询服务器时间应答
+     * @param phoneNum 卡号
+     * @param date 返回的时间
+     * @return 命令
+     */
+    public static byte[] queryServerDateTime(byte[] phoneNum, Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
-        String timeHex = sdf.format(new Date(System.currentTimeMillis()));
+        String timeHex = sdf.format(date);
         byte[] timeBytes = ByteArrHelper.hexStr2bytes(timeHex);
         return warp(
                 new byte[]{(byte)0x80, 0x04},
@@ -327,21 +338,16 @@ public class ResHelper {
 
     /**
      * 0x8108 下发终端升级包
+     *
      * @param phoneNum 电话号码
      * @param tup 更新包
      * @return 命令
      */
-    public static byte[] sentTerminalUpdatePkg(byte[] phoneNum ,TerminalUpdatePkg tup){
+    public static byte[] sentTerminalUpdatePkg(byte[] phoneNum , TerminalUpdatePkg tup){
         return warp(
                 new byte[]{(byte) 0x81,0x08},
                 phoneNum,
-                ByteArrHelper.union(
-                        new byte[]{tup.getUpdateType()},
-                        tup.getProducerId(),
-                        new byte[]{tup.getVersionLength()},
-                        tup.getVersion(),
-                        tup.getDataLength(),
-                        tup.getData())
+                tup.toBytes()
         );
     }
 
