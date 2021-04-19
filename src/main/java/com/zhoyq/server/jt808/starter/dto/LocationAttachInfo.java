@@ -19,6 +19,7 @@ import lombok.Setter;
 
 /**
  * 定位附加信息项目
+ * TODO 值获取 遍历性 需要提升
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2020/2/23
  */
@@ -27,6 +28,12 @@ import lombok.Setter;
 public class LocationAttachInfo {
     private int id;
     private byte[] data;
+
+    // TODO 苏标：获取驾驶辅助功能报警信息
+    // TODO 苏标：获取驾驶员行为检测功能报警信息
+    // TODO 苏标：获取轮胎状态监测报警信息
+    // TODO 苏标：获取变道决策辅助报警信息
+    // TODO 苏标：获取激烈驾驶报警信息
 
     public static LocationAttachInfo fromBytes(byte[] data) {
         LocationAttachInfo locationAttachInfo = new LocationAttachInfo();

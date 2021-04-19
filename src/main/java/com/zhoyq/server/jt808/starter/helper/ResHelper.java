@@ -325,6 +325,25 @@ public class ResHelper {
     }
 
     /**
+     * 0x8106 查询指定终端参数
+     * 遍历性改进方法
+     * @param phoneNum      电话号码
+     * @param parameterIds    参数id列表
+     * @return 命令
+     */
+    public static byte[] searchSpecifyTerminalParameters(byte[] phoneNum, List<TerminalParameterId> parameterIds){
+        byte[] msgBody = new byte[]{(byte)parameterIds.size()};
+        for (TerminalParameterId id: parameterIds) {
+            msgBody = ByteArrHelper.union(msgBody, id.getValue());
+        }
+        return warp(
+                new byte[]{(byte) 0x81,0x06},
+                phoneNum,
+                msgBody
+        );
+    }
+
+    /**
      * 0x8107 查询终端属性
      * @param phoneNum 电话号码
      * @return 命令
@@ -928,7 +947,7 @@ public class ResHelper {
     }
 
     /**
-     * 苏标 0x9208 报警附件上传指令
+     * 苏标：0x9208 报警附件上传指令
      */
     public static byte[] alarmAttachUpload(byte[] phoneNum, AlarmAttachUpload alarmAttachUpload){
         return warp(
@@ -939,7 +958,7 @@ public class ResHelper {
     }
 
     /**
-     * 苏标 0x9212 文件上传完成应答
+     * 苏标：0x9212 文件上传完成应答
      */
     public static byte[] alarmAttachUpload(byte[] phoneNum, FileUploadOver fileUploadOver){
         return warp(

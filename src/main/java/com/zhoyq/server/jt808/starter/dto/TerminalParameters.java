@@ -63,8 +63,8 @@ public class TerminalParameters {
         TerminalParameters terminalParameters = new TerminalParameters();
         int pos = 0;
         while(pos < data.length){
-            int length = data[pos + 2];
-            int totalLength = length + 3;
+            int length = data[pos + 4];
+            int totalLength = length + 5;
             byte[] buf = ByteArrHelper.subByte(data, pos, pos + totalLength);
             pos += totalLength;
 

@@ -75,8 +75,8 @@ public class TerminalParameter {
      */
     public static TerminalParameter fromBytes(byte[] data) {
         TerminalParameter terminalParameter = new TerminalParameter();
-        terminalParameter.setParameterId(TerminalParameterId.VALUE_OF(new byte[]{data[0], data[1]}));
-        terminalParameter.setValue(ByteArrHelper.subByte(data, 3));
+        terminalParameter.setParameterId(TerminalParameterId.VALUE_OF(new byte[]{data[0], data[1], data[2], data[3]}));
+        terminalParameter.setValue(ByteArrHelper.subByte(data, 5));
         return terminalParameter;
     }
 }
