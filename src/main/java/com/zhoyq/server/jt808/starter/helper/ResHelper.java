@@ -958,6 +958,17 @@ public class ResHelper {
     }
 
     /**
+     * 苏标：0x9208 报警附件上传指令
+     */
+    public static byte[] x9208(byte[] phoneNum, AlarmAttachUpload alarmAttachUpload){
+        return warp(
+                new byte[]{(byte) 0x92,0x08},
+                phoneNum,
+                alarmAttachUpload.toBytes()
+        );
+    }
+
+    /**
      * 苏标：0x9212 文件上传完成应答
      */
     public static byte[] alarmAttachUpload(byte[] phoneNum, FileUploadOver fileUploadOver){

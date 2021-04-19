@@ -17,6 +17,8 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
+import com.zhoyq.server.jt808.starter.core.SessionManagement;
+import com.zhoyq.server.jt808.starter.dto.AlarmAttachUpload;
 import com.zhoyq.server.jt808.starter.dto.LocationInfo;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
@@ -37,6 +39,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0200 implements PackHandler {
     DataService dataService;
     ThreadPoolExecutor tpe;
+    SessionManagement sessionManagement;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
@@ -47,6 +50,12 @@ public class Handler0x0200 implements PackHandler {
             LocationInfo locationInfo = LocationInfo.fromBytes(msgBody);
 
             dataService.terminalLocation(phone, locationInfo, null);
+
+            // 针对苏标 下发附件上传指令 0x9208
+
+//            AlarmAttachUpload alarmAttachUpload = new AlarmAttachUpload();
+//            byte[] res = ResHelper.x9208(phoneNum, )
+//            sessionManagement.write(phone, );
         });
 
         return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
