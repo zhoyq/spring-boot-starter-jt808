@@ -29,7 +29,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 终端升级结果通知
- * TODO 苏标对结果 进行了扩充 暂时不影响解析
+ * 支持苏标
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2018/7/31
  */
