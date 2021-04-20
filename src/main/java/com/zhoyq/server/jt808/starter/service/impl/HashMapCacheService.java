@@ -15,11 +15,13 @@
 
 package com.zhoyq.server.jt808.starter.service.impl;
 
+import com.zhoyq.server.jt808.starter.dto.FileUploadAnswerPkg;
 import com.zhoyq.server.jt808.starter.service.CacheService;
 
 import java.lang.ref.SoftReference;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -102,5 +104,38 @@ public class HashMapCacheService implements CacheService {
     @Override
     public Map<Integer, byte[]> getSentPackages(String phone) {
         return sentPackageMap.get(phone);
+    }
+
+
+    // ==== \/ 苏标：stream upload
+
+    @Override
+    public void startSuStreamUpload(String fileName, long fileLength) {
+
+    }
+
+    @Override
+    public byte[] stopSuStreamUpload(String fileName) {
+        return new byte[0];
+    }
+
+    @Override
+    public void addSuStreamUpload(String fileName, byte[] data) {
+
+    }
+
+    @Override
+    public boolean checkSuStreamUploadOver(String fileName) {
+        return false;
+    }
+
+    @Override
+    public boolean checkSuStreamUpload(String fileName) {
+        return false;
+    }
+
+    @Override
+    public List<FileUploadAnswerPkg> getSuStreamReUpload(String fileName) {
+        return null;
     }
 }

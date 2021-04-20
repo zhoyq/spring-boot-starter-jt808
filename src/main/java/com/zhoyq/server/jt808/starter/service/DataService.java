@@ -229,8 +229,11 @@ public interface DataService {
      */
     List<SimAuthDto> simAuth();
 
+    // ==========
+
     /**
      * 苏标：报警附件信息
+     * 关联消息ID：0x1210
      * @param sim 卡号
      * @param alarmInfo 报警附件信息
      */
@@ -238,6 +241,7 @@ public interface DataService {
 
     /**
      * 苏标：报警文件信息
+     * 关联消息ID：0x1211 0x1212
      * @param sim 卡号
      * @param suAlarmFileInfo 报警文件信息
      * @param data 文件数据

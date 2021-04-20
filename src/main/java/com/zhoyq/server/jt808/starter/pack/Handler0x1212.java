@@ -17,6 +17,8 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
+import com.zhoyq.server.jt808.starter.dto.FileUploadAnswer;
+import com.zhoyq.server.jt808.starter.dto.FileUploadAnswerPkg;
 import com.zhoyq.server.jt808.starter.dto.SuAlarmFileInfo;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
@@ -25,6 +27,7 @@ import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -45,13 +48,37 @@ public class Handler0x1212 implements PackHandler {
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("1212 文件上传完成消息 FileUploadOver");
 
-        tpe.execute(() -> {
-            String sim = ByteArrHelper.toHexString(phoneNum);
-            SuAlarmFileInfo suAlarmFileInfo = SuAlarmFileInfo.fromBytes(msgBody);
-            byte[] data = cacheService.stopSuStreamUpload(sim);
-            dataService.suAlarmFileInfo(sim, suAlarmFileInfo, data);
-        });
+        SuAlarmFileInfo suAlarmFileInfo = SuAlarmFileInfo.fromBytes(msgBody);
+        // 为空 则返回应答失败
+        if (suAlarmFileInfo == null) {
+            return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 1);
+        }
 
-        return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
+        if (cacheService.checkSuStreamUploadOver(suAlarmFileInfo.getFileName())) {
+            byte[] data = cacheService.stopSuStreamUpload(suAlarmFileInfo.getFileName());
+            tpe.execute(() -> {
+                String sim = ByteArrHelper.toHexString(phoneNum);
+                dataService.suAlarmFileInfo(sim, suAlarmFileInfo, data);
+            });
+
+            FileUploadAnswer fileUploadOver = new FileUploadAnswer();
+
+            fileUploadOver.setFileName(suAlarmFileInfo.getFileName());
+            fileUploadOver.setFileType(suAlarmFileInfo.getFileType());
+            fileUploadOver.setUploadResult(0x00);
+
+            return ResHelper.fileUploadOverAnswer(phoneNum, fileUploadOver);
+        }
+        // 没有完全受到信息 补传
+        List<FileUploadAnswerPkg> pkgs = cacheService.getSuStreamReUpload(suAlarmFileInfo.getFileName());
+
+        FileUploadAnswer fileUploadOver = new FileUploadAnswer();
+
+        fileUploadOver.setFileName(suAlarmFileInfo.getFileName());
+        fileUploadOver.setFileType(suAlarmFileInfo.getFileType());
+        fileUploadOver.setUploadResult(0x01);
+        fileUploadOver.setPkgs(pkgs);
+
+        return ResHelper.fileUploadOverAnswer(phoneNum, fileUploadOver);
     }
 }

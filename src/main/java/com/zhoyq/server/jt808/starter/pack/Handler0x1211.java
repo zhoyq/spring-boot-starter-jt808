@@ -44,11 +44,12 @@ public class Handler0x1211 implements PackHandler {
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("1211 文件信息上传 FileUpload");
 
-        String sim = ByteArrHelper.toHexString(phoneNum);
+        SuAlarmFileInfo suAlarmFileInfo = SuAlarmFileInfo.fromBytes(msgBody);
 
-        // 这之后 将会有文件流上传 需要服务进行处理
-        // 记录 sessionId 上传文件需要和0x1211命令使用同样的会话才行 中间断开是不能接收文件信息的
-        cacheService.startSuStreamUpload(sim, sessionManagement.getSessionId(sim));
+        if (suAlarmFileInfo != null) {
+            // 这之后 将会有文件流上传 需要服务进行处理
+            cacheService.startSuStreamUpload(suAlarmFileInfo.getFileName(), suAlarmFileInfo.getFileLength());
+        }
 
         return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }

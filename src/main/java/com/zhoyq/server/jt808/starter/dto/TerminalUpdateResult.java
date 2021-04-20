@@ -28,15 +28,33 @@ public enum TerminalUpdateResult {
     /**
      * 成功
      */
-    SUCCESS(0),
+    SUCCESS(0x00),
     /**
      * 失败
      */
-    FAILED(1),
+    FAILED(0x01),
     /**
      * 取消
      */
-    CANCEL(2);
+    CANCEL(0x02),
+
+    /**
+     * 苏标：未找到目标设备
+     */
+    NOT_FOUND(0x10),
+    /**
+     * 苏标：硬件型号不支持
+     */
+    NOT_SUPPORT_HARDWARE(0x11),
+    /**
+     * 苏标：软件版本相同
+     */
+    SAME_VERSION(0x12),
+    /**
+     * 苏标：软件版本不支持
+     */
+    NOT_SUPPORT_SOFTWARE(0x13),
+    ;
 
     private byte value;
     TerminalUpdateResult(int value) {

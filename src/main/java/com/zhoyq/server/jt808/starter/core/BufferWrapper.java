@@ -93,4 +93,11 @@ public class BufferWrapper {
             nettyOut.add(buf);
         }
     }
+
+    String getSessionId() {
+        if(minaFlag){
+            return Long.toHexString(this.session.getId());
+        }
+        return ctx.channel().id().asLongText();
+    }
 }

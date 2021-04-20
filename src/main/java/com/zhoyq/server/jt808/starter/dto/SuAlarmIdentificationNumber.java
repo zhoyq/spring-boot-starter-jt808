@@ -12,14 +12,18 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
+import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 苏标：报警标识号
  * @author 刘路 <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2021/4/19
  */
+@Slf4j
 @Setter
 @Getter
 public class SuAlarmIdentificationNumber {
@@ -41,4 +45,19 @@ public class SuAlarmIdentificationNumber {
      * 标识对应报警的附件数量
      */
     private int attachNumber;
+
+    public static SuAlarmIdentificationNumber fromBytes(byte[] data) {
+        if (data.length != 16) {
+            log.warn("AlarmIdentificationNumber fromBytes data is too long!");
+            return null;
+        }
+        SuAlarmIdentificationNumber id = new SuAlarmIdentificationNumber();
+
+        id.setTerminalId(ByteArrHelper.toHexString(ByteArrHelper.subByte(data, 0, 7)));
+        id.setDatetime(ByteArrHelper.getBCDStr(ByteArrHelper.subByte(data, 7, 13)));
+        id.setNumber(data[13]);
+        id.setAttachNumber(data[14]);
+
+        return id;
+    }
 }

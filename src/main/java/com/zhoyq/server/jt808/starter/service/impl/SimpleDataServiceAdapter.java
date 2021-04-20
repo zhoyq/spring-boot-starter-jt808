@@ -169,4 +169,16 @@ public class SimpleDataServiceAdapter implements DataService {
     public List<SimAuthDto> simAuth() {
         return null;
     }
+
+    // 苏标
+
+    @Override
+    public void suAlarmAttachInfo(String sim, SuAlarmAttachInfo alarmInfo) {
+        log.info("{}, suAlarmAttachInfo", sim);
+    }
+
+    @Override
+    public void suAlarmFileInfo(String sim, SuAlarmFileInfo suAlarmFileInfo, byte[] data) {
+        log.info("{}, suAlarmFileInfo", sim);
+    }
 }

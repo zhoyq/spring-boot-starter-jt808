@@ -22,6 +22,7 @@ import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.GzipHelper;
 import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x1210 implements PackHandler {
     ThreadPoolExecutor tpe;
     DataService dataService;
+    CacheService cacheService;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {

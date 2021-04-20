@@ -16,6 +16,7 @@
 package com.zhoyq.server.jt808.starter.dto;
 
 
+import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,6 +27,10 @@ import lombok.Setter;
 @Setter
 @Getter
 public class CameraInfo {
+    /**
+     * 通道ID
+     * TODO: 苏标定义略有不同
+     */
     private byte id;
     private byte[] comm;
     private byte[] spaceTime;
@@ -36,4 +41,14 @@ public class CameraInfo {
     private byte contrast;
     private byte saturation;
     private byte tone;
+
+    public byte[] toBytes(){
+        return ByteArrHelper.union(
+                new byte[]{this.getId()},
+                this.getComm(),
+                this.getSpaceTime(),
+                new byte[]{this.getSaveSign(),this.getResolution(),
+                        this.getQuality(),this.getLuminance(),
+                        this.getContrast(),this.getSaturation(),this.getTone()});
+    }
 }

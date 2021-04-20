@@ -815,13 +815,7 @@ public class ResHelper {
         return warp(
                 new byte[]{(byte) 0x88,0x01},
                 phoneNum,
-                ByteArrHelper.union(
-                        new byte[]{info.getId()},
-                        info.getComm(),
-                        info.getSpaceTime(),
-                        new byte[]{info.getSaveSign(),info.getResolution(),
-                                info.getQuality(),info.getLuminance(),
-                                info.getContrast(),info.getSaturation(),info.getTone()})
+                info.toBytes()
         );
     }
 
@@ -971,11 +965,11 @@ public class ResHelper {
     /**
      * 苏标：0x9212 文件上传完成应答
      */
-    public static byte[] alarmAttachUpload(byte[] phoneNum, FileUploadOver fileUploadOver){
+    public static byte[] fileUploadOverAnswer(byte[] phoneNum, FileUploadAnswer fileUploadAnswer){
         return warp(
-                new byte[]{(byte) 0x92,0x08},
+                new byte[]{(byte) 0x92,0x12},
                 phoneNum,
-                fileUploadOver.toBytes()
+                fileUploadAnswer.toBytes()
         );
     }
 }

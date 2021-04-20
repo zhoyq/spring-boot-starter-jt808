@@ -2,9 +2,12 @@ package com.zhoyq.server.jt808.starter.core;
 
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * @author Zhoyq &lt;feedback@zhoyq.com&gt;
@@ -14,6 +17,8 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class Coder {
+
+    private CacheService cacheService;
 
     private static final byte MSG_BROKER = 0x7E;
     /**
@@ -29,6 +34,10 @@ public class Coder {
     private static final int MAX_READ_LEN = 1024 * 10;
 
     /**
+     * 在处理粘包分包前：
+     * - 判断是否 苏标上传文件协议内容 已经开启 未开启 则继续进行解包
+     * - 如果已经开启 则判断帧头 解析文件数据 并存入 缓存
+     *
      * 这里处理的是网络原因引起的分包 粘包
      * 1、当内容刚好时，返回false，告知父类接收下一批内容
      * 2、内容不够时需要下一批发过来的内容，此时返回false，这样父类 CumulativeProtocolDecoder
@@ -119,7 +128,41 @@ public class Coder {
                 // 长度不符合
                 log.warn("wrong data length expected {}, real {} drop !", size, packageBuf.length);
                 return wrapper.remaining() > 0;
-            }else{
+            } else if (byteBuf == 0x30
+                    && wrapper.get() == 0x31
+                    && wrapper.get() == 0x63
+                    && wrapper.get() == 0x64 ) {
+
+                // 苏标数据帧
+
+                if (wrapper.remaining() < 58) {
+                    wrapper.reset();
+                    return false;
+                }
+
+                byte[] byteBuff = new byte[58];
+                wrapper.get(byteBuff);
+                int dataLength = ByteArrHelper.fourbyte2int(ByteArrHelper.subByte(byteBuff, 54));
+                String fileName = null;
+                try {
+                    fileName = Jt808Helper.toGBKString(ByteArrHelper.subByte(byteBuff, 0, 50));
+                } catch (UnsupportedEncodingException e) {
+                    log.warn(e.getMessage());
+                }
+
+                // 检查文件名不存在 或者 缓存中不存在则 直接放弃读取
+                if (fileName == null || !cacheService.checkSuStreamUpload(fileName)) {
+                    return wrapper.remaining() > 0;
+                }
+
+                // 重置后读取相应数据即可
+                wrapper.reset();
+
+                byte[] data = new byte[62 + dataLength];
+                cacheService.addSuStreamUpload(fileName, data);
+
+                return wrapper.remaining() > 0;
+            } else {
                 log.warn("wrong data structure {}", wrapper.getRemoteAddress());
                 for(int i = 0;i<wrapper.remaining();){
                     if( wrapper.get() == MSG_BROKER ){

@@ -17,57 +17,56 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 /**
- * 报警附件上传指令数据 0x9208
+ * 苏标：文件上传完成信息格式 0x9212
  * @author 刘路 <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2021/4/13
  */
-
 @Slf4j
 @Setter
 @Getter
-public class AlarmAttachUpload {
+public class FileUploadAnswer {
+
     /**
-     * 服务器IP地址
+     * 文件名
      */
-    private String attachServerIp;
+    private String fileName;
     /**
-     * 使用TCP传输时 服务器端口号
+     * 文件类型
      */
-    private int attachServerTcpPort;
+    private int fileType;
     /**
-     * 使用UDP传输时 服务器端口号
+     * 上传结果
      */
-    private int attachServerUdpPort;
+    private int uploadResult;
     /**
-     * 报警标识号 来自终端 16字节
+     * 不传分包列表
      */
-    private byte[] terminalAlarmId;
-    /**
-     * 报警编号 来自平台 32 字节
-     */
-    private byte[] platformAlarmId;
+    private List<FileUploadAnswerPkg> pkgs;
+
 
     public byte[] toBytes() {
         try {
-            byte[] serverIp = attachServerIp.getBytes("GBK");
-            return ByteArrHelper.union(new byte[]{(byte)serverIp.length}, serverIp,
-                    ByteArrHelper.int2twobytes(attachServerTcpPort),
-                    ByteArrHelper.int2twobytes(attachServerUdpPort),
-                    terminalAlarmId,
-                    platformAlarmId,
-                    new byte[16]
+            byte[] fileNameBytes = fileName.getBytes("GBK");
+            byte[] ret = ByteArrHelper.union(
+                    new byte[]{(byte)fileNameBytes.length},
+                    fileNameBytes,
+                    new byte[]{(byte)fileType, (byte)uploadResult, pkgs == null? 0x00 :(byte)pkgs.size()}
             );
-        } catch (Exception e) {
+
+            if(pkgs != null){
+                for (FileUploadAnswerPkg pkg : pkgs) {
+                    ret = ByteArrHelper.union(ret, pkg.toBytes());
+                }
+            }
+
+            return ret;
+        } catch (UnsupportedEncodingException e) {
             log.warn(e.getMessage());
             return null;
         }
-    }
-
-    public static byte[] generatePlatformAlarmId() {
-        return UUID.randomUUID().toString().replaceAll("-", "").getBytes(StandardCharsets.US_ASCII);
     }
 }

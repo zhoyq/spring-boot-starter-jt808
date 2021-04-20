@@ -28,15 +28,33 @@ public enum TerminalUpdatePkgType {
     /**
      * 终端
      */
-    TERMINAL(0),
+    TERMINAL(0x00),
     /**
      * 道路运输证IC卡读卡器
      */
-    IC_READER(12),
+    IC_READER(0x0C),
     /**
      * 卫星定位模块
      */
-    GPS_POSITIONING(52);
+    GPS_POSITIONING(0x34),
+    /**
+     * 苏标：驾驶辅助功能模块
+     */
+    DRIVE_ASSISTANCE_MODULE(0x64),
+    /**
+     * 苏标：驾驶员行为检测模块
+     */
+    DRIVER_MOTION_MONITOR(0x65),
+    /**
+     * 苏标：轮胎状态检测模块
+     */
+    TIRE_STATUS_MONITOR(0x66),
+    /**
+     * 苏标：变道决策辅助模块
+     */
+    CHANGE_ROAD_ASSISTANCE(0x67),
+    ;
+
 
     private byte value;
     TerminalUpdatePkgType(int value) {

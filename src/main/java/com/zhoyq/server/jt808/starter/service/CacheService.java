@@ -15,6 +15,10 @@
 
 package com.zhoyq.server.jt808.starter.service;
 
+import com.zhoyq.server.jt808.starter.dto.FileUploadAnswerPkg;
+import com.zhoyq.server.jt808.starter.dto.SuAlarmFileInfo;
+
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -92,23 +96,44 @@ public interface CacheService {
     Map<Integer,byte[]> getSentPackages(String phone);
 
     /**
-     * 苏标：开始码流数据上传
-     * @param sim 卡号
-     * @param sessionId 当前会话ID
+     * 苏标：开始文件码流上传
+     * @param fileName 文件名
+     * @param fileLength 文件长度
      */
-    void startSuStreamUpload(String sim, String sessionId);
+    void startSuStreamUpload(String fileName, long fileLength);
 
     /**
-     * 苏标：
-     * @param sim 卡号
-     * @return 是否开启码流上传
+     * 苏标：完成文件码流上传
+     * @param fileName 文件名称
+     * @return 文件内容数据 内容按照苏标 2019 中定义的结构进行 TODO 需要便利性提升 解析后返回
      */
-    boolean checkSuStreamUpload(String sim);
+    byte[] stopSuStreamUpload(String fileName);
 
     /**
-     * 苏标：
-     * @param sim 卡号
-     * @return 返回文件数据
+     * 苏标：添加苏标数据码流
+     * @param fileName 文件名称
+     * @param data 数据信息
      */
-    byte[] stopSuStreamUpload(String sim);
+    void addSuStreamUpload(String fileName, byte[] data);
+
+    /**
+     * 苏标：检查是否已经上传完成
+     * @param fileName 文件名称
+     * @return 检查结果
+     */
+    boolean checkSuStreamUploadOver(String fileName);
+
+    /**
+     * 苏标：检查是否存在的文件名
+     * @param fileName 文件名称
+     * @return 检查结果
+     */
+    boolean checkSuStreamUpload(String fileName);
+
+    /**
+     * 苏标：获取补传数据包
+     * @param fileName 文件名称
+     * @return 补传数据包
+     */
+    List<FileUploadAnswerPkg> getSuStreamReUpload(String fileName);
 }

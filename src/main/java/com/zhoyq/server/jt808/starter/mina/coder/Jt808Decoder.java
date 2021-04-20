@@ -17,6 +17,8 @@ package com.zhoyq.server.jt808.starter.mina.coder;
 
 import com.zhoyq.server.jt808.starter.core.BufferWrapper;
 import com.zhoyq.server.jt808.starter.core.Coder;
+import com.zhoyq.server.jt808.starter.core.SessionManagement;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.buffer.IoBuffer;
