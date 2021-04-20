@@ -90,4 +90,25 @@ public interface CacheService {
      * @return 包列表
      */
     Map<Integer,byte[]> getSentPackages(String phone);
+
+    /**
+     * 苏标：开始码流数据上传
+     * @param sim 卡号
+     * @param sessionId 当前会话ID
+     */
+    void startSuStreamUpload(String sim, String sessionId);
+
+    /**
+     * 苏标：
+     * @param sim 卡号
+     * @return 是否开启码流上传
+     */
+    boolean checkSuStreamUpload(String sim);
+
+    /**
+     * 苏标：
+     * @param sim 卡号
+     * @return 返回文件数据
+     */
+    byte[] stopSuStreamUpload(String sim);
 }

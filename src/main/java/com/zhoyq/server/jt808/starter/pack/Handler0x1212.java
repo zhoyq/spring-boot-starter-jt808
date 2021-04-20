@@ -17,12 +17,18 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
+import com.zhoyq.server.jt808.starter.dto.SuAlarmFileInfo;
+import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
+import com.zhoyq.server.jt808.starter.service.CacheService;
+import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 /**
- * TODO 苏标 0x1212
+ * 苏标 0x1212
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2018/7/31
  */
@@ -30,9 +36,22 @@ import lombok.extern.slf4j.Slf4j;
 @Jt808Pack(msgId = 0x1212)
 @AllArgsConstructor
 public class Handler0x1212 implements PackHandler {
+
+    ThreadPoolExecutor tpe;
+    DataService dataService;
+    CacheService cacheService;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("1212 文件上传完成消息 FileUploadOver");
+
+        tpe.execute(() -> {
+            String sim = ByteArrHelper.toHexString(phoneNum);
+            SuAlarmFileInfo suAlarmFileInfo = SuAlarmFileInfo.fromBytes(msgBody);
+            byte[] data = cacheService.stopSuStreamUpload(sim);
+            dataService.suAlarmFileInfo(sim, suAlarmFileInfo, data);
+        });
+
         return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

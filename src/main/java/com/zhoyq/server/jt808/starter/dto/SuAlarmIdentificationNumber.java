@@ -12,9 +12,33 @@
 
 package com.zhoyq.server.jt808.starter.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
+ * 苏标：报警标识号
  * @author 刘路 <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2021/4/19
  */
+@Setter
+@Getter
 public class SuAlarmIdentificationNumber {
+    /**
+     * 终端ID
+     */
+    private String terminalId;
+    /**
+     * 时间 YYMMDDhhmmss
+     */
+    private String datetime;
+    /**
+     * 序号
+     * 同一时间点报警序号 从零开始
+     */
+    private int number;
+    /**
+     * 附件数量
+     * 标识对应报警的附件数量
+     */
+    private int attachNumber;
 }

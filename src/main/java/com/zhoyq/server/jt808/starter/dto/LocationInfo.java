@@ -74,6 +74,43 @@ public class LocationInfo {
      */
     private List<LocationAttachInfo> attachInfo;
 
+    /**
+     * 获取苏标报警标识号 用于下发上传附件命令
+     */
+    public List<SuAlarmIdentificationNumber> getSuAlarmIdentificationNumberList() {
+        List<SuAlarmIdentificationNumber> ret = new ArrayList<>();
+        List<LocationAttachInfo> attachInfoList = this.getAttachInfo();
+
+        if (attachInfoList != null && attachInfoList.size() > 0) {
+            for (LocationAttachInfo locationAttachInfo : attachInfoList) {
+                SuAlarm alarm = null;
+                switch (locationAttachInfo.getId()){
+                    case 0x64:
+                        alarm = locationAttachInfo.getSuDriveAssistanceAlarm();
+                        break;
+                    case 0x65:
+                        alarm = locationAttachInfo.getSuDriverMotionMonitorAlarm();
+                        break;
+                    case 0x66:
+                        alarm = locationAttachInfo.getSuTireStatusMonitorAlarm();
+                        break;
+                    case 0x67:
+                        alarm = locationAttachInfo.getSuChangeRoadAssistanceAlarm();
+                        break;
+                    case 0x70:
+                        alarm = locationAttachInfo.getSuIntenseDrivingMonitorAlarm();
+                        break;
+                }
+
+                if (alarm != null) {
+                    ret.add(alarm.alarmIdentificationNumber());
+                }
+            }
+        }
+
+        return ret;
+    }
+
 
     public static LocationInfo fromBytes(byte[] data) {
         // 报警标识

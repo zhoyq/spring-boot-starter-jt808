@@ -77,6 +77,7 @@ public interface DataService {
      * 终端应答消息
      * 应答类消息都会传入此方法进行处理
      * 相关消息ID：0x0001 0x0104 0x0107 0x0108 0x0302 0x0500 0x0608 0x0700 0x0802 0x0805
+     * 相关苏标消息ID：0x1210
      * @param sim 卡号
      * @param platformStreamNumber 应答对应平台流水号
      * @param platformCommandId 应答对应平台消息ID
@@ -227,4 +228,19 @@ public interface DataService {
      * @return 关系
      */
     List<SimAuthDto> simAuth();
+
+    /**
+     * 苏标：报警附件信息
+     * @param sim 卡号
+     * @param alarmInfo 报警附件信息
+     */
+    void suAlarmAttachInfo(String sim, SuAlarmAttachInfo alarmInfo);
+
+    /**
+     * 苏标：报警文件信息
+     * @param sim 卡号
+     * @param suAlarmFileInfo 报警文件信息
+     * @param data 文件数据
+     */
+    void suAlarmFileInfo(String sim, SuAlarmFileInfo suAlarmFileInfo, byte[] data);
 }

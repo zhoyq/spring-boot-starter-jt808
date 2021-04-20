@@ -13,6 +13,7 @@
 package com.zhoyq.server.jt808.starter.dto;
 
 /**
+ * TODO 苏标：车辆状态
  * @author 刘路 <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2021/4/19
  */

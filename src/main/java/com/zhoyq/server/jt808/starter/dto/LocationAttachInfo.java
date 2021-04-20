@@ -30,12 +30,40 @@ public class LocationAttachInfo {
 
     // 苏标：获取驾驶辅助功能报警信息
     public SuDriveAssistanceAlarm getSuDriveAssistanceAlarm() {
-        return SuDriveAssistanceAlarm.fromBytes(data);
+        if (this.id == 0x64) {
+            return SuDriveAssistanceAlarm.fromBytes(data);
+        }
+        return null;
     }
-    // TODO 苏标：获取驾驶员行为检测功能报警信息
-    // TODO 苏标：获取轮胎状态监测报警信息
-    // TODO 苏标：获取变道决策辅助报警信息
-    // TODO 苏标：获取激烈驾驶报警信息
+    // 苏标：获取驾驶员行为检测功能报警信息
+    public SuDriverMotionMonitorAlarm getSuDriverMotionMonitorAlarm() {
+        if (this.id == 0x65) {
+            return SuDriverMotionMonitorAlarm.fromBytes(data);
+        }
+        return null;
+    }
+    // 苏标：获取轮胎状态监测报警信息
+    public SuTireStatusMonitorAlarm getSuTireStatusMonitorAlarm() {
+        if (this.id == 0x66) {
+            return SuTireStatusMonitorAlarm.fromBytes(data);
+        }
+        return null;
+    }
+    // 苏标：获取变道决策辅助报警信息
+    public SuChangeRoadAssistanceAlarm getSuChangeRoadAssistanceAlarm() {
+        if (this.id == 0x67) {
+            return SuChangeRoadAssistanceAlarm.fromBytes(data);
+        }
+        return null;
+    }
+    // 苏标：获取激烈驾驶报警信息
+    public SuIntenseDrivingMonitorAlarm getSuIntenseDrivingMonitorAlarm() {
+        if (this.id == 0x70) {
+            return SuIntenseDrivingMonitorAlarm.fromBytes(data);
+        }
+        return null;
+    }
+
 
     public static LocationAttachInfo fromBytes(byte[] data) {
         LocationAttachInfo locationAttachInfo = new LocationAttachInfo();

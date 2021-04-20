@@ -56,4 +56,16 @@ public class SessionManagement {
         }
         return false;
     }
+
+    public String getSessionId(String sim) {
+        if(this.contains(sim)) {
+            Object session = this.get(sim);
+            if (session instanceof IoSession){
+                return Long.toHexString(((IoSession) session).getId());
+            } else if(session instanceof ChannelHandlerContext){
+                return ((ChannelHandlerContext) session).channel().id().asLongText();
+            }
+        }
+        return null;
+    }
 }

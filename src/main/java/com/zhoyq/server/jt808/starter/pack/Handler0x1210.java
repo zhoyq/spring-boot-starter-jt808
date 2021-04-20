@@ -17,8 +17,10 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
+import com.zhoyq.server.jt808.starter.dto.SuAlarmAttachInfo;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.GzipHelper;
+import com.zhoyq.server.jt808.starter.helper.Jt808Helper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.AllArgsConstructor;
@@ -36,9 +38,21 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Jt808Pack(msgId = 0x1210)
 @AllArgsConstructor
 public class Handler0x1210 implements PackHandler {
+    ThreadPoolExecutor tpe;
+    DataService dataService;
+
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
         log.info("1210 报警附件信息消息 AlarmAttach");
+
+        tpe.execute(() -> {
+            String sim = ByteArrHelper.toHexString(phoneNum);
+            dataService.terminalAnswer(sim, -1, "9208", "1210", msgBody);
+
+            SuAlarmAttachInfo alarmInfo = SuAlarmAttachInfo.fromBytes(msgBody);
+            dataService.suAlarmAttachInfo(sim, alarmInfo);
+        });
+
         return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }
 }

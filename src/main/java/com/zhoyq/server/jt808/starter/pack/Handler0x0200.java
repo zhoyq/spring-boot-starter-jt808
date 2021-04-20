@@ -18,14 +18,14 @@ package com.zhoyq.server.jt808.starter.pack;
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
 import com.zhoyq.server.jt808.starter.core.SessionManagement;
-import com.zhoyq.server.jt808.starter.dto.AlarmAttachUpload;
-import com.zhoyq.server.jt808.starter.dto.LocationInfo;
+import com.zhoyq.server.jt808.starter.dto.*;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
 import com.zhoyq.server.jt808.starter.service.DataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -39,7 +39,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class Handler0x0200 implements PackHandler {
     DataService dataService;
     ThreadPoolExecutor tpe;
-    SessionManagement sessionManagement;
+//    SessionManagement sessionManagement;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
@@ -51,11 +51,16 @@ public class Handler0x0200 implements PackHandler {
 
             dataService.terminalLocation(phone, locationInfo, null);
 
-            // 针对苏标 下发附件上传指令 0x9208
+            // 针对苏标 下发附件上传指令 0x9208 将在需要时 上传
+            // 这部分内容 在需要是 手动或者配置自动下发指令即可 不在此进行处理
 
-//            AlarmAttachUpload alarmAttachUpload = new AlarmAttachUpload();
-//            byte[] res = ResHelper.x9208(phoneNum, )
-//            sessionManagement.write(phone, );
+//            List<SuAlarmIdentificationNumber> suAlarmIdList = locationInfo.getSuAlarmIdentificationNumberList();
+//
+//            for (SuAlarmIdentificationNumber suAlarmIdentificationNumber : suAlarmIdList) {
+//                AlarmAttachUpload alarmAttachUpload = new AlarmAttachUpload();
+//                byte[] res = ResHelper.x9208(phoneNum, alarmAttachUpload);
+//                sessionManagement.write(phone, res);
+//            }
         });
 
         return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
