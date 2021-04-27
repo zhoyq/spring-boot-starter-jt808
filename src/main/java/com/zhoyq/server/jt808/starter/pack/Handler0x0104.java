@@ -47,7 +47,7 @@ public class Handler0x0104 implements PackHandler {
         tpe.execute(() -> {
             dataService.terminalAnswer(phone, platformStreamNumber, "8104",
                     "0104", msgBody);
-            dataService.terminalParameters(phone, TerminalParameters.fromBytes(msgBody));
+            dataService.terminalParameters(phone, TerminalParameters.fromBytes(ByteArrHelper.subByte( msgBody, 3)));
         });
         return ResHelper.getPlatAnswer(phoneNum, streamNum, msgId, (byte) 0x00);
     }
