@@ -69,7 +69,7 @@ public class DataTransportDeviceInfo {
     }
 
     private static Ret handleProp(int pos, byte[] subByte) throws Exception{
-        byte length = subByte[pos];
+        int length = subByte[pos] & 0xff;
         if (length > 32) {
             throw new Exception("length over 32 limit!");
         }
