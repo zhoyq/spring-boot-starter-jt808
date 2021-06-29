@@ -104,8 +104,9 @@ public interface CacheService {
 
     /**
      * 苏标：完成文件码流上传
+     * TODO 需要便利性提升 解析后返回
      * @param fileName 文件名称
-     * @return 文件内容数据 内容按照苏标 2019 中定义的结构进行 TODO 需要便利性提升 解析后返回
+     * @return 文件内容数据 内容按照苏标 2019 中定义的结构进行
      */
     byte[] stopSuStreamUpload(String fileName);
 

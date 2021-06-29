@@ -25,6 +25,7 @@
 - 删除 DtoHelper 类
 - 将 entity 包内的数据 转换到 dto 包内
 - 删除 Analyze 类 , 以及相关分析类，使用 dto 内 使用对象内方法代替 。丰富 DataService 方法并标明相关消息ID 
+- ByteArrHelper 字节处理方法优化
 
 正在
 

@@ -129,10 +129,12 @@ public class ByteArrHelper {
         buf = new byte[len];
         int pos = 0;
         for (byte[] bytes : b) {
-            for (byte aByte : bytes) {
-                buf[pos] = aByte;
-                pos++;
-            }
+            System.arraycopy(bytes, 0, buf, pos, bytes.length);
+//            for (byte aByte : bytes) {
+//                buf[pos] = aByte;
+//                pos++;
+//            }
+            pos += bytes.length;
         }
         return buf;
     }
@@ -146,9 +148,10 @@ public class ByteArrHelper {
      */
     public static byte[] subByte(byte[] data, int start) {
         byte[] buf = new byte[data.length - start];
-        for (int n = 0, i = start; i < data.length; i++, n++) {
-            buf[n] = data[i];
-        }
+        System.arraycopy(data, start, buf, 0, buf.length);
+//        for (int n = 0, i = start; i < data.length; i++, n++) {
+//            buf[n] = data[i];
+//        }
         return buf;
     }
 
@@ -162,9 +165,10 @@ public class ByteArrHelper {
      */
     public static byte[] subByte(byte[] data, int start, int end) {
         byte[] buf = new byte[end - start];
-        for (int n = 0, i = start; i < end; i++, n++) {
-            buf[n] = data[i];
-        }
+        System.arraycopy(data, start, buf, 0, buf.length);
+//        for (int n = 0, i = start; i < end; i++, n++) {
+//            buf[n] = data[i];
+//        }
         return buf;
     }
 

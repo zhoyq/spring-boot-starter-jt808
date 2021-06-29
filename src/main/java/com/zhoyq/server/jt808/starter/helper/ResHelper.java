@@ -326,7 +326,7 @@ public class ResHelper {
 
     /**
      * 0x8106 查询指定终端参数
-     * 遍历性改进方法
+     * 便利性改进方法
      * @param phoneNum      电话号码
      * @param parameterIds    参数id列表
      * @return 命令
