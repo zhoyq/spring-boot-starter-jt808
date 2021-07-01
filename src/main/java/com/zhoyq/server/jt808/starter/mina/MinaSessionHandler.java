@@ -17,6 +17,9 @@ package com.zhoyq.server.jt808.starter.mina;
 
 import com.zhoyq.server.jt808.starter.config.Jt808Config;
 import com.zhoyq.server.jt808.starter.core.HandlerWrapper;
+import com.zhoyq.server.jt808.starter.core.PackHandlerManagement;
+import com.zhoyq.server.jt808.starter.core.SessionManagement;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoHandlerAdapter;
@@ -32,12 +35,12 @@ import java.util.Arrays;
  * @date 2020/2/16
  */
 @Slf4j
-@Component
 @AllArgsConstructor
 public class MinaSessionHandler extends IoHandlerAdapter {
-    private Jt808Config jt808Config;
-    private HandlerWrapper handlerWrapper;
-
+    SessionManagement sessionManagement;
+    CacheService cacheService;
+    PackHandlerManagement packHandlerManagement;
+    Jt808Config jt808Config;
     /**
      * 会话空闲
      */
@@ -69,6 +72,12 @@ public class MinaSessionHandler extends IoHandlerAdapter {
         byte[] originData  = (byte[])msg;
         log.debug("session received msg with id {} and msg {}", session.getId(), Arrays.toString(originData));
 
+        HandlerWrapper handlerWrapper = new HandlerWrapper(
+                sessionManagement,
+                cacheService,
+                packHandlerManagement,
+                jt808Config
+        );
         handlerWrapper.init(originData);
         handlerWrapper.handleSession(session);
         handlerWrapper.handleMessage();

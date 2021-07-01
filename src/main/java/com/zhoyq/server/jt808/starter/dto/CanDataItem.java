@@ -16,54 +16,65 @@ import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2020/2/20
  */
+@Slf4j
 @Setter
 @Getter
 public class CanDataItem {
 
+    private byte[] pack;
+    private int headInt;
+
     /**
      * CAN总线ID
      */
-    private int canID;
+    public int canID() {
+        return headInt & 0x1fffffff;
+    }
     /**
      * 通道号
      * 0 CAN1 | 1 CAN2
      */
-    private int canTunnel;
+    private int canTunnel() {
+        return headInt & 0x80000000 >> 31;
+    }
 
     /**
      * 帧类型
      * 0 标准帧 | 1 扩展帧
      */
-    private int frameType;
+    private int frameType() {
+        return headInt & 0x40000000 >> 30;
+    }
 
     /**
      * 数据采集方式
      * 0 原始数据 | 1 采集区间的平均值
      */
-    private int dataCollectModel;
+    private int dataCollectModel() {
+        return headInt & 0x20000000 >> 29;
+    }
 
-    /**
-     * CAN 数据
-     */
-    private byte[] data;
+    public byte[] toBytes() {
+        return this.pack;
+    }
 
     public static CanDataItem fromBytes(byte[] data) {
-        byte[] head = ByteArrHelper.subByte(data, 0,4);
-        byte[] tail = ByteArrHelper.subByte(data, 4);
+        if (data.length != 12) {
+            log.warn("CanDataItem fromBytes data is bad!");
+            return null;
+        }
+
         CanDataItem item = new CanDataItem();
-
-        int headInt = ByteArrHelper.fourbyte2int(head);
-
-        item.setCanTunnel(headInt & 0x80000000 >> 31);
-        item.setFrameType(headInt & 0x40000000 >> 30);
-        item.setDataCollectModel(headInt & 0x20000000 >> 29);
-        item.setCanID(headInt & 0x1fffffff);
-        item.setData(tail);
+        item.setPack(data);
+        item.setHeadInt(ByteArrHelper.fourbyte2int(new byte[]{
+                data[0], data[1], data[2], data[3]
+        }));
 
         return item;
     }

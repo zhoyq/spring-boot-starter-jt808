@@ -15,11 +15,16 @@
 
 package com.zhoyq.server.jt808.starter.netty;
 
+import com.zhoyq.server.jt808.starter.config.Jt808Config;
 import com.zhoyq.server.jt808.starter.core.HandlerWrapper;
+import com.zhoyq.server.jt808.starter.core.PackHandlerManagement;
+import com.zhoyq.server.jt808.starter.core.SessionManagement;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
@@ -30,7 +35,10 @@ import java.util.Arrays;
 @Slf4j
 @AllArgsConstructor
 public class NettySessionHandler extends ChannelInboundHandlerAdapter {
-    private HandlerWrapper handlerWrapper;
+    SessionManagement sessionManagement;
+    CacheService cacheService;
+    PackHandlerManagement packHandlerManagement;
+    Jt808Config jt808Config;
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
@@ -45,6 +53,12 @@ public class NettySessionHandler extends ChannelInboundHandlerAdapter {
         byte[] originData  = (byte[])msg;
         log.debug("session received msg with id {} and msg {}", ctx.name(), Arrays.toString(originData));
 
+        HandlerWrapper handlerWrapper = new HandlerWrapper(
+                sessionManagement,
+                cacheService,
+                packHandlerManagement,
+                jt808Config
+        );
         handlerWrapper.init(originData);
         handlerWrapper.handleSession(ctx);
         handlerWrapper.handleMessage();

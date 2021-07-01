@@ -17,12 +17,10 @@ package com.zhoyq.server.jt808.starter.netty;
 
 import com.zhoyq.server.jt808.starter.config.Const;
 import com.zhoyq.server.jt808.starter.config.Jt808Config;
-import com.zhoyq.server.jt808.starter.core.BufferWrapper;
-import com.zhoyq.server.jt808.starter.core.Coder;
-import com.zhoyq.server.jt808.starter.core.HandlerWrapper;
-import com.zhoyq.server.jt808.starter.core.Jt808Server;
+import com.zhoyq.server.jt808.starter.core.*;
 import com.zhoyq.server.jt808.starter.netty.coder.Jt808NettyDecoder;
 import com.zhoyq.server.jt808.starter.netty.coder.Jt808NettyEncoder;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -47,10 +45,13 @@ public class Jt808NettyServer implements Jt808Server {
     private static EventLoopGroup masterGroup;
     private static EventLoopGroup slaveGroup;
 
-    private Jt808Config jt808Config;
-    private HandlerWrapper handlerWrapper;
-    private BufferWrapper bufferWrapper;
-    private Coder coder;
+    BufferWrapper bufferWrapper;
+    Coder coder;
+
+    SessionManagement sessionManagement;
+    CacheService cacheService;
+    PackHandlerManagement packHandlerManagement;
+    Jt808Config jt808Config;
 
     @Override
     public boolean start() {
@@ -74,7 +75,7 @@ public class Jt808NettyServer implements Jt808Server {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline().addLast(new Jt808NettyEncoder(coder));
                             socketChannel.pipeline().addLast(new Jt808NettyDecoder(coder, bufferWrapper));
-                            socketChannel.pipeline().addLast(new NettySessionHandler(handlerWrapper));
+                            socketChannel.pipeline().addLast(new NettySessionHandler(sessionManagement, cacheService, packHandlerManagement, jt808Config));
                         }
                     })
                     .childOption(ChannelOption.TCP_NODELAY, jt808Config.getTcpNoDelay())
@@ -94,7 +95,7 @@ public class Jt808NettyServer implements Jt808Server {
                         protected void initChannel(NioDatagramChannel channel) throws Exception {
                             channel.pipeline().addLast(new Jt808NettyEncoder(coder));
                             channel.pipeline().addLast(new Jt808NettyDecoder(coder, bufferWrapper));
-                            channel.pipeline().addLast(new NettySessionHandler(handlerWrapper));
+                            channel.pipeline().addLast(new NettySessionHandler(sessionManagement, cacheService, packHandlerManagement, jt808Config));
                         }
                     });
 

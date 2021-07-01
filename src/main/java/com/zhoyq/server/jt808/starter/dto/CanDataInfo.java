@@ -33,36 +33,58 @@ public class CanDataInfo {
     private long timestamp;
 
     /**
+     * 数据项个数
+     */
+    private byte[] dataNumber;
+
+    public int dataNumber() {
+        return ByteArrHelper.twobyte2int(this.dataNumber);
+    }
+
+    /**
      * 数据接收时间 hh-mm-ss-msms
      */
-    private String receiveTime;
+    private byte[] receiveTime;
+
+    public String receiveTime() {
+        return ByteArrHelper.getBCDStr(new byte[]{receiveTime[0]}) + "-" +
+                ByteArrHelper.getBCDStr(new byte[]{receiveTime[1]}) + "-" +
+                ByteArrHelper.getBCDStr(new byte[]{receiveTime[2]}) + "-" +
+                ByteArrHelper.getBCDStr(new byte[]{receiveTime[3]}) +
+                ByteArrHelper.getBCDStr(new byte[]{receiveTime[4]});
+    }
 
     /**
      * CAN总线数据项
      */
-    private List<CanDataItem> data;
+    private byte[] data;
+
+    public List<CanDataItem> data() {
+        List<CanDataItem> ret = new ArrayList<>();
+        int pos = 0;
+        while (pos < data.length) {
+            byte[] buf = ByteArrHelper.subByte(data, pos,pos + 12);
+            ret.add(CanDataItem.fromBytes(buf));
+            pos += 12;
+        }
+        return ret;
+    }
+
+    public byte[] toBytes() {
+        return ByteArrHelper.union(
+                dataNumber,
+                receiveTime,
+                data
+        );
+    }
 
     public static CanDataInfo fromBytes(byte[] data) {
         CanDataInfo canDataInfo = new CanDataInfo();
 
         canDataInfo.setTimestamp(System.currentTimeMillis());
-
-        String time = ByteArrHelper.getBCDStr(new byte[]{data[2]}) + "-" +
-                ByteArrHelper.getBCDStr(new byte[]{data[3]}) + "-" +
-                ByteArrHelper.getBCDStr(new byte[]{data[4]}) + "-" +
-                ByteArrHelper.getBCDStr(new byte[]{data[5]}) +
-                ByteArrHelper.getBCDStr(new byte[]{data[6]});
-
-        canDataInfo.setReceiveTime(time);
-        canDataInfo.setData(new ArrayList<>());
-
-        int pos = 7;
-        while (pos < data.length) {
-            byte[] buf = ByteArrHelper.subByte(data, pos,pos + 12);
-            canDataInfo.getData().add(CanDataItem.fromBytes(buf));
-            pos += 12;
-        }
-
+        canDataInfo.setDataNumber(new byte[]{data[0], data[1]});
+        canDataInfo.setReceiveTime(new byte[]{data[2], data[3], data[4], data[5], data[6]});
+        canDataInfo.setData(ByteArrHelper.subByte(data, 7));
         return canDataInfo;
     }
 }

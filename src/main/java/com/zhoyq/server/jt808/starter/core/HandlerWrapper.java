@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2020-10-27
  */
 @Slf4j
-@Component
 public class HandlerWrapper {
     SessionManagement sessionManagement;
     CacheService cacheService;
@@ -204,24 +203,24 @@ public class HandlerWrapper {
 
         int offset = 0;
 
-        final byte[] msgId = new byte[]{originData[offset++],originData[offset++]};
-        final byte[] msgBodyProp = new byte[]{originData[offset++],originData[offset++]};
+        final byte[] msgId = new byte[]{data[offset++],data[offset++]};
+        final byte[] msgBodyProp = new byte[]{data[offset++],data[offset++]};
         // 通过消息体属性中的版本标识位 判断是否是 2019版本协议 并增加相关解析
         byte[] phoneNum;
         if (Jt808Helper.isVersion2019(msgBodyProp)) {
             // 忽略 协议版本解析
             offset++;
             phoneNum = new byte[]{
-                    originData[offset++],originData[offset++],originData[offset++],originData[offset++],originData[offset++],
-                    originData[offset++],originData[offset++],originData[offset++],originData[offset++],originData[offset++]
+                    data[offset++],data[offset++],data[offset++],data[offset++],data[offset++],
+                    data[offset++],data[offset++],data[offset++],data[offset++],data[offset++]
             };
         } else {
             phoneNum = new byte[]{
-                    originData[offset++],originData[offset++],originData[offset++],
-                    originData[offset++],originData[offset++],originData[offset++]
+                    data[offset++],data[offset++],data[offset++],
+                    data[offset++],data[offset++],data[offset++]
             };
         }
-        final byte[] streamNum = new byte[]{originData[offset++],originData[offset++]};
+        final byte[] streamNum = new byte[]{data[offset++],data[offset++]};
         if (this.hasPackage) {
             // 超长的数据一定是分包合并后的数据 直接获取后边的数据即可 因为已经处理了尾部的校验位
 
@@ -229,12 +228,12 @@ public class HandlerWrapper {
             // 感谢 https://github.com/bigbeef 提交的建议
 
             offset += 4;
-            msgBody = ByteArrHelper.subByte(originData, offset);
+            msgBody = ByteArrHelper.subByte(data, offset);
         } else {
-            int bodyLength = originData.length-1-offset;
+            int bodyLength = data.length-1-offset;
             msgBody = new byte[bodyLength];
             for(int i=0;i<msgBody.length;i++){
-                msgBody[i] = originData[offset++];
+                msgBody[i] = data[offset++];
             }
             // 无分包需要 单独处理 RSA 加密
             // 解密失败 直接返回 失败应答

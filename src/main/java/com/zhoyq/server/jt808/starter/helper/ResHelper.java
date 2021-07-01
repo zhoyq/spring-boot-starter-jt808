@@ -261,7 +261,6 @@ public class ResHelper {
      * // TODO TerminalParameter 类便利方法
      * ```
      *
-     *
      * {@link TerminalParameter}
      *
      * @param phoneNum SIM卡号

@@ -29,6 +29,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -556,6 +559,22 @@ public class Jt808Helper {
                 ByteArrHelper.getBCDStr(ByteArrHelper.subByte(dateTime, 5, 6));
     }
 
+    public static Date bytes2date(byte[] datetime) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
+        String timeString = ByteArrHelper.getBCDStr(datetime);
+        try {
+            return sdf.parse(timeString);
+        } catch (ParseException e) {
+            log.warn(e.getMessage());
+            return null;
+        }
+    }
+
+    public static double bytes2latlon(byte[] date) {
+        int buf = ByteArrHelper.fourbyte2int(date);
+        return (double)buf / (double)1000000;
+    }
+
 //    /**
 //     * 保存报警信息
 //     * @param phoneNum 电话
@@ -981,7 +1000,7 @@ public class Jt808Helper {
     }
 
     /**
-     * 检查是否使用了 ras 加密
+     * 检查是否使用了 rsa 加密
      * @param msgBodyProp 消息体属性
      * @return 是否
      */

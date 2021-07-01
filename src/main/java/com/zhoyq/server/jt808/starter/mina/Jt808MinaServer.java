@@ -18,8 +18,11 @@ package com.zhoyq.server.jt808.starter.mina;
 import com.zhoyq.server.jt808.starter.config.Const;
 import com.zhoyq.server.jt808.starter.config.Jt808Config;
 import com.zhoyq.server.jt808.starter.core.Jt808Server;
+import com.zhoyq.server.jt808.starter.core.PackHandlerManagement;
+import com.zhoyq.server.jt808.starter.core.SessionManagement;
 import com.zhoyq.server.jt808.starter.helper.CustomThreadFactory;
 import com.zhoyq.server.jt808.starter.mina.coder.Jt808CodecFactory;
+import com.zhoyq.server.jt808.starter.service.CacheService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.AbstractIoAcceptor;
@@ -47,9 +50,12 @@ public class Jt808MinaServer implements Jt808Server {
 
     private static AbstractIoAcceptor acceptor;
 
-    private Jt808Config jt808Config;
-    private IoHandler handler;
-    private Jt808CodecFactory jt808CodecFactory;
+    Jt808CodecFactory jt808CodecFactory;
+
+    SessionManagement sessionManagement;
+    CacheService cacheService;
+    PackHandlerManagement packHandlerManagement;
+    Jt808Config jt808Config;
 
     @Override
     public boolean start() {
@@ -78,7 +84,7 @@ public class Jt808MinaServer implements Jt808Server {
 
         // 数据校验 以及 粘包 分包处理 过滤器
         acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(jt808CodecFactory));
-        acceptor.setHandler(handler);
+        acceptor.setHandler(new MinaSessionHandler(sessionManagement, cacheService, packHandlerManagement, jt808Config));
         acceptor.getSessionConfig().setIdleTime( IdleStatus.BOTH_IDLE, jt808Config.getIdleTime() );
         // 设置缓冲区大小
         acceptor.getSessionConfig().setReadBufferSize( jt808Config.getReadBufferSize() );

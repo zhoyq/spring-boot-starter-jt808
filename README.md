@@ -7,39 +7,31 @@
 
 ## 版本特性
 
-### 20210409 v1.4.0 v1.4.0-jdk1.8
-
-继承之前解决的问题
-
-- 解决 SessionManagement.write 返回 false 的问题
-
-完成
-
-- ByteArrHelper 改为静态类 不再使用 spring 托管（非兼容性更新）
-- RsaHelper 改为静态类 不再使用 spring 托管（非兼容性更新）
-- 增加 PlatStreamHelper 获取平台流水号
-- ResHelper 改为静态类 不再使用 spring 托管（非兼容性更新）
-- Jt808Helper 改为静态类 不再使用 spring 托管（非兼容性更新）
-- 解析支持 RSA 加密（消息长度还有些问题，默认关闭）
-- 分发支持 RSA 加密（消息长度还有些问题，默认关闭）
-- 删除 DtoHelper 类
-- 将 entity 包内的数据 转换到 dto 包内
-- 删除 Analyze 类 , 以及相关分析类，使用 dto 内 使用对象内方法代替 。丰富 DataService 方法并标明相关消息ID 
-- ByteArrHelper 字节处理方法优化
-
-正在
-
-- 增加 苏标 2017 2019 版本解析
-
-即将
-
-- ResHelper 增加测试类
-- ResHelper 文档
-- 增加 1078 2016 版本解析
-
 长期
 
 - 后续会根据需要 升级 DataService 和 ResHelper 类 的便利性
+
+### 20210701 v1.5.0 v1.5.0-jdk1.8
+
+- :sparkles: 增加 1078 协议 2016 版本解析
+- :sparkles: 解析支持 RSA 加密
+- :sparkles: 分发支持 RSA 加密
+- :hammer: ResHelper 增加测试类
+- :hammer: ResHelper 文档
+
+### 20210701 v1.4.0 v1.4.0-jdk1.8
+
+- :sparkles: 增加 苏标 2017 2019 版本解析
+- :bug: 解决 SessionManagement.write 返回 false 的问题
+- :hammer: ByteArrHelper 改为静态类 不再使用 spring 托管（非兼容性更新）
+- :hammer: RsaHelper 改为静态类 不再使用 spring 托管（非兼容性更新）
+- :hammer: ResHelper 改为静态类 不再使用 spring 托管（非兼容性更新）
+- :hammer: Jt808Helper 改为静态类 不再使用 spring 托管（非兼容性更新）
+- :hammer: 删除 DtoHelper 类
+- :hammer: 删除 Analyze 类 , 以及相关分析类，使用 dto 内 使用对象内方法代替 。丰富 DataService 方法并标明相关消息ID 
+- :hammer: ByteArrHelper 字节处理方法优化
+- :construction: 将 entity 包内的数据 转换到 dto 包内
+- :construction: 增加 PlatStreamHelper 获取平台流水号
 
 ### 20210409 v1.3.2 v1.3.2-jdk1.8
 
@@ -85,6 +77,7 @@
 
 ### 1.3.x 升级 1.4.0
 
+- rsa 加密目前不可用 所以配置 useRsa 需要直接设置成 false
 - 由于 ResHelper、ByteArrHelper、Jt808Helper、RsaHelper 改为静态类 原始托管单例需要 自行修改使用静态方法调用
 - 原始包名 entity 修改成 dto 与 原始 dto 包 合并， 如果引用了这个包内的成员需要修改
 - dto 包内的对象修改， 不会影响 DataService 中的方法实现 但是如果使用了原始类 中间属性可能会有影响，如果解析时使用了 dto 中的对象 需要修改

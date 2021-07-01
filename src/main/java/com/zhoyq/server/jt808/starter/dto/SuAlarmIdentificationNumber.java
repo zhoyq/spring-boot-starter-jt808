@@ -18,6 +18,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * 苏标：报警标识号
  * @author 刘路 <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
@@ -30,31 +35,56 @@ public class SuAlarmIdentificationNumber {
     /**
      * 终端ID
      */
-    private String terminalId;
+    private byte[] terminalId;
     /**
      * 时间 YYMMDDhhmmss
      */
-    private String datetime;
+    private byte[] datetime;
     /**
      * 序号
      * 同一时间点报警序号 从零开始
      */
-    private int number;
+    private byte number;
     /**
      * 附件数量
      * 标识对应报警的附件数量
      */
-    private int attachNumber;
+    private byte attachNumber;
+
+    public String terminalId() {
+        return new String(terminalId, StandardCharsets.US_ASCII);
+    }
+
+    public Date datetime() {
+        return Jt808Helper.bytes2date(this.datetime);
+    }
+
+    public int number() {
+        return this.number;
+    }
+
+    public int attachNumber() {
+        return this.attachNumber;
+    }
+
+    public byte[] toBytes() {
+        return ByteArrHelper.union(
+                terminalId,
+                datetime,
+                new byte[]{number, attachNumber}
+        );
+    }
 
     public static SuAlarmIdentificationNumber fromBytes(byte[] data) {
         if (data.length != 16) {
             log.warn("AlarmIdentificationNumber fromBytes data is too long!");
             return null;
         }
+
         SuAlarmIdentificationNumber id = new SuAlarmIdentificationNumber();
 
-        id.setTerminalId(ByteArrHelper.toHexString(ByteArrHelper.subByte(data, 0, 7)));
-        id.setDatetime(ByteArrHelper.getBCDStr(ByteArrHelper.subByte(data, 7, 13)));
+        id.setTerminalId(ByteArrHelper.subByte(data, 0, 7));
+        id.setDatetime(ByteArrHelper.subByte(data, 7, 13));
         id.setNumber(data[13]);
         id.setAttachNumber(data[14]);
 
