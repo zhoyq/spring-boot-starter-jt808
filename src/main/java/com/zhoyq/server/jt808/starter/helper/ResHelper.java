@@ -940,6 +940,16 @@ public class ResHelper {
     }
 
     /**
+     * 1078: 0x9003 查询终端音视频属性
+     */
+    public static byte[] queryTerminalAudioOrVideoProp(byte[] phoneNum){
+        return warp(
+                new byte[]{(byte) 0x90,0x03},
+                phoneNum
+        );
+    }
+
+    /**
      * 苏标：0x9208 报警附件上传指令
      */
     public static byte[] alarmAttachUpload(byte[] phoneNum, AlarmAttachUpload alarmAttachUpload){

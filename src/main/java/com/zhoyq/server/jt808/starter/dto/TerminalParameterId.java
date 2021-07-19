@@ -328,7 +328,37 @@ public enum TerminalParameterId {
      */
     ImageOrVideoChroma(new byte[]{0x00, 0x00, 0x00, 0x74}),
 
-    // 0x0075 - 0x007F 保留
+    // 0x0075 - 0x007F 在808中保留 在 1078 部分有定义
+    /**
+     * 音视频参数设置
+     */
+    AudioOrVideoSetting(new byte[]{0x00, 0x00, 0x00, 0x75}),
+    /**
+     * 音视频通道列表设置
+     */
+    AudioOrVideoChannelList(new byte[]{0x00, 0x00, 0x00, 0x76}),
+    /**
+     * 单独视频通道参数设置
+     */
+    SingleVideoChannelSetting(new byte[]{0x00, 0x00, 0x00, 0x77}),
+    /**
+     * 特殊报警录像参数设置
+     */
+    SpecialVideoSetting(new byte[]{0x00, 0x00, 0x00, 0x79}),
+    /**
+     * 视频相关报警屏蔽字
+     */
+    VideoAlarmShieldWord(new byte[]{0x00, 0x00, 0x00, 0x7A}),
+    /**
+     * 图像分析报警参数设置
+     */
+    ImageAnalyzeAlarmSetting(new byte[]{0x00, 0x00, 0x00, 0x7B}),
+    /**
+     * 终端休眠唤醒模式设置
+     */
+    TerminalAwakeModeSetting(new byte[]{0x00, 0x00, 0x00, 0x7C}),
+
+    // 1078 部分结束
 
     /**
      * 车辆里程表读数 单位 1 / 10 km

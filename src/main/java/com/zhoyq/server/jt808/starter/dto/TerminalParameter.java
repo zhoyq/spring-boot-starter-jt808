@@ -24,7 +24,7 @@ import lombok.val;
 import java.nio.charset.Charset;
 
 /**
- * 终端控制参数
+ * TODO 终端控制参数
  * @author zhoyq
  * @date 2018-06-27
  */
@@ -60,6 +60,10 @@ public class TerminalParameter {
     public void setIllegalDrivingTime(int fromHour, int fromMinute, int toHour, int toMinute) {
         this.value = new byte[]{(byte) fromHour, (byte) fromMinute, (byte) toHour, (byte) toMinute};
     }
+
+//    public void setAudioOrVideoSetting() {
+//
+//    }
 
     /**
      * 转换消息到二进制

@@ -247,4 +247,12 @@ public interface DataService {
      * @param data 文件数据
      */
     void suAlarmFileInfo(String sim, SuAlarmFileInfo suAlarmFileInfo, byte[] data);
+
+    /**
+     * 1078：终端上传音视频属性
+     * 关联消息ID：0x1003
+     * @param sim 卡号
+     * @param prop 属性
+     */
+    void uploadAudioOrVideoProp(String sim, AudioOrVideoProp prop);
 }
