@@ -181,4 +181,9 @@ public class SimpleDataServiceAdapter implements DataService {
     public void suAlarmFileInfo(String sim, SuAlarmFileInfo suAlarmFileInfo, byte[] data) {
         log.info("{}, suAlarmFileInfo", sim);
     }
+
+    @Override
+    public void uploadAudioOrVideoProp(String sim, AudioOrVideoProp prop) {
+        log.info("{}, uploadAudioOrVideoProp", sim);
+    }
 }
