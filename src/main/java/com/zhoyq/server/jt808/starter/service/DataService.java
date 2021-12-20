@@ -255,4 +255,11 @@ public interface DataService {
      * @param prop 属性
      */
     void uploadAudioOrVideoProp(String sim, AudioOrVideoProp prop);
+
+    /**
+     * 1078: 终端上传乘客流量
+     * @param sim 卡号
+     * @param info 乘客流量信息
+     */
+    void uploadPassengerFlow(String sim, PassengerFlowInfo info);
 }

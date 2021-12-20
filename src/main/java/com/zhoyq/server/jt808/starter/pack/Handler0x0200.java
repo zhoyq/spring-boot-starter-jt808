@@ -52,7 +52,7 @@ public class Handler0x0200 implements PackHandler {
             dataService.terminalLocation(phone, locationInfo, null);
 
             // 针对苏标 下发附件上传指令 0x9208 将在需要时 上传
-            // 这部分内容 在需要是 手动或者配置自动下发指令即可 不在此进行处理
+            // 这部分内容 在需要时 手动或者配置自动下发指令即可 不在此进行处理
 
 //            List<SuAlarmIdentificationNumber> suAlarmIdList = locationInfo.getSuAlarmIdentificationNumberList();
 //

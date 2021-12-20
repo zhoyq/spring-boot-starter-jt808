@@ -64,6 +64,18 @@ public class LocationAttachInfo {
         return null;
     }
 
+    // 1078: 获取视频先关报警 0x14
+//    public Jt1078VideoRelatedAlarm getJt1078VideoRelatedAlarm() {
+//        if (this.id == 0x14) {
+//            return Jt1078VideoRelatedAlarm.fromBytes(data);
+//        }
+//        return null;
+//    }
+
+    // 1078: 获取视频信号丢失报警状态 0x15
+    // 1078: 获取视频信号遮挡报警状态 0x16
+    // 1078: 获取存储器故障报警状态 0x17
+    // 1078: 获取异常驾驶行为详细描述 0x18
 
     public static LocationAttachInfo fromBytes(byte[] data) {
         LocationAttachInfo locationAttachInfo = new LocationAttachInfo();

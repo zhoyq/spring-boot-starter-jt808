@@ -17,7 +17,7 @@ package com.zhoyq.server.jt808.starter.pack;
 
 import com.zhoyq.server.jt808.starter.core.Jt808Pack;
 import com.zhoyq.server.jt808.starter.core.PackHandler;
-import com.zhoyq.server.jt808.starter.dto.AudioOrVideoProp;
+import com.zhoyq.server.jt808.starter.dto.PassengerFlowInfo;
 import com.zhoyq.server.jt808.starter.helper.ByteArrHelper;
 import com.zhoyq.server.jt808.starter.helper.GzipHelper;
 import com.zhoyq.server.jt808.starter.helper.ResHelper;
@@ -28,32 +28,30 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * 1078: 终端上传音视频属性
+ * TODO 1078: 终端上传音视频资源列表
  * @author zhoyq <a href="mailto:feedback@zhoyq.com">feedback@zhoyq.com</a>
  * @date 2018/7/31
  */
 @Slf4j
-@Jt808Pack(msgId = 0x1003)
+@Jt808Pack(msgId = 0x1205)
 @AllArgsConstructor
-public class Handler0x1003 implements PackHandler {
+public class Handler0x1205 implements PackHandler {
     DataService dataService;
     ThreadPoolExecutor tpe;
     GzipHelper gzipHelper;
 
     @Override
     public byte[] handle( byte[] phoneNum, byte[] streamNum, byte[] msgId, byte[] msgBody) {
-        log.info("1003 终端上传音视频属性");
+        log.info("1205 终端上传音视频资源列表");
         tpe.execute(() -> {
             String phone = ByteArrHelper.toHexString(phoneNum);
-            // 因为压缩消息之后的全是 所以就不需要压缩消息长度取解析了
-            // 解压缩后的数据
-            AudioOrVideoProp prop = AudioOrVideoProp.fromBytes(msgBody);
-
-            if (prop != null) {
-                dataService.uploadAudioOrVideoProp(phone, prop);
-            } else {
-                log.warn("1003 {} msg was broken ! ", phone);
-            }
+//            PassengerFlowInfo info = PassengerFlowInfo.fromBytes(msgBody);
+//
+//            if (info != null) {
+//                dataService.uploadPassengerFlow(phone, info);
+//            } else {
+//                log.warn("1005 {} msg was broken ! ", phone);
+//            }
         });
         return ResHelper.getPlatAnswer(phoneNum,streamNum,msgId,(byte) 0);
     }

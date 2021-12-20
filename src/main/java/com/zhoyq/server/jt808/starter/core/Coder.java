@@ -71,7 +71,7 @@ public class Coder {
                 // 继续读取 重新解析
                 if (byteBuf != MSG_BROKER) {
                     // 如果只有一个 标识位 会导致一直读取的问题 需要设置一个限定长度 读取超过这个长度 就直接丢弃
-                    // 目前设置成 10K 以后会加入配置
+                    // TODO 目前设置成 10K 以后会加入配置
                     if (pos < MAX_READ_LEN) {
                         wrapper.reset();
                     }
@@ -134,6 +134,7 @@ public class Coder {
                     && wrapper.get() == 0x64 ) {
 
                 // 苏标数据帧
+                // TODO 需要支持 1078 数据 考虑将 苏标 和 1078 的数据帧抽离到其他项目
 
                 if (wrapper.remaining() < 58) {
                     wrapper.reset();
