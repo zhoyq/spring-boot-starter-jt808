@@ -186,4 +186,9 @@ public class SimpleDataServiceAdapter implements DataService {
     public void uploadAudioOrVideoProp(String sim, AudioOrVideoProp prop) {
         log.info("{}, uploadAudioOrVideoProp", sim);
     }
+
+    @Override
+    public void uploadPassengerFlow(String sim, PassengerFlowInfo info) {
+        log.info("{}, uploadPassengerFlow", sim);
+    }
 }
